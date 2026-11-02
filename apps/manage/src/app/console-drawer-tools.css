@@ -1,0 +1,11 @@
+@media (max-width:767px){
+html.mdr-mob body .app-header .header-actions :is(.lang):not(#_z){position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;padding:0!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;border:0!important;opacity:0!important;pointer-events:none!important}
+#mdr-tools{position:fixed;z-index:2100;display:none;flex-wrap:wrap;align-content:center;align-items:center;gap:8px;height:60px;padding:0 12px;box-sizing:border-box;background:var(--color-surface,#fff);border-top:1px solid var(--color-border,#D1D5DB);font-family:var(--font-sans)}
+#mdr-tools .mdr-lang{display:flex;align-items:center;height:34px;padding:2px;border:1px solid var(--color-border-strong,#D1D5DB);border-radius:6px;flex:1 1 100%}
+#mdr-tools .mdr-lb{flex:1 1 0;height:28px;min-width:34px;padding:0 8px;border:0;border-radius:4px;background:none;font:500 13px/1 var(--font-sans);color:var(--color-text-muted,#4B4B4B);cursor:pointer}
+#mdr-tools .mdr-lb.is-on{background:var(--color-primary);color:var(--color-on-primary,#fff)}
+
+#mdr-tools .mdr-lb:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+
+html.mdr-on body aside.sidebar.is-open:not(#_z){padding-bottom:72px!important}
+}

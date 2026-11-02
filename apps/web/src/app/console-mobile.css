@@ -1,0 +1,59 @@
+@media (max-width:767px){
+/* generic: never let text inside buttons clip; let rows of controls wrap */
+.btn{white-space:nowrap;flex-shrink:0}
+.page-head{flex-wrap:wrap;gap:8px}
+
+.modal-foot{flex-wrap:wrap}
+/* badges never clip */
+.badge{white-space:nowrap;max-width:none}
+/* tables: single-line cells, horizontal scroll */
+.table-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+.table-scroll>table{width:max-content!important;min-width:100%}
+.table-scroll th,.table-scroll td{white-space:nowrap!important}
+.table-scroll td{max-width:240px;overflow:hidden;text-overflow:ellipsis}
+.table-scroll td:has(select),.table-scroll td:has(.dd){overflow:visible;max-width:none}
+/* tab strips: one line, swipe */
+[role="tablist"]{flex-wrap:nowrap!important;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;gap:20px}
+[role="tablist"]::-webkit-scrollbar{display:none}
+[role="tablist"]>*{flex:none!important;white-space:nowrap}
+/* toasts at the bottom, full width */
+.toast-stack{left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;width:auto!important}
+.toast-stack .toast{width:100%;max-width:none}
+/* footer at the bottom on short pages */
+.root{height:auto!important;min-height:100vh;overflow-x:clip!important;overflow-y:visible!important}
+.app{display:flex!important;flex-direction:column!important;min-height:100vh!important;height:auto!important;max-height:none!important;overflow-x:clip!important;overflow-y:visible!important}
+.app>.app-content{overflow-y:visible!important;height:auto!important;max-height:none!important}
+/* header stays on top while scrolling (all portals) */
+.app>.app-header{position:sticky!important;top:0!important;z-index:1900!important}
+.app>*{flex-shrink:0}
+.app>.app-content{flex:1 0 auto!important;min-width:0}
+/* modals: full-width bottom sheet; fields never overflow */
+
+.modal-body input,.modal-body select,.modal-body textarea,.app-content input,.app-content select,.app-content textarea{max-width:100%}
+input[type=file]{max-width:100%;min-width:0}
+.overlay:not(.drawer-overlay){grid-template-columns:minmax(0,1fr)!important}
+.overlay .modal-body{min-width:0;overflow-x:auto}
+/* popup open: lock the page behind, only the popup scrolls */
+html.mf-lock{overflow:hidden!important;overscroll-behavior:none}
+.modal-body{overscroll-behavior:contain}
+/* header: language switch + extensions visible on mobile (compact) */
+html body .app-header .header-actions .lang{display:inline-flex!important;height:28px;padding:1px;margin-right:2px}
+html body .app-header .header-actions .lang .lang-btn{height:24px;min-width:28px;padding:0 5px;font-size:12px}
+html body .app-header .header-actions [aria-label="Extensions"]{display:grid!important}
+html body .app-header .header-actions{gap:2px!important}
+html body .app-header .header-actions .lang .lang-btn{min-width:24px;padding:0 4px}
+
+html body .app-header .header-actions{flex:none!important}
+html body .app-header .brand :is(span,b,strong,div){white-space:nowrap}
+html body .app-header{gap:6px!important;padding-left:8px!important;padding-right:8px!important}
+html body .app-header .brand{flex:none!important;gap:4px!important}
+
+html body .app-header .brand .wordmark-mark{flex:none!important}
+html body .app-header .brand .wordmark{font-size:14px!important;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html body .app-header .brand .role-chip{display:none!important}
+html body .app-header .header-actions .btn-icon{width:30px!important;min-width:30px!important}
+html body .app-header .header-actions .user-menu{padding:2px!important;gap:0!important}
+
+/* extensions panel: inside the screen */
+
+}

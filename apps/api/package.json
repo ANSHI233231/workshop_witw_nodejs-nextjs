@@ -1,0 +1,50 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workshop Witw — API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node --enable-source-maps dist/server.js",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "verify": "npm run type-check && npm run lint",
+    "cli": "ts-node src/cli/index.ts",
+    "cli:dist": "node --enable-source-maps dist/cli/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "chalk": "^4.1.2",
+    "commander": "^14.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "cron-parser": "5.10.1",
+    "dotenv": "^17.2.3",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.4.0",
+    "mysql2": "^3.15.3",
+    "ua-parser-js": "2.0.10",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-boundaries": "^7.2.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.71.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

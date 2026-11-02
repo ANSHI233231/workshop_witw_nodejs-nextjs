@@ -1,0 +1,18 @@
+{
+  "author": "Project",
+  "fixedTimestamp": "2026-01-01T00:00:00Z",
+  "documents": [
+    {
+      "source": "../../how-it-works/workflows/technical-document.md",
+      "output": "../../how-it-works/workflows/documents/technical-document.docx"
+    },
+    {
+      "source": "../../how-it-works/workflows/staging-deployment.md",
+      "output": "../../how-it-works/workflows/documents/staging-deployment.docx"
+    },
+    {
+      "source": "../../how-it-works/workflows/production-deployment.md",
+      "output": "../../how-it-works/workflows/documents/production-deployment.docx"
+    }
+  ]
+}

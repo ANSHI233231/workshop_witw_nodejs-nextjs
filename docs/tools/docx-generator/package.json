@@ -1,0 +1,19 @@
+{
+  "name": "docx-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Converts the repo's Markdown docs to Word (.docx) with fixed styling and reproducible bytes",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node src/commands/build.js",
+    "check": "node src/commands/build.js --check",
+    "diagrams": "node src/commands/diagrams.js"
+  },
+  "dependencies": {
+    "docx": "9.8.1",
+    "jszip": "3.10.2",
+    "marked": "18.1.0"
+  }
+}

@@ -1,0 +1,54 @@
+
+# dependencies
+node_modules/
+
+
+# uploaded files: the API's STORAGE_LOCAL_ROOT (apps/api/.env), never committed, on any machine or server
+/storage/
+
+
+# local pm2 file: each developer's own ports, copied from environments/ecosystem.local.config.example.js
+/environments/ecosystem.local.config.js
+
+
+# api (TypeScript)
+apps/api/dist/
+apps/api/logs/
+
+
+# manage (Next.js)
+apps/manage/.next/
+apps/manage/out/
+apps/manage/build/
+apps/manage/*.tsbuildinfo
+apps/manage/next-env.d.ts
+apps/manage/logs/
+apps/manage/translations/
+
+
+# web (Next.js)
+apps/web/.next/
+apps/web/out/
+apps/web/build/
+apps/web/*.tsbuildinfo
+apps/web/next-env.d.ts
+apps/web/logs/
+apps/web/translations/
+
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS / editor
+.DS_Store
+*.pem
+.vscode/
+.idea/

@@ -1,0 +1,9 @@
+#mdr-tools{display:none}
+@media (max-width:767px){
+.root .app.sl aside.sidebar.is-open #mdr-tools{display:flex;left:0;bottom:0;width:min(280px,86vw)}
+
+}
+@media (max-width:1023px){
+html:has(.app.sl aside.sidebar.is-open){overflow:hidden}
+}
+.cut-hint{position:fixed;left:12px;right:12px;z-index:var(--z-tooltip);padding:8px 12px;border-radius:var(--radius-md);background:var(--color-text);color:var(--color-surface);font:var(--text-caption);overflow-wrap:anywhere;box-shadow:var(--shadow-lg);pointer-events:none}
