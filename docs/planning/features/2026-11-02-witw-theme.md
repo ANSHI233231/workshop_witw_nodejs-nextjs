@@ -59,6 +59,7 @@ Both: radius-md 8, radius-xl 12; status badges and portal pills fully round; WIT
 - 2026-11-02 (user): Roboto is loaded with `next/font` (self-hosted at build), not a Google Fonts link and not by name only.
 - 2026-11-02 (user): the stored password-reset email gets the new colours through a CLI command (dry run unless `confirm`); the applied migration is not edited.
 - 2026-11-02: the 22 boards are recorded ready at 6231393 in `docs/PROTOTYPE-SYNC.md` (the user declared the updated prototype the one to follow).
+- 2026-11-04 (user): the prototype submodule now maps git@github.com:umang-lgtm/workshop_witw_prototype.git (a new history), pinned at 02ae9a4. Ready at 02ae9a4: the 20 boards kept from before (Admin 16; Web Sign-In, Forgot-Password, Notifications, Not-Found); Web-Sign-Up and the Shared Safari boards (W1–W9, C1–C7) not ready until declared. Its newer theme is recorded as open item B2 in PROTOTYPE-SYNC, to be restyled in a separate change (supersedes, for the theme, the 6231393 values in §2). Web-Welcome and Web-Dashboard, dropped from the prototype, are recorded as ours, no board.
 
 ## 5. Execution log
 
