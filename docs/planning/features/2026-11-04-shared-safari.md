@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | shipped |
 | Started | 2026-11-04 |
-| Shipped | |
+| Shipped | 2026-11-10 |
 | Apps | api / manage / web |
 | Test cases | TC-AUTH-01..04, TC-PARK-01..06, TC-SS-01..44, TC-FR-01..03 |
 | How it works | [workflows/WITW-Shared-Safari-Workflow.md](../../how-it-works/workflows/WITW-Shared-Safari-Workflow.md) (the process); to write: `modules/park/`, `modules/shared-safari/`; to update: `modules/auth/`, `platform/file-storage.md`, `platform/manage-console.md` |
@@ -32,7 +32,7 @@ In short: a signed-in user organises a safari in a park and offers seats. Others
 1. **Boards ready.** Web-Sign-Up, W1–W9 and C1–C7 have an empty Ready column in [PROTOTYPE-SYNC](../../PROTOTYPE-SYNC.md). Nothing is built from a board until the user declares it ready (AGENTS.md). The pin moved from 02ae9a4 to 450bcc4, so the 20 boards already marked ready are re-checked at 450bcc4 too.
 2. **Prototype fixed first (#28).** The items in the [prototype changes](../prototype-changes/2026-11-04-shared-safari.md) list are done in the prototype repository and ticked there before their boards are declared ready. Most are already on the boards at 450bcc4 (§5); the list is not ticked yet.
 3. **Re-theme first (#61).** The apps are re-themed to the 450bcc4 design system before any new screen. That is open item B2 in PROTOTYPE-SYNC, plus the new frames: the WITW header and logo in both apps, the WITW site frame on the website, and the console's Shared Safari sidebar group. B2 gets its own planning file and a browser test of every built board.
-4. **Migration applied.** The user applies `2026-11-04-shared-safari.sql` to the local database (the schema questions are settled, §2.9; `2026-11-04-park.sql` is deleted).
+4. **Migration applied.** ~~The user applies~~ (superseded 2026-11-04, §4: the agent applies it to the local database at step 2). The user applies `2026-11-04-shared-safari.sql` to the local database (the schema questions are settled, §2.9; `2026-11-04-park.sql` is deleted).
 
 ### 2.2 API modules
 
@@ -246,6 +246,10 @@ Every screen case runs at 1366 and 390 px, with no console errors, no failed cal
 - 2026-11-04 (user, via the workflow and migration): the flag-reason master is `master_flag_reason` (#13); parks and safaris are in one migration file, `2026-11-04-shared-safari.sql`; notification kinds are 801 / 802.
 - ~~2026-11-04 (user): "please fix the all question according to your best understanding": the eleven questions are settled as in §2.9: park file deleted; `comment_text` TEXT; cover image file name only at `shared_safari/<id>/cover_image/<file>`; index `(status, end_date)`; park regions, `N/A` and the newline fixed, slugs kept; audit modules shared-safari 8, park 9; a public cover-image route limited to visible safaris; console Login unless a Super Admin is signed in; mobile as 10 digits; each web screen's frame and language switch as its board; boards declared ready by the user, board by board.~~ Superseded by the next line where the user's files decide.
 - 2026-11-04 (user): "use this for all your question and update my planning file": the workflow and the prototype-changes list are the answers to every question (§2.9 with the source of each). Changed from the line above: **#8 the console always shows its Login first** when opened from the website, also for a signed-in Super Admin (workflow §2); #10 and #11 follow the boards and the prototype-changes list (the prototype is fixed first, #28). Unchanged, as the files agree or are silent on technical points: #1–#7, #9.
+- 2026-11-04 (user): "all boards are ready, when you develop on features then work on it; same for migration when you develop work on it": every board (Web-Sign-Up, W1–W9, C1–C7 and the 20 existing ones) is declared ready at 450bcc4, recorded in PROTOTYPE-SYNC; each board is built, and its PROTOTYPE-SYNC row updated, in the step of §2.7 that develops its feature. The migration `2026-11-04-shared-safari.sql` is applied to the local database by the agent when the work reaches the step that needs it (step 2, the park module), and checked there; this supersedes, for this feature's local database, "the user applies" in §2.1 gate 4.
+- 2026-11-04 (user): "Now Start Building The Features, Use Sub Agents for Independant Feature Work … for the common and complex work do it yourself … make sure the Browser Testing and Mark the testing pass fail into the planning file, and Re-do work if failed, untill all test pass": building started; independent parts (Parks, Flag Reasons, Sign Up, console screens, website screens) go to subagents; the shared codes, the website frame and the shared-safari API are built by the lead.
+- 2026-11-04 (lead, within the plan): the flag reasons are their own module `flag-reason` (owns `master_flag_reason`, mounted `/api/flag-reason`) so it could be built apart; console routes are `/shared-safaris`, `/flagged-comments`, `/parks`, `/flag-reasons` (top level, not under `/shared-safaris/`). The website's public routes take an optional viewer (`auth.access.viewer`, listed as public): the list, the view and the cover image know a signed-in viewer without requiring one. The cover image is uploaded after the safari is saved (`PUT /safaris/:id/cover-image`), its file saved before the row is updated and removed again if the update fails.
+- 2026-11-10 (user): TC-AUTH-04 failed because the website and the console share one session; the user chose **a separate sign-in per app**: each app keeps its own session cookies, so signing in on the website does not sign in to the console, and the reverse (keeps §2.9 #8 and workflow §2 as written).
 - 2026-11-04 (workflow §13): every decision #1–#63 applies as written there; it is the single list, not copied here. Superseded inside it: #4 ("Live" filter) by #55.
 
 ## 5. Execution log
@@ -257,5 +261,69 @@ Every screen case runs at 1366 and 390 px, with no console errors, no failed cal
 - 2026-11-04: plan written. Nothing built; no migration applied.
 - 2026-11-04: §2.9 settled. `2026-11-04-shared-safari.sql` edited (unapplied, so still editable): `comment_text` TEXT, index `idx_shared_safari_status_end_date`, cover-image header, audit module line, park rows (Ripu-Chirang 6, Palamau 4, Jhalana 3, Kangchenjunga website NULL, Sundarbans newline). `2026-11-04-park.sql` deleted. Workflow §4 and #21 reworded to the file-storage path. Checked by building a throwaway database (`ct_schema_check`) from every migration: no errors, 55 parks (no `N/A`, no trailing newline, the three regions as above), 8 reasons, templates 801 / 802, the new index; the database dropped. Not applied to the local database.
 - 2026-11-04: §2.9 re-checked against the user's workflow and prototype-changes list: #8 changed (Console always opens on its Login); a gate added for the prototype-changes list (§2.1, step 2); TC-AUTH-04 added. No change to the migration or the workflow; nothing built.
+- 2026-11-04: building. Migration `2026-11-04-shared-safari.sql` applied to the local database by the lead (55 parks, 8 flag reasons, templates 801/802, the four `shared_safari*` tables). Audit codes (modules 8 shared-safari, 9 park; actions 801–836, 901–906, 107/108 sign-up; entities 9–12) and notification kinds 801/802 (API and both apps' copies) added. Console menu group Shared Safari and `console-shared-safari.css` (the C boards' styles, global ones scoped under `.ssc-screen`) added.
+- 2026-11-04: shared-safari API module built (`apps/api/src/modules/shared-safari`). Smoke test through the API with two `ct_smoke` users: create (validation messages), cover PNG upload and a GIF refused, public list/view as guest with the plan masked, host-only edit, own-join refused, comment before join refused, join, comment, reply, edit own, edit others refused, flag own refused, flag twice, admin list/detail/flagged/flags/pin/delete with reason (view then 404)/make active/ignore flags, leave, edit after leaving refused, comment after leaving allowed, seat full blocks join, inactive hidden from guests and shown to the host, admin comment delete, host delete, host-deleted read-only in the console; host notified once on join and on each comment by others (not on the own reply); audit rows for every write and failure. Test data deleted.
+- TC-AUTH-01 PASS (browser 1366 + 390, mysql; subagent): sign up lands on `/` signed in, no `user_role`, audit 107; the console refuses the account; the welcome toast checked on its own until it is mounted on `/`.
+- TC-AUTH-02 PASS (browser 1366 + 390; subagent): the six messages under their fields (empty, bad email, taken email in other case, bad mobile, taken mobile, 7-character password).
+- TC-AUTH-03 PASS (browser; subagent): signed out, then signed in with the email and with the mobile.
+- TC-PARK-01 PASS (browser 1366 + 390; subagent): 55 parks, 20 per page, S.No, alternate rows (cards on phone), upcoming count 3 from six test safaris, search / region / status filters, Clear filters, page 2 "Showing 21–40 of 55".
+- TC-PARK-02 PASS (browser; subagent): Add park without status switch, toast, Active with the price range, at once in `/api/park/active`.
+- TC-PARK-03 PASS (browser; subagent): the six park messages (duplicate name from the API, case-insensitive).
+- TC-PARK-04 PASS (browser + DB; subagent): Edit prefilled, inactive leaves `/api/park/active`, icon actions with tooltips and toasts, a park's safaris unchanged when it is made inactive.
+- TC-PARK-05 PASS (browser 1366 + 390; subagent): detail with all fields and "Upcoming shared safaris (3)", Edit, Make inactive / active.
+- TC-FR-01 PASS (browser 1366 + 390; subagent): 8 reasons in added order with S.No, Used in flags counts open and closed flags, search and status filters, Clear filters, cards on phone.
+- TC-FR-02 PASS (browser + API; subagent): "Enter the reason.", duplicate in other case "This reason already exists.", 61 characters refused "Use up to 60 characters.", new reason last and Active, edit with status switch, inactive leaves `/api/flag-reason/active`.
+- TC-FR-03 PASS (API + DB + browser; subagent): a flag keeps `reason_name` after its reason is renamed and made inactive; Used in flags still counts it.
+- TC-SS-42 PASS (API): a guest gets 401 UNAUTHENTICATED on every signed-in route (mine, create, join, comment, edit / flag a comment, active flag reasons) and 200 on the public ones (list, view, active parks); a signed-up member without a role is refused by the console sign-in (CONSOLE_ACCESS_DENIED) and gets 403 ACCESS_DENIED on every Super Admin route (shared-safari admin, parks, flag reasons); editing, changing the status of or deleting someone else's safari gives 403 SHARED_SAFARI_NOT_HOST, editing or deleting someone else's comment 403 SHARED_SAFARI_NOT_WRITER.
+- TC-SS-43 PASS (API + CLI): `todayInIndia` turns from 2026-11-04 to 2026-11-05 between 18:29Z and 18:31Z; a safari starting today (IST) is not started; with its start yesterday it is started and still listed (activeTotal 1); with its end yesterday it leaves the list (activeTotal 0) and its view still opens (200).
+- TC-SS-44 PASS (DB): every write wrote its audit row with what changed (sign-up 107, created 801 with title and slug, comment 820 with its text); every refused change wrote its failure row with the error code (804, 806, 808 SHARED_SAFARI_NOT_HOST; 823, 826 SHARED_SAFARI_NOT_WRITER); the earlier smoke test covered the rest (803–829). Test users `ct_api1/2` and their rows deleted.
+- TC-SS-35 PASS (browser 1366 + 390; subagent): Status All by default, 20 per page (page 2 from S.No 21), each status filter shows only its badges, search by title and by park, Host picker, Clear filters; Joined / Left counts open their lists (bottom sheet on phone); Filters button on phone.
+- TC-SS-36 PASS (browser + DB; subagent): Pin / Unpin with toast and tooltip, filled green / outline icon, pinned first; a deleted pinned safari stays pinned and first; audit 813 / 814.
+- TC-SS-37 PASS (browser; subagent): details with the plan in full (phone and email shown), picture, Joined (2) with join times, Left (1) with "Left on", Comments (4) with reply and flag counts, replies marked.
+- TC-SS-38 PASS (browser + API + DB; subagent): "Select a reason.", "Enter the details.", "Use up to 1000 characters."; after Delete the reason banner, the Deleted by admin filter, the website 404; Make active back to Active with the delete columns NULL and the website showing it; audit 809, 811.
+- TC-SS-39 PASS (browser; subagent): "Deleted by host on … This safari is read-only.", no Pin, Delete, Make active or comment delete.
+- TC-SS-40 PASS (browser + DB; subagent): a single reply deleted alone; a comment deleted with its replies, on the console and the website; their open flags closed; audit 825.
+- TC-SS-41 PASS (browser + DB; subagent): Flagged Comments shows the edited text, leaves out the writer-deleted comment; View flags (reason, details, who, when); Ignore keeps the comment; Delete removes it and its reply; flags closed.
+- 2026-11-10: console detail (C3) now shows the host as "Name (email)" and an Updated row, as the board (API detail returns `hostEmail` and `updatedAt`); checked in the browser on a test safari, then deleted.
+- TC-SS-01 PASS (browser 1366 + 390 + SQL; subagent): banner, "There are currently N active shared safaris" equal to the API's activeTotal and the SQL count; started listed, ended and inactive not; no Organize for guests; 12 per page then more on scroll, no duplicates; back-to-top.
+- TC-SS-02 PASS (browser; subagent): date badge, strip Safaris / Seats X of Y (grey when full), host line, park, initials with names, +N, "N joined"; buttons per viewer (guest Join → Login, Join, Leave, View Safari, Seat Full → view).
+- TC-SS-03 PASS (browser + API; subagent): park, month, both sliders, theme and stay checkboxes match the API totals; chips ✕, Clear all, "No shared safaris match your filters."; phone Filters sheet with count.
+- TC-SS-04 PASS (browser + API; subagent): the six sorts in the API's order, started safaris included.
+- TC-SS-05 PASS (browser, empty answer mocked because other rows existed; subagent): "No shared safaris yet."
+- TC-SS-06 PASS (browser; subagent): three steps with dots, Back keeps values, Cancel closes, bottom sheet on phone, create lands on the view with "Your safari is live." and is listed at once.
+- TC-SS-07 PASS (browser; subagent): every §4 message under its field, Next stays; ₹0 allowed; 999 words saves, 1000 refused.
+- TC-SS-08 PASS (browser + API; subagent): GIF and 6 MB refused with their messages; PNG / JPEG accepted with preview; the picture shown to a guest (`?app=web`, 200 image/png); default cover without one.
+- TC-SS-09 PASS (browser + DB; subagent): "Edit your safari", "Safari updated.", slug unchanged, members and comments kept, image replaced.
+- TC-SS-10 PASS (browser; subagent): a started safari saves with its dates untouched; its start moved to yesterday is refused.
+- TC-SS-11 PASS (browser; subagent): Seat full (grey strip, no Join, members can leave), Inactive (off the list, others "not available", the host sees the page from My Shared Safaris), back to Active.
+- TC-SS-12 PASS (browser + DB; subagent): "Delete this safari? / This can't be undone.", "Safari deleted.", status −1, others "not available".
+- TC-SS-13 PASS (browser; subagent): picture, title, dates, park, "Organized by", the facts, the share row (no action), masked plan, Discussion (3), Interested - 11.
+- TC-SS-14 PASS (browser + API; subagent): `••••` for guest, member and host on the view; full in Edit and the console.
+- TC-SS-15 PASS (browser; subagent): unknown slug, inactive (not host) and deleted: "This safari is not available.", Back to Shared Safaris.
+- TC-SS-16 PASS (browser; subagent): an ended safari is off the list and its view opens.
+- TC-SS-17 PASS (browser; subagent): join from the card and the view, toast, in Interested.
+- TC-SS-18 PASS (browser + SQL; subagent): leave at once on the card, with "Leave this safari?" on the view; one 801 per member after a re-join.
+- TC-SS-19 PASS (API; subagent): own safari, Seat full and inactive refused with their messages.
+- TC-SS-20 PASS (browser; subagent): "This safari has already started." note; join and leave work.
+- TC-SS-21 PASS (browser; subagent): 8 initials then "+3", names on hover, not clickable; popup "INTERESTED (11)" with S.No / Name / Joined On and "Showing 1 - 11 of 11 interested users"; the one who left not shown.
+- TC-SS-22 PASS (browser; subagent): guest Join and the account icon open Login; "Sign in and join this safari to comment."; no flag icons.
+- TC-SS-23 PASS (browser; subagent): "Enter a comment.", 200 words refused, 199 accepted, oldest first, reply under its comment.
+- TC-SS-24 PASS (browser; subagent): never joined "Join this safari to comment."; a member who left and a started safari get the box.
+- TC-SS-25 PASS (browser; subagent): edit with the same rules, "Comment updated.", no edited mark.
+- TC-SS-26 PASS (browser + API; subagent): deletes at once; a reply alone, a comment with its replies, also gone from the console.
+- TC-SS-27 PASS (browser; subagent): after leaving no Edit / Delete icons; can still post.
+- TC-SS-28 PASS (browser + SQL + API; subagent): active reasons in added order, "Thanks, we'll review this comment.", two flags = two rows, own comment refused.
+- TC-SS-29 PASS (browser; subagent): "Select a reason.", "Enter the details.", 501 characters "Use up to 500 characters."
+- TC-SS-30 PASS (browser + SQL; subagent): a deactivated host's safaris leave the list, the count, the view and members' Joined tab; the console still lists them; back after reactivation.
+- TC-SS-31 PASS (browser + SQL + API; subagent): a deactivated member's comment, Interested entry, count and flag hidden; back after reactivation.
+- TC-SS-32 PASS (browser; subagent): Organised (Active / Seat full / Inactive / Over; View, Edit, Change status, Delete) and Joined (no Inactive, Over, Hosted by; View, Leave); icons in their own row on phone.
+- TC-SS-33 PASS (browser + SQL; subagent): the two texts in the mail popover and on Notifications, each opening `/shared-safaris/{id}`; none for the host's own comments.
+- TC-SS-34 PASS (browser; subagent): `/` is Shared Safaris, Welcome gone, `/dashboard` is the site's "Page not found" (the dev server answers every unknown address with 200, as before), Organize only when signed in.
+- TC-PARK-06 PASS (browser + API; subagent): Edit shows the inactive park; "This park is no longer active. Select an active park."; saves after picking an active one (`PARK_INACTIVE`).
+- TC-AUTH-04 FAIL (browser, lead): signed in on the website as a Super Admin, opening the console (`localhost:3041/`) goes straight to the Dashboard, not the console Login: both apps share one session (one access cookie), so §2.9 #8 ("always Login first") needs the sessions split per app. Asked the user (2026-11-10).
+- Cleanup: every `ct_` test user, safari, member, comment, flag, notification, audit row and cover file deleted by marker (subagents and lead); parks 55 active, flag reasons the 8, `shared_safari*` tables empty.
+- 2026-11-10: sessions split per app (user's decision): the API names the cookie pair after the request's app (`SESSION_COOKIE_APP` in `modules/auth/types/auth.types.ts`: `web_` / `manage_` + `access_token` / `refresh_token`; `auth.controller.ts` reads and writes the request app's pair), and each app's `ACCESS_TOKEN_COOKIE` (`lib/config.ts`) names its own; docs `modules/auth`, `platform/frontend-apps`, `platform/manage-console` updated. Everyone signed in before signs in once more. The technical document (`workflows/technical-document.md`, "one session for all apps") is now out of date; it is changed only when the user asks.
+- TC-AUTH-04 PASS (browser 1366 + 390, lead): signed in on the website (cookies `web_access_token`, `web_refresh_token`), opening the console shows its Login; signing in there adds `manage_*` cookies; the website stays signed in; Log Out in the console removes only the `manage_*` pair and the website stays signed in; with the website's access cookie removed it refreshes and stays signed in; no failed calls. Test user `ct_auth` deleted.
+- TC-AUTH-01 PASS (browser, lead, re-run after the split): Sign Up still signs the user in on the website (the `web_*` pair).
 
 ## 6. Post-deploy

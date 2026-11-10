@@ -1,5 +1,11 @@
 import { ACCESS_TOKEN_COOKIE } from '@/lib/config';
-import { type AuthUser, type ChangePasswordInput, type PasswordResetInput, type SignInInput } from '@/types/auth.types';
+import {
+    type AuthUser,
+    type ChangePasswordInput,
+    type PasswordResetInput,
+    type SignInInput,
+    type SignUpInput,
+} from '@/types/auth.types';
 
 import { apiClient } from './api-client';
 import { ApiError } from './api-error';
@@ -17,6 +23,9 @@ const isSignedOut = (error: unknown): boolean =>
 
 export const signIn = async (input: SignInInput): Promise<AuthUser> =>
     (await apiClient.post<UserResponse>('/auth/sign-in', input)).user;
+
+export const signUp = async (input: SignUpInput): Promise<AuthUser> =>
+    (await apiClient.post<UserResponse>('/auth/sign-up', input)).user;
 
 const requestRefresh = async (): Promise<AuthUser | null> => {
     try {

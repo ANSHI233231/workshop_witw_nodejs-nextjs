@@ -21,6 +21,7 @@ docs/
 git clone --recurse-submodules <this repo>        # new clone, prototype included
 git submodule update --init                       # existing clone without the prototype
 git submodule update --remote docs/prototype      # move the pin to the prototype's latest main
+git submodule sync && git submodule update --init # after the prototype's address changed (.gitmodules)
 ```
 
 Set it up with `node init.js` (or later: `node init.js --prototype=<url>`): [how-it-works/platform/prototype.md](how-it-works/platform/prototype.md). Change the prototype in its own repository, not through this one. After `update --remote`, commit the new pin here (`git add docs/prototype`) so everyone gets the same version.

@@ -7,12 +7,14 @@ import {
     forgotPasswordSchema,
     resetPasswordSchema,
     signInSchema,
+    signUpSchema,
 } from '../validators/auth.validators';
 
 export const createAuthRouter = (authController: AuthController, session: AccessGuard): ApiRouter => {
     const route = apiRouter();
 
     route.post('/sign-in', publicAccess, validate(signInSchema), asyncHandler(authController.signIn));
+    route.post('/sign-up', publicAccess, validate(signUpSchema), asyncHandler(authController.signUp));
     route.post('/refresh', publicAccess, asyncHandler(authController.refresh));
     route.post('/sign-out', publicAccess, asyncHandler(authController.signOut));
     route.get('/me', session, authController.me);

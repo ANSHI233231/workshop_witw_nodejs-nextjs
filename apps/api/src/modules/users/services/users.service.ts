@@ -23,6 +23,7 @@ import type {
     UserDetailDto,
     UserUpdate,
     NewAccount,
+    NewSignUp,
 } from '../dto/users.dto';
 import { toRoleListItem, toUserListItem } from '../mappers/users.mapper';
 import {
@@ -51,6 +52,11 @@ const appOfOwnChange = (): ClientAppCode => {
     return app !== undefined && ACCOUNT_APPS.includes(app) ? app : ClientApp.WEB;
 };
 
+const actAs = (userId: number): void => {
+    const context = getRequestContext();
+    if (context) context.userId = userId;
+};
+
 const changesBetween = (before: UserDetailDto, update: UserUpdate): Record<string, { from: unknown; to: unknown }> =>
     Object.fromEntries(
         EDITED_FIELDS.filter((field) => before[field] !== update[field]).map((field) => [
@@ -68,6 +74,51 @@ export class UsersService implements IUsersService {
     ) {}
 
     async createUser(user: NewUser): Promise<UserSummary> {
+        const created = await this.insertNewUser(user);
+        await this.auditService.record({
+            action: AuditAction.USER_CREATED,
+            entityType: AuditEntity.USER,
+            entityId: created.id,
+            details: { username: user.username, email: user.email, mobile: user.mobile },
+        });
+        return created;
+    }
+
+    async signUp(account: NewSignUp): Promise<UserSummary> {
+        const passwordHash = await bcrypt.hash(account.password, PASSWORD_HASH_ROUNDS);
+        try {
+            return await this.db.transaction(async () => {
+                const created = await this.insertNewUser({
+                    name: account.name,
+                    username: null,
+                    email: account.email,
+                    mobile: account.mobile,
+                    passwordHash,
+                });
+                actAs(created.id);
+                await this.auditService.record({
+                    action: AuditAction.USER_SIGNED_UP,
+                    entityType: AuditEntity.USER,
+                    entityId: created.id,
+                    details: { email: account.email, mobile: account.mobile },
+                });
+                return created;
+            });
+        } catch (error) {
+            await this.auditService.recordFailure(
+                {
+                    action: AuditAction.USER_SIGN_UP_FAILED,
+                    entityType: AuditEntity.USER,
+                    actorLabel: account.email,
+                    details: { email: account.email, mobile: account.mobile },
+                },
+                error,
+            );
+            throw error;
+        }
+    }
+
+    private async insertNewUser(user: NewUser): Promise<UserSummary> {
         const holders = await this.usersRepository.findIdentifierHolders(this.db, user);
         const same = (held: string | null, wanted: string | null): boolean =>
             held !== null && wanted !== null && held.toLowerCase() === wanted.toLowerCase();
@@ -81,12 +132,6 @@ export class UsersService implements IUsersService {
             throw new ConflictException('An account with this mobile number already exists.', 'MOBILE_TAKEN');
         }
         const id = await this.usersRepository.insertUser(this.db, user);
-        await this.auditService.record({
-            action: AuditAction.USER_CREATED,
-            entityType: AuditEntity.USER,
-            entityId: id,
-            details: { username: user.username, email: user.email, mobile: user.mobile },
-        });
         return {
             id,
             name: user.name,

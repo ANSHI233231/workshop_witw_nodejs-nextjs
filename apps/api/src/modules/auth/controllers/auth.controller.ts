@@ -1,6 +1,6 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 
-import { noContent, ok } from '../../../core/http';
+import { created, noContent, ok } from '../../../core/http';
 import type { IAuthService, SignedInSession } from '../contracts/auth-service.contract';
 import type { IPasswordResetService } from '../contracts/password-reset-service.contract';
 import type { AuthUserDto } from '../dto/auth.dto';
@@ -8,7 +8,9 @@ import {
     type AuthSettings,
     currentSessionApp,
     REFRESH_COOKIE_PATH,
+    SESSION_COOKIE_APP,
     SESSION_COOKIES,
+    type SessionCookieKind,
     SESSION_USER_HEADER,
 } from '../types/auth.types';
 import type {
@@ -17,6 +19,7 @@ import type {
     ForgotPasswordBody,
     ResetPasswordBody,
     SignInBody,
+    SignUpBody,
 } from '../validators/auth.validators';
 
 const BEARER_PREFIX = 'Bearer ';
@@ -28,8 +31,6 @@ const readCookie = (req: Request, name: string): string | undefined => {
     return typeof value === 'string' && value ? value : undefined;
 };
 
-const sessionCookie = (req: Request, name: string): string | undefined =>
-    currentSessionApp() === undefined ? undefined : readCookie(req, name);
 
 const sessionUserId = (req: Request): string | undefined => req.get(SESSION_USER_HEADER)?.trim() || undefined;
 
@@ -39,22 +40,22 @@ const bearerToken = (req: Request): string | undefined => {
 };
 
 export class AuthController {
-    private readonly accessCookieName: string;
-    private readonly refreshCookieName: string;
-
     constructor(
         private readonly authService: IAuthService,
         private readonly settings: AuthSettings,
         private readonly passwordResetService: IPasswordResetService,
-    ) {
-        this.accessCookieName = `${settings.cookiePrefix}${SESSION_COOKIES.ACCESS}`;
-        this.refreshCookieName = `${settings.cookiePrefix}${SESSION_COOKIES.REFRESH}`;
-    }
+    ) {}
 
     signIn = async (req: Request, res: Response): Promise<void> => {
         const session = await this.authService.signIn(req.body as SignInBody);
         this.setCookies(res, session);
         ok(res, { user: session.user }, 'Signed in.');
+    };
+
+    signUp = async (req: Request, res: Response): Promise<void> => {
+        const session = await this.authService.signUp(req.body as SignUpBody);
+        this.setCookies(res, session);
+        created(res, { user: session.user }, 'Your account is created.');
     };
 
     refresh = async (req: Request, res: Response): Promise<void> => {
@@ -65,8 +66,10 @@ export class AuthController {
 
     signOut = async (req: Request, res: Response): Promise<void> => {
         await this.authService.signOut(this.refreshCookie(req));
-        res.clearCookie(this.accessCookieName, this.cookieOptions('/'));
-        res.clearCookie(this.refreshCookieName, this.cookieOptions(REFRESH_COOKIE_PATH));
+        const accessName = this.cookieName(SESSION_COOKIES.ACCESS);
+        const refreshName = this.cookieName(SESSION_COOKIES.REFRESH);
+        if (accessName) res.clearCookie(accessName, this.cookieOptions('/'));
+        if (refreshName) res.clearCookie(refreshName, this.cookieOptions(REFRESH_COOKIE_PATH));
         noContent(res);
     };
 
@@ -120,6 +123,18 @@ export class AuthController {
         next();
     };
 
+    identifyIfSignedIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const accessToken = this.accessCookie(req) ?? bearerToken(req);
+        if (accessToken) {
+            try {
+                res.locals['authUser'] = await this.authService.authenticate(accessToken, sessionUserId(req));
+            } catch {
+                res.locals['authUser'] = undefined;
+            }
+        }
+        next();
+    };
+
     authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         res.locals['authUser'] = await this.authService.authenticate(
             this.accessCookie(req) ?? bearerToken(req),
@@ -129,22 +144,36 @@ export class AuthController {
     };
 
     private setCookies(res: Response, session: SignedInSession): void {
-        res.cookie(this.accessCookieName, session.tokens.accessToken, {
+        const accessName = this.cookieName(SESSION_COOKIES.ACCESS);
+        const refreshName = this.cookieName(SESSION_COOKIES.REFRESH);
+        if (!accessName || !refreshName) return;
+        res.cookie(accessName, session.tokens.accessToken, {
             ...this.cookieOptions('/'),
             ...(session.remember ? { maxAge: this.settings.accessTokenLifetimeSeconds * 1000 } : {}),
         });
-        res.cookie(this.refreshCookieName, session.tokens.refreshToken, {
+        res.cookie(refreshName, session.tokens.refreshToken, {
             ...this.cookieOptions(REFRESH_COOKIE_PATH),
             ...(session.remember ? { maxAge: this.settings.refreshTokenLifetimeSeconds * 1000 } : {}),
         });
     }
 
+    private cookieName(kind: SessionCookieKind): string | undefined {
+        const app = currentSessionApp();
+        const appPart = app === undefined ? undefined : SESSION_COOKIE_APP[app];
+        return appPart === undefined ? undefined : `${this.settings.cookiePrefix}${appPart}${kind}`;
+    }
+
+    private sessionCookie(req: Request, kind: SessionCookieKind): string | undefined {
+        const name = this.cookieName(kind);
+        return name ? readCookie(req, name) : undefined;
+    }
+
     private accessCookie(req: Request): string | undefined {
-        return sessionCookie(req, this.accessCookieName);
+        return this.sessionCookie(req, SESSION_COOKIES.ACCESS);
     }
 
     private refreshCookie(req: Request): string | undefined {
-        return sessionCookie(req, this.refreshCookieName);
+        return this.sessionCookie(req, SESSION_COOKIES.REFRESH);
     }
 
     private cookieOptions(path: string): CookieOptions {

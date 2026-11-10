@@ -10,7 +10,8 @@
 
 1. **First Super Admin:** `npm run cli user/create-super-admin "<name>" <email> <10-digit mobile> confirm` (dry run without `confirm`): creates the user with a random password, printed once, and gives them role 100. The audit row has no actor (the CLI).
 2. **Users page** (manage `/users`): search (name, username, email, mobile), Role and Status filters, 20 per page, Export (CSV of every match). **Add User**: name, username (optional), email, mobile, the system roles, password and confirmation. **Edit**: the same without the password; **Set password**; **Active / Inactive** switch.
-3. **Roles page** (manage `/roles`): the `meta_role` list with search (also in other languages, through `data_translation`); read only.
+3. **Sign Up** (website, through [auth](../auth/README.md)): `signUp({ name, email, mobile, password })` creates an active user with no username and **no role**; the new user is the audit actor.
+4. **Roles page** (manage `/roles`): the `meta_role` list with search (also in other languages, through `data_translation`); read only.
 
 ## Rules
 
@@ -21,8 +22,8 @@
 - **Roles:** `meta_role` rows come only from migrations (no screen). The starter has **100 Super Admin**; a project adds its own roles in the next hundreds (200–299 …) in its own migration, with a constant in `MetaRole` and, for console roles, an area in manage's `lib/console-access.ts`.
 - **System roles** are kept in `user_role` (one row per user and role; removing a role sets it inactive). The users list shows each user's active role names.
 - A user is never deleted (`status`: 1 active, 2 inactive, -1 deleted).
-- **Notifications** ([notification](../notification/README.md)): creating an account sends the new user 101 Account created (portal); changing, resetting or setting a password sends 102 Password changed (in the app it was changed in; set by an administrator → the user's portal), in the same transaction. `activeUserIdsWithRole(roleId)` lists the active users holding a role (the jobs worker uses it for Super Admins).
-- **Audit** (module 1): 101 user created, 102 create failed, 103 user updated (with what changed and the roles added / removed), 104 update failed, 105 password changed, 106 password change failed.
+- **Notifications** ([notification](../notification/README.md)): creating an account (Add User, the CLI; not Sign Up, whose template would read "created by") sends the new user 101 Account created (portal); changing, resetting or setting a password sends 102 Password changed (in the app it was changed in; set by an administrator → the user's portal), in the same transaction. `activeUserIdsWithRole(roleId)` lists the active users holding a role (the jobs worker uses it for Super Admins).
+- **Audit** (module 1): 101 user created, 102 create failed, 103 user updated (with what changed and the roles added / removed), 104 update failed, 105 password changed, 106 password change failed, 107 user signed up, 108 sign-up failed (the email typed as the actor label).
 
 ## Where it lives
 

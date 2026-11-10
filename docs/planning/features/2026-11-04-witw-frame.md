@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Status | in-progress |
+| Status | shipped |
 | Started | 2026-11-04 |
-| Shipped | |
+| Shipped | 2026-11-10 |
 | Apps | manage / web / docs |
 | Test cases | TC-FRAME-01..09 |
 | How it works | [docs/PROTOTYPE-SYNC.md](../../PROTOTYPE-SYNC.md), [platform/frontend-apps](../../how-it-works/platform/frontend-apps.md), [platform/manage-console](../../how-it-works/platform/manage-console.md) |
@@ -95,8 +95,22 @@ The images come from the boards and are saved as files in `apps/web/public/witw/
 - 2026-11-04 (user): "Update my PROTOTYPE-SYNC according to my prototype. Use theme as like prototype": the apps follow the prototype at 450bcc4, theme and frames; the 20 existing boards are recorded ready at 450bcc4 (the user declared the updated prototype the one to follow, as on 2026-11-02). The Shared Safari boards and Web-Sign-Up stay not ready.
 - 2026-11-04 (workflow #3, #29): links on existing boards to screens not built yet are shown and inert; the website frame has no language switch, as its boards.
 
+- 2026-11-04 (user): every board is ready at 450bcc4 (PROTOTYPE-SYNC Ready column); the 20 existing boards are restyled here, the new ones with their features.
+- 2026-11-04 (user): "stop this": work paused mid-way (console tokens, rules, header and logo in code; web tokens and rule colours in code; the website frame not built). Nothing tested yet.
+
 ## 5. Execution log
 
 - 2026-11-04 — Compared: `console-app.css`, `web-app.css`, `web-auth.css` and the boards' inline styles at 450bcc4 against the stylesheets the running apps serve on every route (collected with Playwright, diffed per selector and property). Differences found as in §2.
+- 2026-11-04 / 10 — Built (lead): tokens and rule colours in both apps; the console header block and the WITW logo (`components/ui/witw-logo.tsx`, `public/witw/logo.png`) in the header, sign-in panels and status page; the website frame (`components/website/witw-site-frame.tsx`, `site-icons.tsx`, `website-shell.tsx`, `app/witw-site.css` from the web boards' styles, phone rules under 767 px), the site look of the bell (both apps' copies kept identical: `look="site"`, mail icon, `{id}` in notification links), the Notifications page (`site-notification-list.tsx`: unread line, All / Unread / Shared Safari / Account tabs, tags, the board's dates) and the framed 404 / 403 / error pages; the website images in `apps/web/public/witw/`. The prototype-only `[data-portal="web"] .app-header` block was not copied (no web board uses that header any more).
+- TC-FRAME-01 PASS (browser): every stylesheet rule on the 14 console routes and sign-in collected and diffed with `console-app.css` at 450bcc4: the only differences are notation (`#fff` / `#ffffff`, hex / rgba, `var(--color-danger-ring)` for the same value), the app's `next/font` Roboto variable, and the drawer tools' font written as a variable; `--font-display` was missing and was added.
+- TC-FRAME-03 PASS (browser 1366 + 390): every console page has the header in rgb(9, 66, 45) with the logo image; the chosen language button rgb(153, 255, 51); the user menu and bell popover open over the green header; screenshots beside Admin-Dashboard and Admin-Users boards match (sample data aside); existing screens keep plain rows.
+- TC-FRAME-04 PASS (browser 1366 + 390): the logo on the console Login and Forgot Password panels.
+- TC-FRAME-08 (console half) PASS (browser 1366 + 390): all 14 console routes, no sideways scroll, no console errors or failed calls (only the signed-out session check's 401 on the login page).
+- TC-FRAME-02 PASS (browser): the website's rules on every route (guest and signed in) diffed with `web-app.css` / `web-auth.css` at 450bcc4: the active menu bar radius and the skeleton colours differed and were fixed; the rest is notation, the app's font variable, and the old website module's bar / brand / links rules that no board uses any more.
+- TC-FRAME-05 PASS (browser 1366 + 390): Login, Forgot Password, Sign Up and an unknown address as a guest in the WITW frame (logo, Plan Safari / Safari Packages display only, Shared Safari, account icon → `/login`, footer); the Sign Up line on Login; on phone the menu on its own row.
+- TC-FRAME-06 PASS (browser 1366 + 390): `/notifications` with the banner, unread line, tabs and list; the mail popover; the account menu (name, email, My Shared Safaris, Change Password, Log Out); Change Password opens its dialog; Log Out lands on `/login`.
+- TC-FRAME-07 PASS (browser 1366 + 390): the 404 in the frame signed in; Go Back returns to the previous page, the Shared Safaris button goes to `/`; a guest's unknown address goes to Login (the portal layout, as before).
+- TC-FRAME-08 PASS (browser 1366 + 390): all 20 boards' screens: console (above) and website, screenshots beside the boards match (sample data aside); no sideways scroll; console errors and failed calls only the signed-out session check's 401 on the sign-in pages.
+- TC-FRAME-09 PASS (CLI): `tsc --noEmit` and `npm run lint` clean in api, manage and web; `npm run build` passes in api, manage and web; the dev servers answer 200 after the builds.
 
 ## 6. Post-deploy

@@ -15,5 +15,8 @@ One folder per API module, named exactly like its code folder in `apps/api/src/m
 | [language](language/README.md) | The languages offered and the translations of screen text and data text; Publish to each app's JSON files |
 | [mail](mail/README.md) | Mail templates and the mail log behind the email adapter |
 | [notification](notification/README.md) | In-app notifications: the bell, popover and Notifications page in each app; Notification Templates and the Delivery Log in the console |
+| [park](park/README.md) | The parks safaris are planned in (`master_park`): Console › Parks; the active list for the website |
+| [flag-reason](flag-reason/README.md) | The reasons offered when flagging a comment (`master_flag_reason`): Console › Flag Reasons |
+| [shared-safari](shared-safari/README.md) | Shared safaris: organise, join, discuss and flag on the website; moderation in the console |
 
 `health` is technical only and has no business doc.

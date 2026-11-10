@@ -1,6 +1,6 @@
 import type { ConsoleAccess } from '@/types/console.types';
 
-export type ConsoleIconName = 'DashboardIcon' | 'UserRoleIcon' | 'SettingsIcon';
+export type ConsoleIconName = 'DashboardIcon' | 'SharedSafariIcon' | 'UserRoleIcon' | 'SettingsIcon';
 
 export type ConsoleMenuLink = {
     readonly label: string;
@@ -38,6 +38,18 @@ export type ConsoleMenuNode =
 
 export const CONSOLE_MENU: readonly ConsoleMenuNode[] = [
     { kind: 'link', label: 'Dashboard', icon: 'DashboardIcon', screen: 'Admin-Dashboard', href: '/' },
+    {
+        kind: 'group',
+        key: 'shared-safari',
+        label: 'Shared Safari',
+        icon: 'SharedSafariIcon',
+        children: [
+            { label: 'Shared Safaris', screen: 'C1-Shared-Safaris-list', href: '/shared-safaris' },
+            { label: 'Flagged Comments', screen: 'C4-Flagged-Comments', href: '/flagged-comments' },
+            { label: 'Parks', screen: 'C5-Parks-list', href: '/parks' },
+            { label: 'Flag Reasons', screen: 'C7-Flag-Reasons', href: '/flag-reasons' },
+        ],
+    },
     { kind: 'section', label: 'Platform', color: 'var(--color-primary)' },
     {
         kind: 'group',

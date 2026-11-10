@@ -13,6 +13,7 @@ import {
     ChevronRightIcon,
     DashboardIcon,
     SettingsIcon,
+    SharedSafariIcon,
     UserRoleIcon,
 } from './console-icons';
 import {
@@ -26,6 +27,7 @@ import { DrawerLanguageBar } from './drawer-language-bar';
 
 const ICONS: Record<ConsoleIconName, () => React.JSX.Element> = {
     DashboardIcon,
+    SharedSafariIcon,
     UserRoleIcon,
     SettingsIcon,
 };

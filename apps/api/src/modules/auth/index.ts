@@ -33,6 +33,7 @@ export const createAuthModule = (dependencies: AuthModuleDependencies) => {
     const access = {
         session: AccessGuard.define('session', asyncHandler(authController.identify)),
         signedIn: AccessGuard.define('signed-in', asyncHandler(authController.authenticate)),
+        viewer: AccessGuard.define('public', asyncHandler(authController.identifyIfSignedIn)),
         roles: (roleIds: readonly number[]) =>
             AccessGuard.define('roles', asyncHandler(authController.requireRoles(roleIds)), roleIds),
     };

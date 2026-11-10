@@ -1,11 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import type { MouseEvent, ReactNode } from 'react';
 
 import { useT } from '@/hooks/i18n/use-t';
 import { config } from '@/lib/config';
 
 import { API_DIGEST_PREFIX } from '@/services/api-error';
+
+import { ArrowLeftIcon } from '@/components/website/site-icons';
 
 export type StatusKind = 'forbidden' | 'not-found' | 'error';
 
@@ -49,19 +52,7 @@ export function StatusLogo() {
     return (
         <div className="e4-logo">
             <span className="wordmark-mark">
-                <svg
-                    className="icon "
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                >
-                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
-                    <path d="m9 12 2 2 4-4"></path>
-                </svg>
+                <img src="/witw/logo.png" alt="Walk Into The Wild" />
             </span>
             <span className="wordmark">{t('Portal')}</span>
         </div>
@@ -69,8 +60,8 @@ export function StatusLogo() {
 }
 
 export function StatusFrame({ framed, children }: { readonly framed: boolean; readonly children: ReactNode }) {
+    if (framed) return <div className="page">{children}</div>;
     const card = <div className="e4-wrap">{children}</div>;
-    if (framed) return card;
     return (
         <div className="app e4-app">
             <main className="app-content">{card}</main>
@@ -88,7 +79,33 @@ export function StatusPage({
     readonly detail?: string;
 }) {
     const t = useT();
+    const router = useRouter();
     const status = STATUS_TEXTS[kind];
+    const goBackOrHome = (): void => {
+        if (window.history.length > 1) router.back();
+        else router.push(HOME);
+    };
+    if (framed) {
+        return (
+            <StatusFrame framed>
+                <div className="nf">
+                    <p className="nf-code">{status.code}</p>
+                    <h1>{t(status.title)}</h1>
+                    <p>{t(status.text)}</p>
+                    <div className="ss-row">
+                        <button type="button" className="btn btn-secondary" onClick={goBackOrHome}>
+                            <ArrowLeftIcon />
+                            {t('Go Back')}
+                        </button>
+                        <a className="btn btn-primary" href={HOME}>
+                            {t('Shared Safaris')}
+                        </a>
+                    </div>
+                    {detail && <p className="e4-help">{detail}</p>}
+                </div>
+            </StatusFrame>
+        );
+    }
     return (
         <StatusFrame framed={framed}>
             <section className="e4-card" aria-labelledby="e4-t">

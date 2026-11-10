@@ -2,26 +2,19 @@
 
 import { useEffect, useState } from 'react';
 
-import { ConsoleShell } from '@/components/console/console-shell';
-import { consoleAccessOf } from '@/lib/console-access';
+import { WitwSiteFrame } from '@/components/website/witw-site-frame';
 import { getCurrentUser } from '@/services/auth.service';
 import type { AuthUser } from '@/types/auth.types';
-import type { ConsoleAccess } from '@/types/console.types';
 
 import { FrameBoundary } from './frame-boundary';
 import { LoadingPage } from './loading-page';
 import { StatusPage } from './status-page';
 
-type FrameData = {
-    readonly user: AuthUser;
-    readonly access: ConsoleAccess;
-};
+type FrameData = { readonly user: AuthUser };
 
 const loadFrame = async (): Promise<FrameData | null> => {
     const user = await getCurrentUser();
-    if (!user) return null;
-    const access = consoleAccessOf();
-    return access ? { user, access } : null;
+    return user ? { user } : null;
 };
 
 export function FramedErrorPage({ detail }: { readonly detail: string | undefined }) {
@@ -43,9 +36,11 @@ export function FramedErrorPage({ detail }: { readonly detail: string | undefine
     if (frame === null) return standalone;
     return (
         <FrameBoundary fallback={standalone}>
-            <ConsoleShell user={frame.user} access={frame.access}>
-                <StatusPage kind="error" framed detail={detail} />
-            </ConsoleShell>
+            <WitwSiteFrame user={frame.user}>
+                <main className="wb-main">
+                    <StatusPage kind="error" framed detail={detail} />
+                </main>
+            </WitwSiteFrame>
         </FrameBoundary>
     );
 }

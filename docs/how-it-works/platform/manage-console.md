@@ -26,8 +26,8 @@
 
 1. The root layout loads `app/globals.css` (the console stylesheet) and `app/console-extras.css`, and wraps every page in `<div class="root" data-portal="admin">`.
 2. `/login` renders `SignInScreen` on its own, with no frame; its card is the `SignInForm`.
-3. **Sign-in guard:** the `(dashboard)` layout reads the `access_token` cookie (the session shared by every app) and asks the API who it belongs to (`GET /api/auth/me`, then `GET /api/auth/console-roles`); no valid token → redirect to `/login`; signed in without Super Admin → the 403 page inside the frame.
-4. Pages in the `(dashboard)` route group get `ConsoleShell`: the header (`ConsoleHeader`: the wordmark, the role chip, the language switch, the user menu with Change Password and Log Out), the sidebar (`ConsoleSidebar`), `<main class="app-content">` with the page, and the footer. A page renders its own `<div class="page">`.
+3. **Sign-in guard:** the `(dashboard)` layout reads the console's own `manage_access_token` cookie (the website's session does not sign in to the console) and asks the API who it belongs to (`GET /api/auth/me`, then `GET /api/auth/console-roles`); no valid token → redirect to `/login`; signed in without Super Admin → the 403 page inside the frame.
+4. Pages in the `(dashboard)` route group get `ConsoleShell`: the header (`ConsoleHeader`, dark green with the WITW logo image `public/witw/logo.png` and white controls: the wordmark, the role chip, the language switch, the user menu with Change Password and Log Out), the sidebar (`ConsoleSidebar`), `<main class="app-content">` with the page, and the footer. A page renders its own `<div class="page">`.
 5. Each page calls `requireConsoleArea('platform')` before loading its data; console areas (`lib/console-access.ts`) decide which roles open which pages, so a project's own console roles are added there.
 
 ## The sidebar menu
@@ -37,6 +37,7 @@
 - **Active item:** the link whose route best matches the current page is marked (`is-active` / `is-current`, `aria-current="page"`); its group and sub-group start open.
 - **Menu groups are only how the menu is drawn.** A page's route and API follow its own area (`/users`, `GET /api/users`), never the menu's group.
 - **A link without a route** (`href: undefined`) is shown like the others but goes nowhere, for a page not built yet.
+- **Shared Safari** is the first group, above Platform: Shared Safaris (`/shared-safaris`), Flagged Comments (`/flagged-comments`), Parks (`/parks`), Flag Reasons (`/flag-reasons`). Its screens use their boards' patterns (`console-shared-safari.css`: S.No, alternate row colours, icon actions, the status switch inside Edit), scoped to a page root with the class `ssc-screen` so the platform's own screens keep theirs ([shared-safari](../modules/shared-safari/README.md), [park](../modules/park/README.md), [flag-reason](../modules/flag-reason/README.md)).
 
 ## Tech Documentation
 

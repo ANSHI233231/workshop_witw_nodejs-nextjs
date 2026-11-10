@@ -37,8 +37,7 @@ export type ConsoleMenuNode =
       };
 
 export const CONSOLE_MENU: readonly ConsoleMenuNode[] = [
-    { kind: 'link', label: 'Dashboard', icon: 'DashboardIcon', screen: 'Web-Dashboard', href: '/dashboard' },
-    { kind: 'link', label: 'Welcome', icon: 'DashboardIcon', screen: 'Web-Welcome', href: '/' },
+    { kind: 'link', label: 'Shared Safaris', icon: 'DashboardIcon', screen: 'W1-Shared-Safaris-list', href: '/' },
 ];
 
 const MENUS: Readonly<Record<ConsoleAccess, readonly ConsoleMenuNode[]>> = {

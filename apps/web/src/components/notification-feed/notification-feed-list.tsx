@@ -29,6 +29,7 @@ import {
     DAY_GROUPS,
     dayGroupOf,
     KIND_STYLE,
+    linkOf,
     relativeTime,
     SentenceContent,
 } from './notification-feed-format';
@@ -158,7 +159,7 @@ export function NotificationFeedList({
                                                 <p>
                                                     {links[item.notificationKind] ? (
                                                         <Link
-                                                            href={links[item.notificationKind] ?? feedPath}
+                                                            href={linkOf(links, item, feedPath)}
                                                             onClick={() => {
                                                                 if (!read) void flip(item);
                                                             }}

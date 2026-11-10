@@ -15,6 +15,13 @@ export type NewUser = {
     readonly passwordHash: string;
 };
 
+export type NewSignUp = {
+    readonly name: string;
+    readonly email: string;
+    readonly mobile: string;
+    readonly password: string;
+};
+
 export type UserSummary = {
     readonly id: number;
     readonly name: string;

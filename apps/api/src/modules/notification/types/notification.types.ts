@@ -6,6 +6,8 @@ export const NotificationKind = {
     PASSWORD_CHANGED: 102,
     JOB_FAILED: 501,
     TEST: 601,
+    SHARED_SAFARI_JOINED: 801,
+    SHARED_SAFARI_COMMENTED: 802,
 } as const;
 
 export type NotificationKindCode = (typeof NotificationKind)[keyof typeof NotificationKind];
@@ -21,6 +23,7 @@ export const NotificationTab = {
     UNREAD: 'unread',
     ACCOUNT: 'account',
     JOBS: 'jobs',
+    SHARED_SAFARI: 'shared-safari',
 } as const;
 
 export type NotificationTabKey = (typeof NotificationTab)[keyof typeof NotificationTab];
@@ -29,12 +32,13 @@ export type NotificationKindTab = Exclude<NotificationTabKey, 'all' | 'unread'>;
 
 export const KIND_TABS_OF_APP: Readonly<Partial<Record<ClientAppCode, readonly NotificationKindTab[]>>> = {
     [ClientApp.MANAGE]: [NotificationTab.ACCOUNT, NotificationTab.JOBS],
-    [ClientApp.WEB]: [NotificationTab.ACCOUNT],
+    [ClientApp.WEB]: [NotificationTab.SHARED_SAFARI, NotificationTab.ACCOUNT],
 };
 
 export const KINDS_OF_TAB: Readonly<Record<NotificationKindTab, readonly NotificationKindCode[]>> = {
     [NotificationTab.ACCOUNT]: [NotificationKind.ACCOUNT_CREATED, NotificationKind.PASSWORD_CHANGED],
     [NotificationTab.JOBS]: [NotificationKind.JOB_FAILED],
+    [NotificationTab.SHARED_SAFARI]: [NotificationKind.SHARED_SAFARI_JOINED, NotificationKind.SHARED_SAFARI_COMMENTED],
 };
 
 export const NOTIFICATION_LIMITS = { TITLE_MAX: 255, EXCERPT_MAX: 500, INSERT_BATCH: 500 } as const;

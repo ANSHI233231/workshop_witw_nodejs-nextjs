@@ -14,7 +14,7 @@ import { SIGN_IN_LIMITS } from '@/types/auth.types';
 
 type FieldErrors = { identifier?: string; password?: string };
 
-const DASHBOARD = '/dashboard';
+const SIGNED_IN_HOME = '/';
 
 const checkFields = (t: Translate, identifier: string, password: string): FieldErrors => {
     const errors: FieldErrors = {};
@@ -61,7 +61,7 @@ export function SignInForm() {
         refreshSession()
             .then((user) => {
                 if (!active || !user) return;
-                router.replace(DASHBOARD);
+                router.replace(SIGNED_IN_HOME);
                 router.refresh();
             })
             .catch(() => undefined);
@@ -82,7 +82,7 @@ export function SignInForm() {
         setSending(true);
         try {
             await signIn({ identifier: identifier.trim(), password, remember });
-            router.replace(DASHBOARD);
+            router.replace(SIGNED_IN_HOME);
             router.refresh();
         } catch (error) {
             if (error instanceof ApiError && error.errors.length > 0) {
@@ -106,7 +106,7 @@ export function SignInForm() {
                 width: '440px',
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-xl)',
+                borderRadius: 'var(--radius-md)',
                 boxShadow: 'var(--shadow-md)',
                 padding: '32px',
                 display: 'flex',
@@ -119,7 +119,7 @@ export function SignInForm() {
             {' '}
             <h1 style={{ font: 'var(--text-kpi)', margin: '0' }}>{t('Login')}</h1>
             <p className="helper" style={{ margin: '-8px 0 0', font: 'var(--text-body)' }}>
-                {t('Sign in to the portal.')}
+                {t('Sign in to Walk Into The Wild.')}
             </p>{' '}
             <div className={`field${fieldErrors.identifier ? ' is-invalid' : ''}`}>
                 <label className="label" htmlFor="sign-in-identifier">
@@ -192,7 +192,13 @@ export function SignInForm() {
                 disabled={sending}
             >
                 {sending ? t('Logging in…') : t('Login')}
-            </button>{' '}
+            </button>
+            <p className="auth-switch" style={{ margin: '0', textAlign: 'center', font: 'var(--text-body)' }}>
+                {t("Don't have an account?")}{' '}
+                <Link href="/sign-up" style={{ fontWeight: 600 }}>
+                    {t('Sign Up')}
+                </Link>
+            </p>{' '}
         </form>
     );
 }

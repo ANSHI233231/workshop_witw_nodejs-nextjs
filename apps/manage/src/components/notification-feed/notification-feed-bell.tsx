@@ -20,8 +20,8 @@ import {
     type NotificationOwner,
 } from '@/types/notification-feed.types';
 
-import { actorInitials, KIND_STYLE, relativeTime, SentenceContent } from './notification-feed-format';
-import { BellIcon } from './notification-feed-icons';
+import { actorInitials, KIND_STYLE, linkOf, relativeTime, SentenceContent } from './notification-feed-format';
+import { BellIcon, MailIcon } from './notification-feed-icons';
 
 const log = logger.category('notifications');
 
@@ -39,10 +39,12 @@ export function NotificationFeedBell({
     owner,
     feedPath,
     links,
+    look = 'console',
 }: {
     readonly owner: NotificationOwner;
     readonly feedPath: string;
     readonly links: NotificationLinks;
+    readonly look?: 'console' | 'site';
 }) {
     const t = useT();
     const pathname = usePathname();
@@ -54,6 +56,7 @@ export function NotificationFeedBell({
     const [place, setPlace] = useState<CSSProperties>({});
     const [now, setNow] = useState(() => Date.now());
     const current = decodeURIComponent(pathname) === decodeURIComponent(feedPath);
+    const isSite = look === 'site';
 
     const loadUnread = useCallback(() => {
         getUnreadCount(owner)
@@ -140,68 +143,91 @@ export function NotificationFeedBell({
             .catch((error: unknown) => log.warn('Mark read failed', { error }));
     };
 
+    const button = (
+        <button
+            ref={bellRef}
+            type="button"
+            className={isSite ? 'wb-ic is-bell' : `btn-icon nt-bell${current ? ' is-current' : ''}`}
+            aria-label={t('Notifications')}
+            data-tooltip={isSite ? undefined : t('Notifications')}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            onClick={() => void toggle()}
+        >
+            {isSite ? <MailIcon /> : <BellIcon />}
+            {unread > 0 && (
+                <span className={isSite ? 'wb-cnt' : 'nt-cnt'}>{unread > BADGE_MAX ? `${BADGE_MAX}+` : unread}</span>
+            )}
+        </button>
+    );
+
+    const popover = open && (
+        <div
+            ref={panelRef}
+            className="ntp"
+            role="dialog"
+            aria-label={t('Notifications')}
+            style={isSite ? undefined : place}
+        >
+            <div className="ntp-h">
+                <b>{t('Notifications')}</b>
+                {panel && panel.unread > 0 && (
+                    <span className="ntp-c">{t('{count} new', { count: panel.unread })}</span>
+                )}
+                {panel && panel.unread > 0 && (
+                    <button type="button" className="ntp-mk" onClick={() => void markAll()}>
+                        {t('Mark all as read')}
+                    </button>
+                )}
+            </div>
+            <div className="ntp-l">
+                {panel?.items.map((item) => {
+                    const style = KIND_STYLE[item.notificationKind];
+                    return (
+                        <Link
+                            key={item.id}
+                            className={`ntp-i${item.isRead ? '' : ' is-unread'}`}
+                            href={linkOf(links, item, feedPath)}
+                            onClick={() => openItem(item)}
+                        >
+                            <span className="ntp-av">
+                                {actorInitials(item)}
+                                {style && (
+                                    <span className={`ntp-k ${style.css}`}>
+                                        <style.Icon />
+                                    </span>
+                                )}
+                            </span>
+                            <span className="ntp-t">
+                                <span className="ntp-p">
+                                    <SentenceContent item={item} />
+                                </span>
+                                <small>{relativeTime(item.createdAt, now, t)}</small>
+                            </span>
+                            <span className="ntp-dot" aria-hidden="true"></span>
+                        </Link>
+                    );
+                })}
+            </div>
+            <Link className="ntp-f" href={feedPath} onClick={() => setOpen(false)}>
+                {t('Show all notifications')}
+            </Link>
+        </div>
+    );
+
+    if (isSite) {
+        return (
+            <div className="wb-wrap">
+                {button}
+                {popover && <div className="wb-pop">{popover}</div>}
+            </div>
+        );
+    }
+
     return (
         <>
-            <button
-                ref={bellRef}
-                type="button"
-                className={`btn-icon nt-bell${current ? ' is-current' : ''}`}
-                aria-label={t('Notifications')}
-                data-tooltip={t('Notifications')}
-                aria-haspopup="dialog"
-                aria-expanded={open}
-                onClick={() => void toggle()}
-            >
-                <BellIcon />
-                {unread > 0 && <span className="nt-cnt">{unread > BADGE_MAX ? `${BADGE_MAX}+` : unread}</span>}
-            </button>
-            {open && (
-                <div ref={panelRef} className="ntp" role="dialog" aria-label={t('Notifications')} style={place}>
-                    <div className="ntp-h">
-                        <b>{t('Notifications')}</b>
-                        {panel && panel.unread > 0 && (
-                            <span className="ntp-c">{t('{count} new', { count: panel.unread })}</span>
-                        )}
-                        {panel && panel.unread > 0 && (
-                            <button type="button" className="ntp-mk" onClick={() => void markAll()}>
-                                {t('Mark all as read')}
-                            </button>
-                        )}
-                    </div>
-                    <div className="ntp-l">
-                        {panel?.items.map((item) => {
-                            const style = KIND_STYLE[item.notificationKind];
-                            return (
-                                <Link
-                                    key={item.id}
-                                    className={`ntp-i${item.isRead ? '' : ' is-unread'}`}
-                                    href={links[item.notificationKind] ?? feedPath}
-                                    onClick={() => openItem(item)}
-                                >
-                                    <span className="ntp-av">
-                                        {actorInitials(item)}
-                                        {style && (
-                                            <span className={`ntp-k ${style.css}`}>
-                                                <style.Icon />
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className="ntp-t">
-                                        <span className="ntp-p">
-                                            <SentenceContent item={item} />
-                                        </span>
-                                        <small>{relativeTime(item.createdAt, now, t)}</small>
-                                    </span>
-                                    <span className="ntp-dot" aria-hidden="true"></span>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                    <Link className="ntp-f" href={feedPath} onClick={() => setOpen(false)}>
-                        {t('Show all notifications')}
-                    </Link>
-                </div>
-            )}
+            {button}
+            {popover}
         </>
     );
 }

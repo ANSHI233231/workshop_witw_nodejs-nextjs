@@ -11,6 +11,6 @@ export const generateMetadata = async (): Promise<Metadata> => ({ title: (await 
 
 export default async function LoginPage() {
     const user = await getSignedInUser((await cookies()).get(ACCESS_TOKEN_COOKIE)?.value);
-    if (user) redirect('/dashboard');
+    if (user) redirect('/');
     return <SignInScreen />;
 }

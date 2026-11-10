@@ -12,6 +12,15 @@ export type SignInInput = {
     readonly remember: boolean;
 };
 
+export type SignUpInput = {
+    readonly name: string;
+    readonly email: string;
+    readonly mobile: string;
+    readonly password: string;
+};
+
+export const SIGN_UP_LIMITS = { NAME_MIN: 2, NAME_MAX: 100, EMAIL: 254 } as const;
+
 export const SIGN_IN_LIMITS = { IDENTIFIER: 254, PASSWORD: 200 } as const;
 
 export const PASSWORD_LIMITS = { MIN: 8, MAX: 72 } as const;

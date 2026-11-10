@@ -8,9 +8,11 @@ export const NotificationKind = {
     PASSWORD_CHANGED: 102,
     JOB_FAILED: 501,
     TEST: 601,
+    SHARED_SAFARI_JOINED: 801,
+    SHARED_SAFARI_COMMENTED: 802,
 } as const;
 
-export const NOTIFICATION_KIND_TABS = ['account', 'jobs'] as const;
+export const NOTIFICATION_KIND_TABS = ['account', 'jobs', 'shared-safari'] as const;
 
 export type NotificationKindTab = (typeof NOTIFICATION_KIND_TABS)[number];
 

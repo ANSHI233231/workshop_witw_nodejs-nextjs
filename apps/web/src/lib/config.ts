@@ -50,4 +50,4 @@ export const config = Object.freeze({
     localeCookieDomain: parsed.data.NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN,
 });
 
-export const ACCESS_TOKEN_COOKIE = `${parsed.data.NEXT_PUBLIC_AUTH_COOKIE_PREFIX}access_token`;
+export const ACCESS_TOKEN_COOKIE = `${parsed.data.NEXT_PUBLIC_AUTH_COOKIE_PREFIX}web_access_token`;

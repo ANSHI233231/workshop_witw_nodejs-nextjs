@@ -15,6 +15,7 @@ import type {
     UserDetailDto,
     UserUpdate,
     NewAccount,
+    NewSignUp,
 } from '../dto/users.dto';
 
 export interface IUsersService {
@@ -25,6 +26,7 @@ export interface IUsersService {
     updateUser(id: number, update: UserUpdate, actorId: number): Promise<UserDetailDto>;
     setStatus(id: number, status: UserStatusCode, actorId: number): Promise<UserDetailDto>;
     createAccount(account: NewAccount, actorId: number | null): Promise<UserDetailDto>;
+    signUp(account: NewSignUp): Promise<UserSummary>;
     passwordHashOf(userId: number): Promise<string | null>;
     findForSignIn(identifier: SignInIdentifier): Promise<SignInUser | undefined>;
     findActiveById(id: number): Promise<UserSummary | undefined>;

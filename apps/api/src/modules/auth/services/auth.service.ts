@@ -17,7 +17,7 @@ import type { IAuthService, RefreshedSession, SignedInSession } from '../contrac
 import type { AuthUserDto } from '../dto/auth.dto';
 import { toAuthUser } from '../mappers/auth.mapper';
 import { type AuthSettings, currentSessionApp, REFRESH_REUSE_GRACE_SECONDS } from '../types/auth.types';
-import type { ChangePasswordBody, SignInBody } from '../validators/auth.validators';
+import type { ChangePasswordBody, SignInBody, SignUpBody } from '../validators/auth.validators';
 import {
     hashToken,
     isPast,
@@ -30,6 +30,8 @@ import {
 
 const MOBILE_PATTERN = /^\d{10}$/;
 const PASSWORD_HASH_ROUNDS = 10;
+
+const SIGN_UP_REMEMBERED = true;
 
 const INVALID_CREDENTIALS = 'The mobile number, email, username or password is not correct.';
 const SESSION_EXPIRED = 'Your session has expired. Please sign in again.';
@@ -102,6 +104,19 @@ export class AuthService implements IAuthService {
         return this.db.transaction(async () => {
             const session = await this.issue(user, body.remember);
             await this.auditService.record({ action: AuditAction.SIGNED_IN, details: { remember: body.remember } });
+            return session;
+        });
+    }
+
+    async signUp(body: SignUpBody): Promise<SignedInSession> {
+        if (sessionAppOrRefuse() !== ClientApp.WEB) {
+            throw new ValidationException('Sign Up is available only on the website.', [], 'AUTH_APP_NOT_ALLOWED');
+        }
+        const user = await this.usersService.signUp(body);
+        markSignedIn(user.id);
+        return this.db.transaction(async () => {
+            const session = await this.issue(user, SIGN_UP_REMEMBERED);
+            await this.auditService.record({ action: AuditAction.SIGNED_IN, details: { remember: SIGN_UP_REMEMBERED } });
             return session;
         });
     }

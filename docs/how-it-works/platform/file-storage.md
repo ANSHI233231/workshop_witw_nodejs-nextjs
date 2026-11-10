@@ -23,7 +23,7 @@
 
 | Feature | Path | Folder constants |
 |---|---|---|
-| (none yet) | | |
+| Shared safari display image | `shared_safari/<safari id>/cover_image/<file>` | `COVER_FOLDER` in `modules/shared-safari/types/shared-safari.types.ts`; served publicly to anyone who may see the safari (`Cache-Control: public`), the one public file route ([shared-safari](../modules/shared-safari/README.md)) |
 
 ## Receiving uploads
 
@@ -33,7 +33,7 @@
 
 ## Showing files in an app
 
-- Files are served only through the API, after the same access check as the feature's list, with their type, `Content-Disposition: inline` and `Cache-Control: private, max-age=86400`.
+- Files are served only through the API, after the same access check as the feature's list, with their type, `Content-Disposition: inline` and `Cache-Control: private, max-age=86400`, by `sendInline()` from `core/http`. A file shown on a public page (the shared safari display image) is sent with `Cache-Control: public` instead, after the same check as that page.
 - An `<img>` cannot send the `X-Client-App` header, so the URL carries `?app=<app>`; build it with `apiClient.fileUrl(path, query)`. The API reads `?app=` only for `GET` / `HEAD` and only when the header is missing; the sign-in cookie is still required.
 - A picture URL carries `v=<file name>`, so a replaced file gets a new URL.
 - A deleted file's row stays (status -1) and its file stays on disk.

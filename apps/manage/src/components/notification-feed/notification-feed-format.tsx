@@ -1,9 +1,9 @@
 import type { ComponentType } from 'react';
 
 import type { Translate } from '@/lib/i18n/locale';
-import { NotificationKind, type NotificationItem } from '@/types/notification-feed.types';
+import { NotificationKind, type NotificationItem, type NotificationLinks } from '@/types/notification-feed.types';
 
-import { KeyIcon, TriangleAlertIcon, UserPlusIcon, BellIcon } from './notification-feed-icons';
+import { KeyIcon, MessageIcon, TriangleAlertIcon, UserPlusIcon, UsersIcon, BellIcon } from './notification-feed-icons';
 
 const INDIA = 'Asia/Kolkata';
 
@@ -58,6 +58,8 @@ export const KIND_STYLE: Readonly<Partial<Record<number, KindStyle>>> = {
     [NotificationKind.PASSWORD_CHANGED]: { css: 'is-account', tag: 'Account', Icon: KeyIcon },
     [NotificationKind.JOB_FAILED]: { css: 'is-jobs', tag: 'Jobs', Icon: TriangleAlertIcon },
     [NotificationKind.TEST]: { css: 'is-test', tag: 'Test', Icon: BellIcon },
+    [NotificationKind.SHARED_SAFARI_JOINED]: { css: 'is-safari', tag: 'Shared Safari', Icon: UsersIcon },
+    [NotificationKind.SHARED_SAFARI_COMMENTED]: { css: 'is-safari', tag: 'Shared Safari', Icon: MessageIcon },
 };
 
 export const actorInitials = (item: NotificationItem): string => (item.actorName ? initialsOf(item.actorName) : 'S');
@@ -78,3 +80,6 @@ export function SentenceContent({ item }: { readonly item: NotificationItem }) {
         </>
     );
 }
+
+export const linkOf = (links: NotificationLinks, item: NotificationItem, fallback: string): string =>
+    links[item.notificationKind]?.replace('{id}', String(item.entityId)) ?? fallback;

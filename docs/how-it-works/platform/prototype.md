@@ -16,6 +16,7 @@
 3. **New developer machine.** `node init.js` on a fresh clone checks `docs/prototype` out at the pinned commit (`git submodule update --init`). Staging and production don't get it: the servers don't need it.
 4. **The pin.** `docs/PROTOTYPE-SYNC.md` records the pinned commit when the prototype is added. Moving the pin later is a deliberate commit: `git submodule update --remote docs/prototype`, then commit `docs/prototype`.
 5. **Commit it.** After `init.js` adds the prototype: `git add .gitmodules docs/prototype docs/PROTOTYPE-SYNC.md` with the project's first commit.
+6. **The prototype moves to another repository.** `git submodule set-url docs/prototype <new URL>`, `git submodule sync docs/prototype`, then in `docs/prototype`: `git fetch origin && git checkout -B main origin/main`. When the new repository has a different history, the old pin and the Ready commits are not in it: re-check every board against the new one and update `docs/PROTOTYPE-SYNC.md` (address, pin, Ready column, rows). Commit `.gitmodules`, `docs/prototype` and `docs/PROTOTYPE-SYNC.md` together. Other machines then run `git submodule sync && git submodule update --init`.
 
 ## Rules
 

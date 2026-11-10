@@ -8,11 +8,14 @@ import type { ICommandRunner } from '../infrastructure/process';
 import type { IFileStorage } from '../infrastructure/storage';
 import { createAuditModule } from '../modules/audit';
 import { type AppUrls, type AuthSettings, createAuthModule } from '../modules/auth';
+import { createFlagReasonModule } from '../modules/flag-reason';
 import { createHealthModule } from '../modules/health';
 import { createJobsModule } from '../modules/jobs';
 import { createLanguageModule } from '../modules/language';
 import { createMailModule, MailLogStatus } from '../modules/mail';
 import { createNotificationModule } from '../modules/notification';
+import { createParkModule } from '../modules/park';
+import { createSharedSafariModule } from '../modules/shared-safari';
 import { createSystemLogModule } from '../modules/system-log';
 import { createUsersModule, MetaRole } from '../modules/users';
 
@@ -79,6 +82,17 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
         usersService: users.usersService,
     });
 
+    const flagReason = createFlagReasonModule({ db: dependencies.db, auditService: audit.auditService });
+    const park = createParkModule({ db: dependencies.db, auditService: audit.auditService });
+    const sharedSafari = createSharedSafariModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        notificationService: notification.notificationService,
+        fileStorage: dependencies.fileStorage,
+        parkService: park.parkService,
+        flagReasonService: flagReason.flagReasonService,
+    });
+
     const superAdmin = auth.access.roles([MetaRole.SUPER_ADMIN]);
 
     return [
@@ -93,11 +107,22 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
         ...mountApi(app, `${API_PREFIX}/system-log`, systemLog.createRouter(superAdmin)),
         ...mountApi(app, `${API_PREFIX}/jobs`, jobs.createRouter(superAdmin)),
         ...mountApi(app, `${API_PREFIX}/language`, language.createRouter(superAdmin)),
+        ...mountApi(
+            app,
+            `${API_PREFIX}/flag-reason`,
+            flagReason.createRouter({ signedIn: auth.access.signedIn, superAdmin }),
+        ),
         ...mountApi(app, `${API_PREFIX}/mail`, mail.createRouter(superAdmin)),
         ...mountApi(
             app,
             `${API_PREFIX}/notification`,
             notification.createRouter({ signedIn: auth.access.signedIn, superAdmin }),
+        ),
+        ...mountApi(app, `${API_PREFIX}/park`, park.createRouter(superAdmin)),
+        ...mountApi(
+            app,
+            `${API_PREFIX}/shared-safari`,
+            sharedSafari.createRouter({ viewer: auth.access.viewer, signedIn: auth.access.signedIn, superAdmin }),
         ),
     ];
 };

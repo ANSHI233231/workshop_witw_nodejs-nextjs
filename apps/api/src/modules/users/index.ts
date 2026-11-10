@@ -8,6 +8,7 @@ import { UsersService } from './services/users.service';
 export type { UsersModuleDependencies } from './contracts/users-module.contract';
 export type { IUsersService } from './contracts/users-service.contract';
 export type {
+    NewSignUp,
     NewUser,
     RoleListItemDto,
     SignInIdentifier,

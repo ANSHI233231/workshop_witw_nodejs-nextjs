@@ -21,7 +21,7 @@ export default defineConfig([
         rules: { 'no-console': 'off' },
     },
     {
-        files: ['src/components/console/**/*.tsx', 'src/components/docs/**/*.tsx'],
+        files: ['src/components/console/**/*.tsx', 'src/components/docs/**/*.tsx', 'src/components/ui/witw-logo.tsx', 'src/components/shared-safari/**/*.tsx'],
         rules: { '@next/next/no-img-element': 'off' },
     },
     {

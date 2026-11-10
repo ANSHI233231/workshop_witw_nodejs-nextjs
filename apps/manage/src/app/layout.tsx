@@ -10,6 +10,7 @@ import './console-extras.css';
 import './console-mobile.css';
 import './console-drawer-tools.css';
 import './console-responsive-fixes.css';
+import './console-shared-safari.css';
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const { t } = await serverTranslator();
