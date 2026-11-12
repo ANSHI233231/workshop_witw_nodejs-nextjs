@@ -4,8 +4,8 @@ Every prototype board against what we built: whether it is ready to build from, 
 
 | | |
 |---|---|
-| Prototype | `docs/prototype` at 450bcc4 (git@github.com:umang-lgtm/workshop_witw_prototype.git) |
-| Boards | 37 in `prototype/Starter-Prototype.html` (renamed from `starter-prototype.html` in the prototype checkout, same content as 450bcc4) (Console 23: Admin 16, Shared Safari C1–C7; Portal 14: Web 5, Shared Safari W1–W9), each Desktop and Mobile; design system in `design-system/` (WITW Design System: Console and Portal themes) |
+| Prototype | `docs/prototype` at 0799439 (git@github.com:ANSHI233231/workshop_witw_prototype.git) |
+| Boards | 62, one file per board in `prototype/screens/` (`<Board>.html`, `<Board>.mobile.html`; `prototype/Starter-Prototype.html` holds them all): Console 23 (Admin 16, Shared Safari C1–C7); Portal 14 (Web 5, Shared Safari W1–W9); Packages 25 (website PK-W1–W9, Partner portal PK-P1–P8, console PK-C1–C8), each Desktop and Mobile; design system in `design-system/` (WITW Design System: Console and Portal themes, plus the Packages parts) |
 
 | Mark | Meaning |
 |---|---|
@@ -46,7 +46,7 @@ Every prototype board against what we built: whether it is ready to build from, 
 
 ## 2. Boards
 
-Every board was compared with the app at 1366 px and 390 px (text and screenshot) on 2026-10-30 / 31, and the prototype updated to match at c5b636f: layout, frames, tables, dialogs, colours and text match. At 6231393 the prototype took the WITW theme (colours, fonts, corners, shadows only); the app followed on 2026-11-02 ([WITW theme](planning/features/2026-11-02-witw-theme.md)): manage in the Console values, web in the Portal values, Roboto in both. Every board was compared again at 1366 and 390 px, by the colours each page paints and a screenshot: the app uses no colour the board does not. On 2026-11-04 the prototype moved to its own repository (git@github.com:umang-lgtm/workshop_witw_prototype.git, a new history: the old commits are not in it); the pin is its 02ae9a4. It keeps the 16 Admin boards and Web Sign-In, Forgot-Password, Notifications and Not-Found, with the newer WITW theme (B2); drops Web-Welcome and Web-Dashboard (section 3); and adds Web-Sign-Up and the Shared Safari boards W1–W9 and C1–C7 (designed from `how-it-works/workflows/WITW-Shared-Safari-*.md`; C7 Flag-Reasons has no wireframe). At 450bcc4 the boards take the Shared Safari decisions ([prototype changes](planning/prototype-changes/2026-11-04-shared-safari.md)); on 4 Nov 2026 the user declared every board ready at 450bcc4. The rows of the 20 built boards are re-checked against 450bcc4 as their screens are restyled (B2); the new boards are built with their features ([Shared Safari](planning/features/2026-11-04-shared-safari.md)). Everywhere: the prototype's sample data (names, dates, log lines), its bar (Console / Portal, board list, Reset data, Desktop / Mobile) and its built-in failure examples are prototype-only. On 2026-11-10 the apps took the 450bcc4 theme and frames ([WITW frame](planning/features/2026-11-04-witw-frame.md)): every stylesheet rule diffed with the boards' and every board's screen compared at 1366 and 390 px.
+Every board was compared with the app at 1366 px and 390 px (text and screenshot) on 2026-10-30 / 31, and the prototype updated to match at c5b636f: layout, frames, tables, dialogs, colours and text match. At 6231393 the prototype took the WITW theme (colours, fonts, corners, shadows only); the app followed on 2026-11-02 ([WITW theme](planning/features/2026-11-02-witw-theme.md)): manage in the Console values, web in the Portal values, Roboto in both. Every board was compared again at 1366 and 390 px, by the colours each page paints and a screenshot: the app uses no colour the board does not. On 2026-11-04 the prototype moved to its own repository (git@github.com:umang-lgtm/workshop_witw_prototype.git, a new history: the old commits are not in it); the pin is its 02ae9a4. It keeps the 16 Admin boards and Web Sign-In, Forgot-Password, Notifications and Not-Found, with the newer WITW theme (B2); drops Web-Welcome and Web-Dashboard (section 3); and adds Web-Sign-Up and the Shared Safari boards W1–W9 and C1–C7 (designed from `how-it-works/workflows/WITW-Shared-Safari-*.md`; C7 Flag-Reasons has no wireframe). At 450bcc4 the boards take the Shared Safari decisions ([prototype changes](planning/prototype-changes/2026-11-04-shared-safari.md)); on 4 Nov 2026 the user declared every board ready at 450bcc4. The rows of the 20 built boards are re-checked against 450bcc4 as their screens are restyled (B2); the new boards are built with their features ([Shared Safari](planning/features/2026-11-04-shared-safari.md)). Everywhere: the prototype's sample data (names, dates, log lines), its bar (Console / Portal, board list, Reset data, Desktop / Mobile) and its built-in failure examples are prototype-only. On 2026-11-10 the apps took the 450bcc4 theme and frames ([WITW frame](planning/features/2026-11-04-witw-frame.md)): every stylesheet rule diffed with the boards' and every board's screen compared at 1366 and 390 px. At 0799439 (2026-11-12) the 37 boards above are unchanged: each board's markup and logic diffed with 450bcc4, and the only changes are file links (`.html` for `.dc.html`) and images moved from inline data to `screens/img/`. The nine board stylesheets are byte-identical, and the design system only adds tokens and components. The Packages boards are new (declared ready by the user on 12 Nov 2026, and the prototype moved to the ANSHI233231 repository the same day), designed from [WITW-Packages-Workflow](how-it-works/workflows/WITW-Packages-Workflow.md) ([Packages](planning/features/2026-11-12-packages.md)).
 
 | Board | Ready | Status | Our route | Differences (why) |
 |---|---|---|---|---|
@@ -87,6 +87,31 @@ Every board was compared with the app at 1366 px and 390 px (text and screenshot
 | C5-Parks-list | 450bcc4 · 4 Nov 2026 | ✅ | manage `/parks` | Park name up to 150 characters (the board's field 100); Status filter Inactive is our code 2 (the board 0); "No parks match these filters." when nothing matches (the board has no empty state) |
 | C6-Park-detail | 450bcc4 · 4 Nov 2026 | ✅ | manage `/parks/{id}` | Upcoming safaris link to the console detail `/shared-safaris/{id}` |
 | C7-Flag-Reasons | 450bcc4 · 4 Nov 2026 | ✅ | manage `/flag-reasons` | Status filter values 1 / 2 (the board "" / 1 / 0); a failed save shows the red banner in the dialog as the app's other dialogs; toasts in the app's toast stack |
+| PK-W1-Become-a-Partner | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W2-Package-list | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W3-Package-card | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W4-Package-page | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W5-Request-a-quote | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W6-My-Quote-Requests | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W7-Park-list | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W8-Park-page | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-W9-Package-Not-In-Use | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P1-Portal-Sign-In | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P2-Business-details | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P3-Dashboard | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P4-Packages-list | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P5-Package-builder | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P6-Gallery | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P7-Quote-Requests | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-P8-Business-Profile-Notifications | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C1-Partner-Requests | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C2-Partners | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C3-Package-Approvals | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C4-Packages | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C5-Package-Delete-Reasons | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C6-Gallery-Approvals | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C7-Galleries | 0799439 · 12 Nov 2026 | ⬜ | – | – |
+| PK-C8-Quote-Requests | 0799439 · 12 Nov 2026 | ⬜ | – | – |
 
 ### States on the boards
 
