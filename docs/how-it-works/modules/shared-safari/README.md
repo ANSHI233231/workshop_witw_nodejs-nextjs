@@ -32,6 +32,45 @@
 | organise, edit, image upload, status, delete, join, leave, My Shared Safaris (`/mine`), comment, edit / delete own comment, flag | signed in |
 | `/admin/…` | Super Admin |
 
+## Sample data (local development only)
+
+The prototype's sample Shared Safari data can be written to a local database, so that the screens look like the boards:
+
+```
+cd apps/api
+npm run cli seed/shared-safari                         # dry run: what it would write
+npm run cli seed/shared-safari <password> confirm      # write it
+npm run cli seed/shared-safari-remove                  # dry run: what it would remove
+npm run cli seed/shared-safari-remove confirm          # remove it
+```
+
+**What the seed writes.** The data is the prototype's (`SEED` at 450bcc4):
+- 14 accounts `<name>@example.test` with the password you give (8–72 characters, never stored anywhere but as the accounts' hash).
+- 14 safaris with their statuses, pins and the admin delete.
+- Members and members who left, comments, replies and flags.
+- The 3 cover pictures from `apps/api/seed/shared-safari/covers/`.
+- The prototype's 4 notifications, as in-app rows with their own times.
+
+**What it does not do.**
+- It sends no email and creates no other notification.
+- Existing accounts (by email) and safaris (by slug) are left as they are, so running it again changes nothing.
+- The normal services and their rules are not used, so past dates can be written. The prototype's times are India time.
+
+**Dates.** The prototype's "today" is 2026-11-03. A safari that was still open then, but whose end date has passed on the day the seed runs, is moved forward by the days between the two, so it keeps its place (started, not over). Kanha stays ended, as in the prototype.
+
+**Remove.** It deletes only the sample data:
+- the `@example.test` sample accounts and the sample safaris they host;
+- every member, comment, flag and notification of those safaris and accounts;
+- the cover files.
+
+It refuses when a sample account hosts any other safari, and when an account has a system role. Refresh tokens of removed accounts stay in `user_refresh_token` (the auth module's table) and no longer work.
+
+**Production.** Both commands refuse when `NODE_ENV=production`. The seed services refuse too (`SEED_NOT_ALLOWED`):
+- `createUsersSeedModule`, `createNotificationSeedModule` and `createSharedSafariSeedModule` are built only by the CLI;
+- each takes `isProduction` and checks it on every call.
+
+**Audit.** Writes are recorded in the audit log with users 109–112 and shared safari 837–840.
+
 ## Screens
 
 Website: `/` (list), `/shared-safaris/<slug>` (view), `/my-shared-safaris`; console: `/shared-safaris`, `/shared-safaris/<id>`, `/flagged-comments`. Rows in [PROTOTYPE-SYNC](../../../PROTOTYPE-SYNC.md).
@@ -39,3 +78,4 @@ Website: `/` (list), `/shared-safaris/<slug>` (view), `/my-shared-safaris`; cons
 ## History
 
 - Planning file: [2026-11-04-shared-safari](../../../planning/features/2026-11-04-shared-safari.md)
+- Sample data: [2026-11-13-shared-safari-seed](../../../planning/features/2026-11-13-shared-safari-seed.md)

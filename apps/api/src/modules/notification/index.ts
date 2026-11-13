@@ -1,12 +1,16 @@
 import type { NotificationModuleDependencies } from './contracts/notification-module.contract';
+import type { NotificationSeedModuleDependencies } from './contracts/notification-seed-module.contract';
+import type { INotificationSeedService } from './contracts/notification-seed-service.contract';
 import type { INotificationService } from './contracts/notification-service.contract';
 import { DeliveryController } from './controllers/delivery.controller';
 import { NotificationController } from './controllers/notification.controller';
 import { DeliveryRepository } from './repositories/delivery.repository';
+import { NotificationSeedRepository } from './repositories/notification-seed.repository';
 import { NotificationTemplateRepository } from './repositories/notification-template.repository';
 import { NotificationRepository } from './repositories/notification.repository';
 import { createNotificationRouter, type NotificationAccess } from './routes/notification.routes';
 import { DeliveryService } from './services/delivery.service';
+import { NotificationSeedService } from './services/notification-seed.service';
 import { NotificationService } from './services/notification.service';
 
 export type { NotificationModuleDependencies } from './contracts/notification-module.contract';
@@ -14,6 +18,18 @@ export type { INotificationService, TestNotification } from './contracts/notific
 export type { NewNotification } from './dto/notification.dto';
 export type { MailStatusCodes } from './types/delivery.types';
 export { NotificationKind, type NotificationKindCode } from './types/notification.types';
+
+export type { INotificationSeedService } from './contracts/notification-seed-service.contract';
+export type { NotificationSeedRemoval, SeedNotification } from './dto/notification-seed.dto';
+
+export const createNotificationSeedModule = (dependencies: NotificationSeedModuleDependencies) => {
+    const notificationSeedService: INotificationSeedService = new NotificationSeedService(
+        dependencies.db,
+        new NotificationSeedRepository(),
+        dependencies.isProduction,
+    );
+    return { notificationSeedService };
+};
 
 export const createNotificationModule = (dependencies: NotificationModuleDependencies) => {
     const templateRepository = new NotificationTemplateRepository();

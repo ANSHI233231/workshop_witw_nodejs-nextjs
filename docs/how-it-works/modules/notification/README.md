@@ -13,6 +13,8 @@
 | 501 Background job failed | jobs: a run ends as Failed in the worker | every active Super Admin | the console |
 | 601 Test notification | the CLI `notification/send-test` | the user named | the app named |
 
+The local sample data (`seed/shared-safari`, [shared-safari › Sample data](../shared-safari/README.md#sample-data-local-development-only)) writes the prototype's four Shared Safari notifications straight as in-app rows with their own created and read times (`createNotificationSeedModule`, built only by the CLI, refused in production); nothing is delivered.
+
 Kinds are numbered by module in hundreds, like the audit actions. A new feature adds its kind to `NotificationKind`, a template row in its migration, the tab it belongs to (`KINDS_OF_TAB`, `KIND_TABS_OF_APP`), and its icon and link in each app (`KIND_STYLE`, the app's notification links).
 
 ## The row

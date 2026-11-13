@@ -21,16 +21,16 @@
 - **Not on yourself:** you cannot remove your own Super Admin role or make yourself inactive (422 `OWN_ACCESS_CHANGE`).
 - **Roles:** `meta_role` rows come only from migrations (no screen). The starter has **100 Super Admin**; a project adds its own roles in the next hundreds (200–299 …) in its own migration, with a constant in `MetaRole` and, for console roles, an area in manage's `lib/console-access.ts`.
 - **System roles** are kept in `user_role` (one row per user and role; removing a role sets it inactive). The users list shows each user's active role names.
-- A user is never deleted (`status`: 1 active, 2 inactive, -1 deleted).
+- A user is never deleted (`status`: 1 active, 2 inactive, -1 deleted). The one exception is local sample data: `createUsersSeedModule` (built only by the CLI, refused in production with `SEED_NOT_ALLOWED`) creates sample accounts by email and removes them for good with their role rows, refusing any account that holds a system role. See [shared-safari › Sample data](../shared-safari/README.md#sample-data-local-development-only).
 - **Notifications** ([notification](../notification/README.md)): creating an account (Add User, the CLI; not Sign Up, whose template would read "created by") sends the new user 101 Account created (portal); changing, resetting or setting a password sends 102 Password changed (in the app it was changed in; set by an administrator → the user's portal), in the same transaction. `activeUserIdsWithRole(roleId)` lists the active users holding a role (the jobs worker uses it for Super Admins).
-- **Audit** (module 1): 101 user created, 102 create failed, 103 user updated (with what changed and the roles added / removed), 104 update failed, 105 password changed, 106 password change failed, 107 user signed up, 108 sign-up failed (the email typed as the actor label).
+- **Audit** (module 1): 101 user created, 102 create failed, 103 user updated (with what changed and the roles added / removed), 104 update failed, 105 password changed, 106 password change failed, 107 user signed up, 108 sign-up failed (the email typed as the actor label), 109 sample accounts created, 110 failed, 111 sample accounts removed, 112 failed.
 
 ## Where it lives
 
 - **Module:** `apps/api/src/modules/users/`
 - **Endpoints:** `GET /api/users`, `GET /api/users/export`, `GET /api/users/summary`, `GET /api/users/picker`, `GET /api/users/:id`, `POST /api/users`, `PATCH /api/users/:id`, `PATCH /api/users/:id/status`, `POST /api/users/:id/password`, `GET /api/users/roles` (all Super Admin)
 - **Tables:** `user`, `meta_role`, `user_role` (migration `2026-10-28-users-and-auth.sql`)
-- **CLI:** `user/create-super-admin`
+- **CLI:** `user/create-super-admin`; the sample accounts of `seed/shared-safari` / `seed/shared-safari-remove`
 - **Screens:** manage `/users`, `/roles` (`components/users/`, `components/roles/`)
 
 ## History
