@@ -22,9 +22,9 @@ export const createAuditRouter = (controller: AuditLogController, superAdmin: Ac
 
 | Kind | Who may call | Made by | Used today |
 |---|---|---|---|
-| `public` | anyone, signed in or not | `publicAccess` from `core/http` | health, sign-in, refresh, sign-out, forgot and reset password, the active languages |
+| `public` | anyone, signed in or not | `publicAccess` from `core/http` | health, sign-in, refresh, sign-out, forgot and reset password, the active languages, Become a Partner as a guest (`POST /api/partner/requests/with-account`), the website's package list, package page and its images (`GET /api/package/packages`, `/packages/:slug`, `/packages/:slug/files/:fileName`: packages shown on the website only), the active parks for the forms (`GET /api/park/active`) and the website's park list, park page and feature image (`GET /api/park/parks`, `/parks/:slug`, `/parks/:slug/feature-image`: active parks only), a partner's logo (`GET /api/partner/partners/:id/logo`: Active and Inactive partners only, shown on the website as the business's picture) |
 | `session` | any valid session, in any app | `auth.access.session` | `/api/auth/me`, `/change-password`, `/console-roles` |
-| `signed-in` | signed in and allowed to use the app that calls (the console needs a console role) | `auth.access.signedIn` | none yet: the first signed-in page of a portal |
+| `signed-in` | signed in and allowed to use the app that calls (the console needs a console role) | `auth.access.signedIn` | a user's own partner request (`/api/partner/requests/mine` …); the Partner portal's galleries (`/api/gallery/galleries` …) packages (`/api/package/portal/…`) and quote requests (`/api/quote-request/portal/…`): the service also requires an active partner; a website user's quote requests (`POST /api/quote-request/requests`, `GET /requests/mine`: the service refuses partners); the notification feed called from the Partner portal also requires an active partner (a feed gate) |
 | `roles` | signed in with one of the given roles; refused with 403 `ACCESS_DENIED` | `auth.access.roles([MetaRole.SUPER_ADMIN])` | every console route |
 | `key` | a caller with a shared key | `AccessGuard.define('key', middleware)` in the module | the apps' log ingest (`X-Log-Key`) |
 

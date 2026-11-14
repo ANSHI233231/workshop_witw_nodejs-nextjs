@@ -17,10 +17,10 @@ By hand, the same steps:
    cd apps/api && for f in src/database/migrations/*.sql; do mysql -u root -p <name> < "$f"; done
    ```
 
-2. **`.env` files:** in `apps/api`, `apps/manage` and `apps/web`, copy `.env.example` to `.env`. In the API's: `DB_*` (with the database password), two new secrets `JWT_SECRET` / `JWT_REFRESH_SECRET` (`openssl rand -hex 32`, different) and `LOG_INGEST_KEY` (the same value in all three files). `.env` files are never committed.
+2. **`.env` files:** in `apps/api`, `apps/manage`, `apps/web` and `apps/partner`, copy `.env.example` to `.env`. In the API's: `DB_*` (with the database password), two new secrets `JWT_SECRET` / `JWT_REFRESH_SECRET` (`openssl rand -hex 32`, different) and `LOG_INGEST_KEY` (the same value in every file). `.env` files are never committed.
 3. **Packages:** `npm ci` in each app.
 4. **First Super Admin:** `npm run cli user/create-super-admin "<name>" <email> <10-digit mobile> confirm` in `apps/api`; it prints the password once.
-5. **Run them:** with pm2 from your own copy of the local process file ([environments/README.md](../../../environments/README.md)), or one terminal each: `npm run dev` in `apps/api`, `apps/manage`, `apps/web`.
+5. **Run them:** with pm2 from your own copy of the local process file ([environments/README.md](../../../environments/README.md)), or one terminal each: `npm run dev` in `apps/api`, `apps/manage`, `apps/web`, `apps/partner`.
 
 ## Ports
 
@@ -29,8 +29,9 @@ By hand, the same steps:
 | api | 8030 | `api.workshop-witw` |
 | web | 3040 | `web.workshop-witw` |
 | manage | 3041 | `manage.workshop-witw` |
+| partner | 3042 | `partner.workshop-witw` |
 
-Change them in your own `environments/ecosystem.local.config.js` (git-ignored) when something else on your machine uses them, and set the API's `PORT`, `CORS_ORIGIN`, `APP_URL_*` and the apps' `NEXT_PUBLIC_API_URL` to match.
+Change them in your own `environments/ecosystem.local.config.js` (git-ignored) when something else on your machine uses them, and set the API's `PORT`, `CORS_ORIGIN`, `APP_URL_*` and the apps' `NEXT_PUBLIC_API_URL` to match (also web's `NEXT_PUBLIC_PARTNER_PORTAL_URL` and partner's `NEXT_PUBLIC_WEBSITE_URL`, which point at each other).
 
 ## Hostnames (optional)
 

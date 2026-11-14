@@ -23,8 +23,9 @@ On the server every process listens on `127.0.0.1` only; nginx sends each name t
 | Branch | any | `staging` | `main` |
 | web | 3040 `web.workshop-witw` | 4100 `stag-web` | 4200 `prod-web` |
 | manage | 3041 `manage.workshop-witw` | 4101 `stag-manage` | 4201 `prod-manage` |
+| partner | 3042 `partner.workshop-witw` | 4102 `stag-partner` | 4202 `prod-partner` |
 | api | 8030 `api.workshop-witw` | 4110 `stag-api` | 4210 `prod-api` |
 
-Locally the ports are your own (the defaults are the example's). On the server, the Next.js apps' ports are in the pm2 file, and the API's is `PORT` in `apps/api/.env` (4110 staging, 4210 production). A new app gets the next free number in each column (e.g. 3042 / 4102 / 4202), added to the example and the two server files together.
+Locally the ports are your own (the defaults are the example's). On the server, the Next.js apps' ports are in the pm2 file, and the API's is `PORT` in `apps/api/.env` (4110 staging, 4210 production). A new app gets the next free number in each column (e.g. 3043 / 4103 / 4203), added to the example and the two server files together.
 
 **A new project renames** `starter` in the local process names, and picks port ranges that stay clear of the other projects on the same machines.

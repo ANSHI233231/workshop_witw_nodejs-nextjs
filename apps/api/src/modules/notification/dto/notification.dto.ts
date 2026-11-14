@@ -21,6 +21,7 @@ export type NewNotification = NotificationPlace & {
     readonly title: string;
     readonly excerpt: string | null;
     readonly actorId: number | null;
+    readonly actorName?: string | null;
 };
 
 export type NotificationFilters = {

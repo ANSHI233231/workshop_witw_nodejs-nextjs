@@ -67,6 +67,7 @@ export const config = Object.freeze({
     appUrls: Object.freeze({
         manage: env.APP_URL_MANAGE.replace(/\/+$/, ''),
         web: env.APP_URL_WEB.replace(/\/+$/, ''),
+        partner: env.APP_URL_PARTNER.replace(/\/+$/, ''),
     }),
     log: Object.freeze({
         // Nothing is written until LOG_ENABLED=true.

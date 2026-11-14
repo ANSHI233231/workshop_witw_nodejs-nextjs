@@ -1,4 +1,4 @@
-export const LOG_APPS = ['api', 'manage', 'web'] as const;
+export const LOG_APPS = ['api', 'manage', 'web', 'partner'] as const;
 
 export type LogApp = (typeof LOG_APPS)[number];
 
@@ -6,6 +6,7 @@ export const LOG_APP_LABEL: Readonly<Record<LogApp, string>> = {
     api: 'API',
     manage: 'Manage',
     web: 'Web',
+    partner: 'Partner Portal',
 };
 
 export const LOG_PAGE_LINES = 100;

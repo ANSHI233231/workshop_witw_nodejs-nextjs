@@ -7,8 +7,9 @@ import type { Translate } from '@/lib/i18n/locale';
 import { daysAgo, isWithinAgoDays, shortDate, wordCount } from '@/lib/shared-safari-format';
 import { ApiError } from '@/services/api-error';
 import { deleteComment, editComment, postComment } from '@/services/shared-safari.service';
-import { SAFARI_LIMITS, type SafariComment, type SafariView } from '@/types/shared-safari.types';
+import { type Person, SAFARI_LIMITS, type SafariComment, type SafariView } from '@/types/shared-safari.types';
 
+import { PersonAvatar } from './person-avatar';
 import { FlagIcon, PencilIcon, ReplyIcon, TrashIcon } from './safari-icons';
 
 const agoText = (isoDateTime: string, t: Translate): string => {
@@ -73,14 +74,14 @@ function CommentField({
 
 export function SafariDiscussion({
     safari,
-    meInitial,
+    me,
     onChanged,
     onMessage,
     onError,
     onFlag,
 }: {
     readonly safari: SafariView;
-    readonly meInitial: string;
+    readonly me: Person;
     readonly onChanged: () => Promise<void>;
     readonly onMessage: (message: string) => void;
     readonly onError: (message: string) => void;
@@ -175,7 +176,7 @@ export function SafariDiscussion({
         const editing = editId === comment.id;
         return (
             <div className="ss3-c">
-                <span className="avatar ss-av">{comment.writer.initials}</span>
+                <PersonAvatar person={comment.writer} className="ss-av" />
                 <div className="ss3-cb">
                     <div className="ss3-ch">
                         <span>
@@ -335,7 +336,7 @@ export function SafariDiscussion({
             )}
             {viewer.canComment && (
                 <div className="ss3-new">
-                    <span className="avatar">{meInitial}</span>
+                    <PersonAvatar person={me} />
                     <div className="ss3-box">
                         <CommentField
                             id="cm-new"

@@ -9,7 +9,7 @@ import { useT } from '@/hooks/i18n/use-t';
 import { formatCount } from '@/lib/format';
 import { ApiError } from '@/services/api-error';
 import { deleteSafariComment, getCommentFlags, ignoreCommentFlags } from '@/services/shared-safari.service';
-import type { CommentFlags, FlaggedComment } from '@/types/shared-safari.types';
+import { type CommentFlags, type FlaggedComment, withBusiness } from '@/types/shared-safari.types';
 
 import { DeleteCommentDialog } from './delete-comment-dialog';
 import { stamp } from './shared-safari-format';
@@ -79,7 +79,7 @@ function FlagsDialog({ row, onClose }: { readonly row: FlaggedComment; readonly 
                                     <b>{t(flag.reason)}</b>
                                     <span>{flag.details}</span>
                                     <span className="ss-cap">
-                                        {flag.flaggerName} · {stamp(flag.createdAt)}
+                                        {withBusiness(flag.flaggerName, flag.flaggerBusinessName)} · {stamp(flag.createdAt)}
                                     </span>
                                 </div>
                             ))}
@@ -234,7 +234,7 @@ export function FlaggedRows({
                                     <span className="ssc-sub">{reasonsOf(row)}</span>
                                 </td>
                                 <td>{row.safari.title}</td>
-                                <td>{row.writerName}</td>
+                                <td>{withBusiness(row.writerName, row.writerBusinessName)}</td>
                                 <td className="col-center">{formatCount(row.flagCount)}</td>
                                 <td className="col-actions">{actionsOf(row)}</td>
                             </tr>
@@ -254,7 +254,7 @@ export function FlaggedRows({
                     {rows.map((row) => (
                         <div key={row.id} className="ssc-card">
                             <div className="ss-between">
-                                <b>{row.writerName}</b>
+                                <b>{withBusiness(row.writerName, row.writerBusinessName)}</b>
                                 {actionsOf(row)}
                             </div>
                             <span>{shortText(row.text)}</span>

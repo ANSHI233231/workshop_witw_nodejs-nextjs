@@ -1,16 +1,22 @@
 import type { Request, Response } from 'express';
 
-import { created, ok, paginated } from '../../../core/http';
+import { created, ok, paginated, sendInline, uploadedFiles } from '../../../core/http';
 import type { IParkService } from '../contracts/park-service.contract';
 import type { ParkInput, ParkUpdate } from '../dto/park.dto';
 import { ParkStatus, type ParkStatusCode } from '../types/park.types';
-import type { ListParkQuery, ParkParams } from '../validators/park.validators';
+import { featureImageTypeError, type ListParkQuery, type ParkParams } from '../validators/park.validators';
 
 type SignedInUser = { readonly id: number };
 
 const signedInUserId = (res: Response): number => (res.locals['authUser'] as SignedInUser).id;
 
 const parkIdOf = (req: Request): number => (req.params as unknown as ParkParams).id;
+
+const imageContentOf = (req: Request): Buffer => {
+    const file = uploadedFiles(req)[0];
+    if (!file) throw featureImageTypeError();
+    return file.content;
+};
 
 export class ParkController {
     constructor(private readonly service: IParkService) {}
@@ -47,5 +53,14 @@ export class ParkController {
         const { status } = req.body as { readonly status: ParkStatusCode };
         const park = await this.service.setStatus(parkIdOf(req), status, signedInUserId(res));
         ok(res, park, `Park "${park.name}" is now ${park.status === ParkStatus.ACTIVE ? 'active' : 'inactive'}.`);
+    };
+
+    setFeatureImage = async (req: Request, res: Response): Promise<void> => {
+        const park = await this.service.setFeatureImage(parkIdOf(req), imageContentOf(req), signedInUserId(res));
+        ok(res, park, `Park "${park.name}" updated.`);
+    };
+
+    featureImage = async (req: Request, res: Response): Promise<void> => {
+        sendInline(res, { ...(await this.service.featureImage(parkIdOf(req))), isPublic: false });
     };
 }

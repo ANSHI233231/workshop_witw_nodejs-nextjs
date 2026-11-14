@@ -11,6 +11,9 @@ import './console-mobile.css';
 import './console-drawer-tools.css';
 import './console-responsive-fixes.css';
 import './console-shared-safari.css';
+import './console-packages.css';
+import './console-package-editor.css';
+import './console-package-preview.css';
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const { t } = await serverTranslator();

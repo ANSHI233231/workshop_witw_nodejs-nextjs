@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import type { Translate } from '@/lib/i18n/locale';
 import { NotificationKind, type NotificationItem, type NotificationLinks } from '@/types/notification-feed.types';
 
-import { KeyIcon, MessageIcon, TriangleAlertIcon, UserPlusIcon, UsersIcon, BellIcon } from './notification-feed-icons';
+import { KeyIcon, MessageIcon, TriangleAlertIcon, UserPlusIcon, UsersIcon, BellIcon, GalleryIcon, PackageIcon, QuoteIcon } from './notification-feed-icons';
 
 const INDIA = 'Asia/Kolkata';
 
@@ -60,9 +60,21 @@ export const KIND_STYLE: Readonly<Partial<Record<number, KindStyle>>> = {
     [NotificationKind.TEST]: { css: 'is-test', tag: 'Test', Icon: BellIcon },
     [NotificationKind.SHARED_SAFARI_JOINED]: { css: 'is-safari', tag: 'Shared Safari', Icon: UsersIcon },
     [NotificationKind.SHARED_SAFARI_COMMENTED]: { css: 'is-safari', tag: 'Shared Safari', Icon: MessageIcon },
+    [NotificationKind.GALLERY_SENT]: { css: 'is-gallery', tag: 'Gallery', Icon: GalleryIcon },
+    [NotificationKind.PACKAGE_VERSION_SENT]: { css: 'is-gallery', tag: 'Package', Icon: PackageIcon },
+    [NotificationKind.QUOTE_REQUEST_RECEIVED]: { css: 'is-gallery', tag: 'Quote request', Icon: QuoteIcon },
+    [NotificationKind.QUOTE_REQUEST_ADMIN_MESSAGE]: { css: 'is-gallery', tag: 'Super Admin', Icon: MessageIcon },
 };
 
 export const actorInitials = (item: NotificationItem): string => (item.actorName ? initialsOf(item.actorName) : 'S');
+
+const AVATAR_TEXT: Readonly<Partial<Record<number, string>>> = {
+    [NotificationKind.QUOTE_REQUEST_RECEIVED]: 'Q',
+    [NotificationKind.QUOTE_REQUEST_ADMIN_MESSAGE]: 'SA',
+};
+
+export const avatarOf = (item: NotificationItem, fallback?: string): string =>
+    AVATAR_TEXT[item.notificationKind] ?? (item.actorName || !fallback ? actorInitials(item) : fallback);
 
 const PLACEHOLDER = /\{\{(\w+)\}\}/g;
 

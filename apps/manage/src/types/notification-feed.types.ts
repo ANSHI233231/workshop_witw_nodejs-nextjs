@@ -10,6 +10,10 @@ export const NotificationKind = {
     TEST: 601,
     SHARED_SAFARI_JOINED: 801,
     SHARED_SAFARI_COMMENTED: 802,
+    GALLERY_SENT: 1101,
+    PACKAGE_VERSION_SENT: 1201,
+    QUOTE_REQUEST_RECEIVED: 1301,
+    QUOTE_REQUEST_ADMIN_MESSAGE: 1302,
 } as const;
 
 export const NOTIFICATION_KIND_TABS = ['account', 'jobs', 'shared-safari'] as const;

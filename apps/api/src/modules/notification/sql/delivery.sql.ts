@@ -41,7 +41,7 @@ export const DeliverySQL = {
 
     inAppDetail: `
         SELECT n.id, n.notification_kind AS notificationKind, n.client_app AS clientApp, u.name AS recipientName,
-               u.username AS recipientUsername, a.name AS actorName, n.title, n.excerpt, n.read_at AS readAt,
+               u.username AS recipientUsername, COALESCE(n.actor_name, a.name) AS actorName, n.title, n.excerpt, n.read_at AS readAt,
                n.created_at AS createdAt, nt.name AS templateName, nt.title_template AS titleTemplate, nt.opens
         FROM notification n
         LEFT JOIN user u ON u.id = n.user_id

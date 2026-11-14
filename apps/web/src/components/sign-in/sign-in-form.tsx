@@ -14,8 +14,6 @@ import { SIGN_IN_LIMITS } from '@/types/auth.types';
 
 type FieldErrors = { identifier?: string; password?: string };
 
-const SIGNED_IN_HOME = '/';
-
 const checkFields = (t: Translate, identifier: string, password: string): FieldErrors => {
     const errors: FieldErrors = {};
     const trimmed = identifier.trim();
@@ -44,7 +42,7 @@ const messageFor = (t: Translate, error: unknown): string => {
     return t('Login failed. Please try again.');
 };
 
-export function SignInForm() {
+export function SignInForm({ returnTo }: { readonly returnTo: string }) {
     const t = useT();
     const router = useRouter();
     const [identifier, setIdentifier] = useState('');
@@ -61,14 +59,14 @@ export function SignInForm() {
         refreshSession()
             .then((user) => {
                 if (!active || !user) return;
-                router.replace(SIGNED_IN_HOME);
+                router.replace(returnTo);
                 router.refresh();
             })
             .catch(() => undefined);
         return () => {
             active = false;
         };
-    }, [router]);
+    }, [router, returnTo]);
 
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -82,7 +80,7 @@ export function SignInForm() {
         setSending(true);
         try {
             await signIn({ identifier: identifier.trim(), password, remember });
-            router.replace(SIGNED_IN_HOME);
+            router.replace(returnTo);
             router.refresh();
         } catch (error) {
             if (error instanceof ApiError && error.errors.length > 0) {

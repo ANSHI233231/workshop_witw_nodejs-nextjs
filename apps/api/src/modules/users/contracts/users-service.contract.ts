@@ -1,4 +1,4 @@
-import type { UserStatusCode } from '../types/users.types';
+import type { MetaRoleId, UserStatusCode } from '../types/users.types';
 import type { PaginationQuery } from '../../../core/validation';
 import type {
     RoleListFilters,
@@ -32,6 +32,7 @@ export interface IUsersService {
     findActiveById(id: number): Promise<UserSummary | undefined>;
     activeRoles(userId: number, metaRoleIds: readonly number[]): Promise<ActiveRole[]>;
     activeUserIdsWithRole(metaRoleId: number): Promise<number[]>;
+    grantRole(userId: number, metaRoleId: MetaRoleId, actorId: number | null): Promise<void>;
     summary(): Promise<UsersSummaryDto>;
     pickUsers(search: string | undefined, pagination: PaginationQuery): Promise<UserPickerPage>;
     listUsers(filters: UserListFilters, pagination: PaginationQuery): Promise<UserListPage>;

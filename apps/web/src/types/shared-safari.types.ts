@@ -52,7 +52,18 @@ export const SAFARI_LIMITS = {
     BUDGET_STEP: 100,
 } as const;
 
-export type Person = { readonly id: number; readonly name: string; readonly initials: string };
+export type PersonPartner = {
+    readonly id: number;
+    readonly businessName: string;
+    readonly logoVersion: string | null;
+};
+
+export type Person = {
+    readonly id: number;
+    readonly name: string;
+    readonly initials: string;
+    readonly partner: PersonPartner | null;
+};
 
 export type Member = Person & { readonly joinedAt: string; readonly leftAt: string | null };
 
@@ -61,6 +72,7 @@ export type ViewerState = {
     readonly isHost: boolean;
     readonly joined: boolean;
     readonly hasLeft: boolean;
+    readonly isPartner: boolean;
     readonly canJoin: boolean;
     readonly canComment: boolean;
 };

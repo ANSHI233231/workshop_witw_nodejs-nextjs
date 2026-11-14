@@ -25,7 +25,7 @@ import {
 } from '@/types/notification-feed.types';
 
 import {
-    actorInitials,
+    avatarOf,
     DAY_GROUPS,
     dayGroupOf,
     KIND_STYLE,
@@ -52,6 +52,7 @@ export function NotificationFeedList({
     page,
     counts,
     result,
+    now,
 }: {
     readonly owner: NotificationOwner;
     readonly feedPath: string;
@@ -62,12 +63,12 @@ export function NotificationFeedList({
     readonly page: number;
     readonly counts: NotificationCounts;
     readonly result: Paginated<NotificationItem>;
+    readonly now: number;
 }) {
     const t = useT();
     const router = useRouter();
     const [readState, setReadState] = useState<Readonly<Record<number, boolean>>>({});
     const [notice, setNotice] = useState<Notice | null>(null);
-    const [now] = useState(() => Date.now());
     const isRead = (item: NotificationItem): boolean => readState[item.id] ?? item.isRead;
 
     const markAll = async () => {
@@ -148,7 +149,7 @@ export function NotificationFeedList({
                                     return (
                                         <div className={`nt-item${read ? '' : ' is-unread'}`} key={item.id}>
                                             <span className="nt-av">
-                                                {actorInitials(item)}
+                                                {avatarOf(item)}
                                                 {style && (
                                                     <span className={`nt-kic ${style.css}`}>
                                                         <style.Icon />

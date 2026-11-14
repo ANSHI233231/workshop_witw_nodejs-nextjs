@@ -1,6 +1,12 @@
 import type { ConsoleAccess } from '@/types/console.types';
 
-export type ConsoleIconName = 'DashboardIcon' | 'SharedSafariIcon' | 'UserRoleIcon' | 'SettingsIcon';
+export type ConsoleIconName =
+    | 'DashboardIcon'
+    | 'SharedSafariIcon'
+    | 'PartnersIcon'
+    | 'PackagesIcon'
+    | 'UserRoleIcon'
+    | 'SettingsIcon';
 
 export type ConsoleMenuLink = {
     readonly label: string;
@@ -48,6 +54,30 @@ export const CONSOLE_MENU: readonly ConsoleMenuNode[] = [
             { label: 'Flagged Comments', screen: 'C4-Flagged-Comments', href: '/flagged-comments' },
             { label: 'Parks', screen: 'C5-Parks-list', href: '/parks' },
             { label: 'Flag Reasons', screen: 'C7-Flag-Reasons', href: '/flag-reasons' },
+        ],
+    },
+    {
+        kind: 'group',
+        key: 'partners',
+        label: 'Partners',
+        icon: 'PartnersIcon',
+        children: [
+            { label: 'Partner Requests', screen: 'PC1-Partner-Requests', href: '/partner-requests' },
+            { label: 'Partners', screen: 'PC2-Partners', href: '/partners' },
+            { label: 'Quote Requests', screen: 'PC9-Quote-Requests', href: '/quote-requests' },
+        ],
+    },
+    {
+        kind: 'group',
+        key: 'packages',
+        label: 'Packages',
+        icon: 'PackagesIcon',
+        children: [
+            { label: 'Package Approvals', screen: 'PC3-Package-Approvals', href: '/package-approvals' },
+            { label: 'Packages', screen: 'PC4-Packages', href: '/packages' },
+            { label: 'Gallery Approvals', screen: 'PC7-Gallery-Approvals', href: '/gallery-approvals' },
+            { label: 'Galleries', screen: 'PC8-Galleries', href: '/galleries' },
+            { label: 'Package Delete Reasons', screen: 'PC6-Package-Delete-Reasons', href: '/package-delete-reasons' },
         ],
     },
     { kind: 'section', label: 'Platform', color: 'var(--color-primary)' },

@@ -80,6 +80,7 @@ export const DiscussionSQL = {
                c.shared_safari_comment_id AS sharedSafariCommentId,
                s.title AS safariTitle,
                s.slug AS safariSlug,
+               c.user_id AS userId,
                u.name AS writerName,
                c.comment_text AS commentText,
                (SELECT GROUP_CONCAT(DISTINCT f.reason_name ORDER BY f.reason_name SEPARATOR '\\n')
@@ -100,7 +101,7 @@ export const DiscussionSQL = {
         ${flaggedWhere(search)}`,
 
     openFlagsOf: `
-        SELECT f.id, f.reason_name AS reasonName, f.details, fu.name AS flaggerName, f.created_at AS createdAt
+        SELECT f.id, f.reason_name AS reasonName, f.details, f.user_id AS userId, fu.name AS flaggerName, f.created_at AS createdAt
         FROM shared_safari_comment_flag f
         JOIN user fu ON fu.id = f.user_id
         WHERE f.shared_safari_comment_id = ? AND f.status = ? AND fu.status = ?

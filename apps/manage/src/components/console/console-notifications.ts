@@ -13,4 +13,6 @@ export const CONSOLE_NOTIFICATION_EMPTY = 'Account changes and failed background
 
 export const CONSOLE_NOTIFICATION_LINKS: NotificationLinks = {
     [NotificationKind.JOB_FAILED]: '/background-jobs?tab=logs&errorsOnly=1',
+    [NotificationKind.GALLERY_SENT]: '/gallery-approvals',
+    [NotificationKind.PACKAGE_VERSION_SENT]: '/package-approvals',
 };

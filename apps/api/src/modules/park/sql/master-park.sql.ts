@@ -12,8 +12,24 @@ const listWhere = (shape: ListShape): string =>
         shape.status ? ' AND master_park.status = ?' : '',
     ].join('');
 
+type WebsiteListShape = {
+    readonly search: boolean;
+    readonly region: boolean;
+};
+
+const websiteWhere = (shape: WebsiteListShape): string =>
+    [
+        'WHERE master_park.status = ?',
+        shape.search ? ' AND master_park.name LIKE ?' : '',
+        shape.region ? ' AND master_park.region = ?' : '',
+    ].join('');
+
+const WEBSITE_ORDERS = { az: 'master_park.name ASC', za: 'master_park.name DESC' } as const;
+
+const WEBSITE_COLUMNS = `master_park.id, master_park.name, master_park.slug, master_park.region, master_park.feature_image`;
+
 const LIST_COLUMNS = `master_park.id, master_park.name, master_park.slug, master_park.region,
-            master_park.avg_safari_price_min, master_park.avg_safari_price_max, master_park.status,
+            master_park.feature_image, master_park.status,
             (SELECT COUNT(*)
                 FROM shared_safari
                 WHERE shared_safari.master_park_id = master_park.id
@@ -46,8 +62,8 @@ export const MasterParkSQL = {
 
     findById: `
         SELECT ${LIST_COLUMNS},
-            master_park.short_description, master_park.feature_image, master_park.latitude,
-            master_park.longitude, master_park.official_website
+            master_park.short_description, master_park.latitude, master_park.longitude,
+            master_park.official_website
         FROM master_park
         WHERE master_park.id = ?`,
 
@@ -75,14 +91,48 @@ export const MasterParkSQL = {
         WHERE slug = ?
         LIMIT 1`,
 
+    websiteList: (shape: WebsiteListShape, sort: keyof typeof WEBSITE_ORDERS) => `
+        SELECT ${WEBSITE_COLUMNS}
+        FROM master_park
+        ${websiteWhere(shape)}
+        ORDER BY ${WEBSITE_ORDERS[sort]}, master_park.id
+        LIMIT ? OFFSET ?`,
+
+    websiteCount: (shape: WebsiteListShape) => `
+        SELECT COUNT(*) AS total
+        FROM master_park
+        ${websiteWhere(shape)}`,
+
+    websitePage: `
+        SELECT ${WEBSITE_COLUMNS},
+            master_park.short_description, master_park.latitude, master_park.longitude,
+            master_park.official_website
+        FROM master_park
+        WHERE master_park.slug = ? AND master_park.status = ?`,
+
+    featureImageById: `
+        SELECT id, feature_image
+        FROM master_park
+        WHERE id = ?`,
+
+    featureImageBySlug: `
+        SELECT id, feature_image
+        FROM master_park
+        WHERE slug = ? AND status = ?`,
+
     insert: `
         INSERT INTO master_park
-            (name, slug, region, avg_safari_price_min, avg_safari_price_max, status, created_by, updated_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            (name, slug, region, short_description, latitude, longitude, status, created_by, updated_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 
     update: `
         UPDATE master_park
-        SET name = ?, region = ?, avg_safari_price_min = ?, avg_safari_price_max = ?, status = ?, updated_by = ?
+        SET name = ?, region = ?, short_description = ?, latitude = ?, longitude = ?, status = ?, updated_by = ?
+        WHERE id = ?`,
+
+    updateFeatureImage: `
+        UPDATE master_park
+        SET feature_image = ?, updated_by = ?
         WHERE id = ?`,
 
     updateStatus: `

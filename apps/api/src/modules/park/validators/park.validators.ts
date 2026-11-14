@@ -1,25 +1,42 @@
 import { z } from 'zod';
 
+import { ValidationException } from '../../../core/exceptions';
 import { paginationQuerySchema } from '../../../core/validation';
-import { PARK_LIMITS, ParkRegion, type ParkRegionCode, ParkStatus, type ParkStatusCode } from '../types/park.types';
+import {
+    FEATURE_IMAGE_FIELD,
+    PARK_LIMITS,
+    ParkRegion,
+    type ParkRegionCode,
+    ParkStatus,
+    type ParkStatusCode,
+    ParkWebsiteSort,
+    type ParkWebsiteSortKey,
+} from '../types/park.types';
 
 export const PARK_MESSAGES = {
     NAME_EMPTY: 'Enter the park name.',
     NAME_TOO_LONG: `Park name can be at most ${PARK_LIMITS.NAME_MAX} characters.`,
     NAME_TAKEN: 'A park with this name already exists.',
     REGION: 'Select a region.',
-    PRICE: 'Enter whole rupees, up to ₹10,00,000.',
-    PRICE_ORDER: 'Max. price must be at least the min. price.',
-    PRICE_PAIR: 'Enter both prices, or leave both empty.',
+    DESCRIPTION_TOO_LONG: 'Use up to 1,000 characters.',
+    LATITUDE: 'Enter a latitude from -90 to 90.',
+    LONGITUDE: 'Enter a longitude from -180 to 180.',
+    COORDINATE_PAIR: 'Enter both latitude and longitude, or leave both empty.',
+    IMAGE_TYPE: 'Use a JPG, JPEG or PNG image.',
+    IMAGE_SIZE: 'Use an image up to 250 KB.',
+    IMAGE_NOT_FOUND: 'This park has no feature image.',
     STATUS: 'Choose a valid status.',
     NOT_FOUND: 'This park was not found.',
+    FIELD_MISSING: 'Send this field; use null to leave it empty.',
 } as const;
 
 const REGIONS: readonly number[] = Object.values(ParkRegion);
 
 const STATUSES: readonly number[] = Object.values(ParkStatus);
 
-const WHOLE_RUPEES = /^\d+$/;
+const DECIMAL_NUMBER = /^-?\d+(\.\d+)?$/;
+
+const SORTS: readonly string[] = Object.values(ParkWebsiteSort);
 
 const isRegion = (value: number): value is ParkRegionCode => REGIONS.includes(value);
 
@@ -49,53 +66,65 @@ const region = z
     .number({ required_error: PARK_MESSAGES.REGION, invalid_type_error: PARK_MESSAGES.REGION })
     .refine(isRegion, PARK_MESSAGES.REGION);
 
-const wholeRupeesOf = (value: unknown): number | undefined => {
-    const text = typeof value === 'number' ? String(value) : typeof value === 'string' ? value.trim() : '';
-    if (!WHOLE_RUPEES.test(text)) return undefined;
-    const amount = Number(text);
-    return amount <= PARK_LIMITS.PRICE_MAX ? amount : undefined;
+const shortDescription = z
+    .string({ required_error: PARK_MESSAGES.FIELD_MISSING, invalid_type_error: PARK_MESSAGES.DESCRIPTION_TOO_LONG })
+    .trim()
+    .max(PARK_LIMITS.DESCRIPTION_MAX, PARK_MESSAGES.DESCRIPTION_TOO_LONG)
+    .nullable()
+    .transform((value) => (value ? value : null));
+
+const coordinateOf = (value: unknown): unknown => {
+    if (typeof value !== 'string') return value;
+    const text = value.trim();
+    if (text === '') return null;
+    return DECIMAL_NUMBER.test(text) ? Number(text) : Number.NaN;
 };
 
-const price = z.unknown().transform((value, context): number | null => {
-    if (value === null || value === undefined || value === '') return null;
-    const amount = wholeRupeesOf(value);
-    if (amount === undefined) {
-        context.addIssue({ code: z.ZodIssueCode.custom, message: PARK_MESSAGES.PRICE });
-        return z.NEVER;
-    }
-    return amount;
-});
+const coordinate = (limit: number, message: string) =>
+    z.preprocess(
+        coordinateOf,
+        z
+            .number({ required_error: PARK_MESSAGES.FIELD_MISSING, invalid_type_error: message })
+            .min(-limit, message)
+            .max(limit, message)
+            .nullable(),
+    );
 
 const status = z
     .number({ required_error: PARK_MESSAGES.STATUS, invalid_type_error: PARK_MESSAGES.STATUS })
     .refine(isStatus, PARK_MESSAGES.STATUS);
 
-type Prices = { readonly avgSafariPriceMin: number | null; readonly avgSafariPriceMax: number | null };
+type Coordinates = { readonly latitude: number | null; readonly longitude: number | null };
 
-const checkPrices = (prices: Prices, context: z.RefinementCtx): void => {
-    const { avgSafariPriceMin: min, avgSafariPriceMax: max } = prices;
-    if (min !== null && max !== null && max < min) {
-        context.addIssue({ code: z.ZodIssueCode.custom, message: PARK_MESSAGES.PRICE_ORDER, path: ['avgSafariPriceMax'] });
-    }
-    if ((min === null) !== (max === null)) {
+const checkCoordinates = (coordinates: Coordinates, context: z.RefinementCtx): void => {
+    const { latitude, longitude } = coordinates;
+    if ((latitude === null) !== (longitude === null)) {
         context.addIssue({
             code: z.ZodIssueCode.custom,
-            message: PARK_MESSAGES.PRICE_PAIR,
-            path: [min === null ? 'avgSafariPriceMin' : 'avgSafariPriceMax'],
+            message: PARK_MESSAGES.COORDINATE_PAIR,
+            path: [latitude === null ? 'latitude' : 'longitude'],
         });
     }
 };
 
-const parkFields = { name, region, avgSafariPriceMin: price, avgSafariPriceMax: price };
+const parkFields = {
+    name,
+    region,
+    shortDescription,
+    latitude: coordinate(PARK_LIMITS.LATITUDE_MAX, PARK_MESSAGES.LATITUDE),
+    longitude: coordinate(PARK_LIMITS.LONGITUDE_MAX, PARK_MESSAGES.LONGITUDE),
+};
+
+const searchText = z
+    .string()
+    .trim()
+    .max(PARK_LIMITS.SEARCH, `Search can be at most ${PARK_LIMITS.SEARCH} characters.`)
+    .optional()
+    .transform((value) => (value ? value : undefined));
 
 export const listParkSchema = z.object({
     query: paginationQuerySchema.extend({
-        search: z
-            .string()
-            .trim()
-            .max(PARK_LIMITS.SEARCH, `Search can be at most ${PARK_LIMITS.SEARCH} characters.`)
-            .optional()
-            .transform((value) => (value ? value : undefined)),
+        search: searchText,
         region: z.coerce.number().int().refine(isRegion, PARK_MESSAGES.REGION).optional(),
         status: z.coerce.number().int().refine(isStatus, PARK_MESSAGES.STATUS).optional(),
     }),
@@ -108,7 +137,7 @@ export const parkIdSchema = z.object({ params: idParam });
 export type ParkParams = z.infer<typeof idParam>;
 
 export const createParkSchema = z.object({
-    body: z.object(parkFields).strict().superRefine(checkPrices),
+    body: z.object(parkFields).strict().superRefine(checkCoordinates),
 });
 
 export const updateParkSchema = z.object({
@@ -116,10 +145,41 @@ export const updateParkSchema = z.object({
     body: z
         .object({ ...parkFields, status })
         .strict()
-        .superRefine(checkPrices),
+        .superRefine(checkCoordinates),
 });
 
 export const parkStatusSchema = z.object({
     params: idParam,
     body: z.object({ status }).strict(),
 });
+
+export const featureImageSchema = z.object({ params: idParam });
+
+export const websiteParkListSchema = z.object({
+    query: z.object({
+        search: searchText,
+        region: z.coerce.number().int().refine(isRegion, PARK_MESSAGES.REGION).optional(),
+        sort: z
+            .string()
+            .optional()
+            .transform((value): ParkWebsiteSortKey =>
+                value && SORTS.includes(value) ? (value as ParkWebsiteSortKey) : ParkWebsiteSort.A_TO_Z,
+            ),
+        page: z.coerce.number().int().positive().optional().default(1),
+    }),
+});
+
+export type WebsiteParkListQuery = z.infer<typeof websiteParkListSchema>['query'];
+
+const slugParam = z.object({ slug: z.string().trim().min(1).max(PARK_LIMITS.SLUG_MAX) });
+
+export const parkSlugSchema = z.object({ params: slugParam });
+
+export type ParkSlugParams = z.infer<typeof slugParam>;
+
+export const featureImageTypeError = (): ValidationException =>
+    new ValidationException(
+        PARK_MESSAGES.IMAGE_TYPE,
+        [{ field: FEATURE_IMAGE_FIELD, message: PARK_MESSAGES.IMAGE_TYPE }],
+        'PARK_IMAGE_TYPE',
+    );

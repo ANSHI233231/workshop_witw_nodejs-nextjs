@@ -57,7 +57,8 @@ type ListState = {
     readonly page: number;
 };
 
-export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
+export function SafariList({ signedIn, isPartner }: { readonly signedIn: boolean; readonly isPartner: boolean }) {
+    const canOrganise = signedIn && !isPartner;
     const t = useT();
     const router = useRouter();
     const isPhone = useIsPhone();
@@ -70,6 +71,7 @@ export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [organiseOpen, setOrganiseOpen] = useState(false);
     const loadingMoreRef = useRef(false);
+    const listGenerationRef = useRef(0);
 
     useEffect(() => {
         listActiveParks()
@@ -78,6 +80,7 @@ export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
     }, []);
 
     useEffect(() => {
+        listGenerationRef.current += 1;
         const controller = new AbortController();
         const timer = setTimeout(() => {
             listSafaris(filters, sort, 1, controller.signal)
@@ -98,8 +101,10 @@ export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
         if (!list || loadingMoreRef.current || list.items.length >= list.total) return;
         loadingMoreRef.current = true;
         setLoadingMore(true);
+        const generation = listGenerationRef.current;
         try {
             const next = await listSafaris(filters, sort, list.page + 1);
+            if (generation !== listGenerationRef.current) return;
             setList((current) =>
                 current
                     ? {
@@ -150,7 +155,7 @@ export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
     const showCards = list !== null && list.items.length > 0;
     const hasMore = list !== null && list.items.length < list.total && !loadingMore;
 
-    const organiseButton = signedIn && (
+    const organiseButton = canOrganise && (
         <button type="button" className="btn btn-primary wb-org" onClick={() => setOrganiseOpen(true)}>
             {t('+ Organize a Shared Safari')}
         </button>
@@ -282,7 +287,7 @@ export function SafariList({ signedIn }: { readonly signedIn: boolean }) {
                         <div className="state">
                             <BinocularsStateIcon className="icon state-icon" />
                             <p className="state-title">{t('No shared safaris yet.')}</p>
-                            {signedIn && (
+                            {canOrganise && (
                                 <button type="button" className="btn btn-primary" onClick={() => setOrganiseOpen(true)}>
                                     {t('+ Organize a Shared Safari')}
                                 </button>

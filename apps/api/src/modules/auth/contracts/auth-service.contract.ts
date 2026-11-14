@@ -4,11 +4,14 @@ import type { ChangePasswordBody, SignInBody, SignUpBody } from '../validators/a
 
 export type SignedInSession = AuthSession & { readonly remember: boolean };
 
+export type SignedUpWith<T> = { readonly session: SignedInSession; readonly created: T };
+
 export type RefreshedSession = SignedInSession | { readonly user: AuthUserDto; readonly tokens: undefined };
 
 export interface IAuthService {
     signIn(body: SignInBody): Promise<SignedInSession>;
     signUp(body: SignUpBody): Promise<SignedInSession>;
+    signUpWith<T>(body: SignUpBody, alsoCreate: (user: AuthUserDto) => Promise<T>): Promise<SignedUpWith<T>>;
     refresh(refreshToken: string | undefined): Promise<RefreshedSession>;
     signOut(refreshToken: string | undefined): Promise<void>;
     authenticate(accessToken: string | undefined, sessionUserId?: string): Promise<AuthUserDto>;

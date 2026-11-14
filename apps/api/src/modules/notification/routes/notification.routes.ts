@@ -1,6 +1,7 @@
 import { type AccessGuard, type ApiRouter, apiRouter, asyncHandler } from '../../../core/http';
 import { validate } from '../../../core/validation';
 import type { DeliveryController } from '../controllers/delivery.controller';
+import type { NotificationFeedGates } from '../contracts/notification-feed-gate.contract';
 import type { NotificationController } from '../controllers/notification.controller';
 import {
     inAppDeliveryIdSchema,
@@ -13,7 +14,11 @@ import {
     notificationOwnerSchema,
 } from '../validators/notification.validators';
 
-export type NotificationAccess = { readonly signedIn: AccessGuard; readonly superAdmin: AccessGuard };
+export type NotificationAccess = {
+    readonly signedIn: AccessGuard;
+    readonly superAdmin: AccessGuard;
+    readonly feedGates?: NotificationFeedGates;
+};
 
 export const createNotificationRouter = (
     controller: NotificationController,

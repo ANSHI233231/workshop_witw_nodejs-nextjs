@@ -14,7 +14,11 @@
 | `/roles` | User & Role › Roles: the `meta_role` list (read only) |
 | `/notifications/templates` | System › Notification › Notification Templates: Email and In-app tabs ([modules/notification](../modules/notification/README.md), [modules/mail](../modules/mail/README.md)) |
 | `/notifications/delivery-log` | System › Notification › Delivery Log: mails and in-app notifications in one list |
-| `/notifications` | The header bell's full page: your own notifications in the console (tabs All, Unread, Account, Jobs) |
+| `/notifications` | The header bell's full page: your own notifications in the console (tabs All, Unread, Account, Jobs; gallery sent 1101 and package version sent 1201 show under All and Unread, 1201 opens `/packages/<id>?version=waiting`) |
+| `/package-approvals` | Packages › Package Approvals (PC3): waiting versions, oldest sent first; search, picture, partner, version ("First version" / "Live now: vN"), sent on; Preview, Edit, Approve, Reject with a reason ([modules/package](../modules/package/README.md)) |
+| `/packages` | Packages › Packages (PC4): live and deleted packages; search, website status and partner filters; Popular and Best deal switches; View, Edit, Delete with a reason |
+| `/packages/<id>?version=waiting\|live&tab=preview\|edit` | Package preview / edit (PC5): the website-style preview and the same five-section editor as the Partner portal; Approve / Reject on a waiting version |
+| `/package-delete-reasons` | Packages › Package Delete Reasons (PC6): add, edit with status, make active / inactive, the "Used" count |
 | `/audit-log` | System › Logs › Audit Log ([modules/audit](../modules/audit/README.md)) |
 | `/system-logs` | System › Logs › System Logs: the log files of the API and the apps ([modules/system-log](../modules/system-log/README.md)) |
 | `/error-logs` | System › Logs › Error Logs: the `app_log` rows |

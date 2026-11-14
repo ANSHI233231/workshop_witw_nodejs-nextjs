@@ -1,23 +1,30 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
 
 import { CloseIcon } from '@/components/ui/icons';
 import { useT } from '@/hooks/i18n/use-t';
 import { useRevealFirstError } from '@/hooks/ui/use-reveal-first-error';
-import { createPark, updatePark } from '@/services/park.service';
+import { logger } from '@/lib/logger';
+import { createPark, getPark, parkFeatureImageUrl, updatePark, uploadParkFeatureImage } from '@/services/park.service';
 import {
+    PARK_IMAGE_ACCEPT,
     PARK_LIMITS,
     PARK_REGION_LABEL,
     PARK_REGIONS,
     type Park,
+    type ParkDetail,
     ParkStatus,
     type ParkStatusCode,
 } from '@/types/park.types';
 
-import { checkParkForm, type ParkField, type ParkFieldErrors, parkSaveErrorsOf } from './park-form';
+import { checkParkForm, checkParkImage, type ParkField, type ParkFieldErrors, parkSaveErrorsOf } from './park-form';
+import { parkPriceRange } from './park-format';
 
-const priceText = (amount: number | null | undefined): string => (amount === null || amount === undefined ? '' : String(amount));
+const log = logger.category('parks');
+
+const coordinateText = (value: number | null | undefined): string =>
+    value === null || value === undefined ? '' : String(value);
 
 function FieldError({ message }: { readonly message: string | undefined }) {
     return message ? (
@@ -29,12 +36,12 @@ function FieldError({ message }: { readonly message: string | undefined }) {
 
 const fieldClass = (message: string | undefined): string => (message ? 'field is-invalid' : 'field');
 
-export function ParkDialog({
+function ParkForm({
     editing,
     onSaved,
     onClose,
 }: {
-    readonly editing: Park | null;
+    readonly editing: ParkDetail | null;
     readonly onSaved: (park: Park) => void;
     readonly onClose: () => void;
 }) {
@@ -42,35 +49,79 @@ export function ParkDialog({
     const { formRef, revealFirstError } = useRevealFirstError<HTMLFormElement>();
     const [name, setName] = useState(editing?.name ?? '');
     const [region, setRegion] = useState(editing ? String(editing.region) : '');
-    const [min, setMin] = useState(priceText(editing?.avgSafariPriceMin));
-    const [max, setMax] = useState(priceText(editing?.avgSafariPriceMax));
+    const [description, setDescription] = useState(editing?.shortDescription ?? '');
+    const [latitude, setLatitude] = useState(coordinateText(editing?.latitude));
+    const [longitude, setLongitude] = useState(coordinateText(editing?.longitude));
+    const [image, setImage] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
     const [status, setStatus] = useState<ParkStatusCode>(editing?.status ?? ParkStatus.ACTIVE);
+    const [savedPark, setSavedPark] = useState<Park | null>(null);
     const [errors, setErrors] = useState<ParkFieldErrors>({});
     const [formError, setFormError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
-    const clear = (field: ParkField) =>
-        setErrors((current) => Object.fromEntries(Object.entries(current).filter(([key]) => key !== field)));
+    const previewRef = useRef<string | null>(null);
+
+    useEffect(
+        () => () => {
+            if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        },
+        [],
+    );
+
+    const replacePreview = (url: string | null) => {
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        previewRef.current = url;
+        setPreview(url);
+    };
+
+    const clear = (...fields: readonly ParkField[]) =>
+        setErrors((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !fields.includes(key as ParkField))));
+
+    const chooseImage = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const problem = checkParkImage(file, t);
+        if (problem) {
+            event.target.value = '';
+            setImage(null);
+            replacePreview(null);
+            setErrors((current) => ({ ...current, image: problem }));
+            return;
+        }
+        clear('image');
+        setImage(file);
+        replacePreview(URL.createObjectURL(file));
+    };
 
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (saving) return;
-        const checked = checkParkForm(t, { name, region, min, max });
-        setErrors(checked.errors);
+        const checked = checkParkForm(t, { name, region, shortDescription: description, latitude, longitude });
+        setErrors((current) => (current.image ? { ...checked.errors, image: current.image } : checked.errors));
         setFormError(null);
-        if (Object.keys(checked.errors).length > 0) {
+        if (Object.keys(checked.errors).length > 0 || errors.image) {
             revealFirstError();
             return;
         }
         setSaving(true);
+        let uploading = false;
         try {
-            onSaved(
-                editing ? await updatePark(editing.id, { ...checked.input, status }) : await createPark(checked.input),
-            );
+            const target = savedPark ?? editing;
+            let park = target
+                ? await updatePark(target.id, { ...checked.input, status })
+                : await createPark(checked.input);
+            setSavedPark(park);
+            if (image) {
+                uploading = true;
+                park = await uploadParkFeatureImage(park.id, image);
+            }
+            onSaved(park);
         } catch (error) {
+            log.error('The park could not be saved.', { error, uploading });
             const found = parkSaveErrorsOf(error, t);
-            setErrors(found.fields);
-            setFormError(found.form);
+            setErrors(uploading ? { image: found.form ?? Object.values(found.fields)[0] ?? '' } : found.fields);
+            setFormError(uploading ? null : found.form);
             revealFirstError();
         } finally {
             setSaving(false);
@@ -78,6 +129,10 @@ export function ParkDialog({
     };
 
     const isActive = status === ParkStatus.ACTIVE;
+    const shownImage =
+        preview ?? (editing?.featureImage ? parkFeatureImageUrl(editing.id, editing.featureImage) : null);
+    const range = editing ? parkPriceRange(editing) : null;
+    const isEdit = editing !== null || savedPark !== null;
 
     return (
         <div className="overlay" onClick={onClose}>
@@ -93,7 +148,7 @@ export function ParkDialog({
             >
                 <div className="modal-head">
                     <h2 className="modal-title" id="pk-t">
-                        {editing ? t('Edit park') : t('Add park')}
+                        {isEdit ? t('Edit park') : t('Add park')}
                     </h2>
                     <button type="button" className="btn-icon" aria-label={t('Close')} onClick={onClose}>
                         <CloseIcon />
@@ -152,47 +207,93 @@ export function ParkDialog({
                             </select>
                             <FieldError message={errors.region} />
                         </div>
+                        <div className={fieldClass(errors.shortDescription)}>
+                            <label className="label" htmlFor="pk-desc">
+                                {t('Description')}
+                            </label>
+                            <textarea
+                                id="pk-desc"
+                                className="textarea"
+                                rows={4}
+                                maxLength={PARK_LIMITS.DESCRIPTION_MAX}
+                                value={description}
+                                aria-invalid={errors.shortDescription ? true : undefined}
+                                onChange={(event) => {
+                                    setDescription(event.target.value);
+                                    clear('shortDescription');
+                                }}
+                            />
+                            <span className="helper">{t('Shown on the park page. Up to 1,000 characters.')}</span>
+                            <FieldError message={errors.shortDescription} />
+                        </div>
                         <div className="ssc-2">
-                            <div className={fieldClass(errors.avgSafariPriceMin)}>
-                                <label className="label" htmlFor="pk-min">
-                                    {t('Min. safari price (₹)')}
+                            <div className={fieldClass(errors.latitude)}>
+                                <label className="label" htmlFor="pk-lat">
+                                    {t('Latitude')}
                                 </label>
                                 <input
-                                    id="pk-min"
+                                    id="pk-lat"
                                     className="input"
-                                    type="number"
-                                    min="0"
-                                    value={min}
-                                    aria-invalid={errors.avgSafariPriceMin ? true : undefined}
+                                    inputMode="decimal"
+                                    placeholder={t('e.g. 22.1548')}
+                                    value={latitude}
+                                    aria-invalid={errors.latitude ? true : undefined}
                                     onChange={(event) => {
-                                        setMin(event.target.value);
-                                        clear('avgSafariPriceMin');
-                                        clear('avgSafariPriceMax');
+                                        setLatitude(event.target.value);
+                                        clear('latitude', 'longitude');
                                     }}
                                 />
-                                <FieldError message={errors.avgSafariPriceMin} />
+                                <FieldError message={errors.latitude} />
                             </div>
-                            <div className={fieldClass(errors.avgSafariPriceMax)}>
-                                <label className="label" htmlFor="pk-max">
-                                    {t('Max. safari price (₹)')}
+                            <div className={fieldClass(errors.longitude)}>
+                                <label className="label" htmlFor="pk-lng">
+                                    {t('Longitude')}
                                 </label>
                                 <input
-                                    id="pk-max"
+                                    id="pk-lng"
                                     className="input"
-                                    type="number"
-                                    min="0"
-                                    value={max}
-                                    aria-invalid={errors.avgSafariPriceMax ? true : undefined}
+                                    inputMode="decimal"
+                                    placeholder={t('e.g. 80.6728')}
+                                    value={longitude}
+                                    aria-invalid={errors.longitude ? true : undefined}
                                     onChange={(event) => {
-                                        setMax(event.target.value);
-                                        clear('avgSafariPriceMin');
-                                        clear('avgSafariPriceMax');
+                                        setLongitude(event.target.value);
+                                        clear('latitude', 'longitude');
                                     }}
                                 />
-                                <FieldError message={errors.avgSafariPriceMax} />
+                                <FieldError message={errors.longitude} />
                             </div>
                         </div>
-                        {editing && (
+                        <div className={fieldClass(errors.image)}>
+                            <label className="label" htmlFor="pk-img">
+                                {t('Feature image')}
+                            </label>
+                            <div className="pkf-img">
+                                {shownImage && <img src={shownImage} alt="" />}
+                                <div className="ss-stack">
+                                    <input
+                                        id="pk-img"
+                                        className="input"
+                                        type="file"
+                                        accept={PARK_IMAGE_ACCEPT}
+                                        aria-invalid={errors.image ? true : undefined}
+                                        onChange={chooseImage}
+                                    />
+                                    <span className="helper">
+                                        {t('JPG, JPEG or PNG, up to 250 KB. Shown on the park card.')}
+                                    </span>
+                                </div>
+                            </div>
+                            <FieldError message={errors.image} />
+                        </div>
+                        <div className="field">
+                            <span className="label">{t('Average safari price')}</span>
+                            <div className="pkf-calc">
+                                {range ? t('{range} per person', { range }) : t('Not calculated yet')}
+                            </div>
+                            <span className="helper">{t('Calculated by the system, not entered here.')}</span>
+                        </div>
+                        {isEdit && (
                             <div className="field ssc-swrow">
                                 <span className="label" id="pf-st-l">
                                     {t('Status')}
@@ -219,10 +320,57 @@ export function ParkDialog({
                         {t('Cancel')}
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={saving}>
-                        {editing ? t('Save') : t('Add park')}
+                        {isEdit ? t('Save') : t('Add park')}
                     </button>
                 </div>
             </form>
+        </div>
+    );
+}
+
+export function ParkDialog({
+    editing,
+    onSaved,
+    onClose,
+}: {
+    readonly editing: Park | null;
+    readonly onSaved: (park: Park) => void;
+    readonly onClose: () => void;
+}) {
+    const t = useT();
+    const [detail, setDetail] = useState<ParkDetail | null>(null);
+    const [failed, setFailed] = useState(false);
+
+    useEffect(() => {
+        if (!editing) return;
+        getPark(editing.id, undefined)
+            .then(setDetail)
+            .catch((error: unknown) => {
+                log.error('The park could not be loaded.', { error });
+                setFailed(true);
+            });
+    }, [editing]);
+
+    if (!editing || detail) return <ParkForm editing={detail} onSaved={onSaved} onClose={onClose} />;
+
+    return (
+        <div className="overlay" onClick={onClose}>
+            <div className="modal " role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+                <div className="modal-body">
+                    {failed ? (
+                        <div className="banner banner-danger" role="alert">
+                            {t('It could not be loaded. Please try again.')}
+                        </div>
+                    ) : (
+                        <p className="ss-cap">{t('Loading…')}</p>
+                    )}
+                </div>
+                <div className="modal-foot">
+                    <button type="button" className="btn btn-secondary" onClick={onClose}>
+                        {t('Cancel')}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

@@ -8,6 +8,7 @@ export const MetaRoleStatus = { ACTIVE: 1, INACTIVE: 2 } as const;
 
 export const MetaRole = {
     SUPER_ADMIN: 100,
+    PARTNER: 101,
 } as const;
 
 export const SYSTEM_ROLE_IDS: readonly number[] = [MetaRole.SUPER_ADMIN];

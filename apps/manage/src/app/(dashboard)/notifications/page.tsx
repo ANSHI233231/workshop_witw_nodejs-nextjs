@@ -14,6 +14,8 @@ import { getNotificationCounts, listNotifications } from '@/services/notificatio
 import { ACCESS_TOKEN_COOKIE } from '@/lib/config';
 import type { NotificationTab } from '@/types/notification-feed.types';
 
+const pageTime = (): number => Date.now();
+
 export const generateMetadata = async (): Promise<Metadata> => ({
     title: (await serverTranslator()).t('Notifications'),
 });
@@ -43,6 +45,7 @@ export default async function NotificationsPage({
             page={page}
             counts={counts}
             result={result}
+            now={pageTime()}
         />
     );
 }

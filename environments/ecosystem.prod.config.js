@@ -19,5 +19,6 @@ module.exports = {
         },
         nextApp('prod-web', 'web', 4200),
         nextApp('prod-manage', 'manage', 4201),
+        nextApp('prod-partner', 'partner', 4202),
     ],
 };

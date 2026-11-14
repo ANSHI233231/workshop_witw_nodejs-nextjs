@@ -8,11 +8,12 @@ import type {
     ConsoleSafariDetailDto,
     ConsoleSafariDto,
     CoverImage,
-    FlagDto,
     FlaggedCommentDto,
+    FlagsOfCommentDto,
     Paged,
 } from '../dto/shared-safari.dto';
-import { personOf, toConsoleDetail, toConsoleSafari, toFlag, toFlagged } from '../mappers/shared-safari.mapper';
+import type { PartnerLookup } from '../contracts/shared-safari-module.contract';
+import { shownInConsole, toConsoleDetail, toConsoleSafari, toFlag, toFlagged } from '../mappers/shared-safari.mapper';
 import type { SharedSafariRepository } from '../repositories/shared-safari.repository';
 import {
     type SafariRow,
@@ -42,6 +43,7 @@ export class ConsoleSafariService implements IConsoleSafariService {
         private readonly repository: SharedSafariRepository,
         private readonly auditService: IAuditService,
         private readonly website: WebsiteSafariService,
+        private readonly partnerService: PartnerLookup,
     ) {}
 
     async list(filters: ConsoleFilters, page: number, limit: number): Promise<Paged<ConsoleSafariDto>> {
@@ -49,7 +51,8 @@ export class ConsoleSafariService implements IConsoleSafariService {
             this.repository.consoleList(this.db, filters, limit, (page - 1) * limit),
             this.repository.consoleCount(this.db, filters),
         ]);
-        return { items: rows.map(toConsoleSafari), total };
+        const show = shownInConsole(await this.partnerService.partnersOf(rows.map((row) => row.userId)));
+        return { items: rows.map((row) => toConsoleSafari(row, show)), total };
     }
 
     async hosts(): Promise<{ id: number; name: string }[]> {
@@ -68,7 +71,13 @@ export class ConsoleSafariService implements IConsoleSafariService {
                 comment.sharedSafariCommentId === null ||
                 comments.some((parent) => parent.id === comment.sharedSafariCommentId),
         );
-        return toConsoleDetail(row, joined, left, visible);
+        const partners = await this.partnerService.partnersOf([
+            row.userId,
+            ...joined.map((member) => member.userId),
+            ...left.map((member) => member.userId),
+            ...visible.map((comment) => comment.userId),
+        ]);
+        return toConsoleDetail(row, joined, left, visible, shownInConsole(partners));
     }
 
     async cover(id: number): Promise<CoverImage> {
@@ -188,16 +197,23 @@ export class ConsoleSafariService implements IConsoleSafariService {
             this.repository.flagged(this.db, search, limit, (page - 1) * limit),
             this.repository.flaggedCount(this.db, search),
         ]);
-        return { items: rows.map(toFlagged), total };
+        const partners = await this.partnerService.partnersOf(rows.map((row) => row.userId));
+        return { items: rows.map((row) => toFlagged(row, partners)), total };
     }
 
-    async flagsOf(commentId: number): Promise<{ comment: { id: number; text: string; writer: string }; flags: FlagDto[] }> {
+    async flagsOf(commentId: number): Promise<FlagsOfCommentDto> {
         const comment = await this.repository.findComment(this.db, commentId);
         if (!comment) throw commentNotFound();
         const flags = await this.repository.openFlagsOf(this.db, commentId);
+        const partners = await this.partnerService.partnersOf([comment.userId, ...flags.map((flag) => flag.userId)]);
         return {
-            comment: { id: comment.id, text: comment.commentText, writer: personOf(comment.userId, comment.writerName).name },
-            flags: flags.map(toFlag),
+            comment: {
+                id: comment.id,
+                text: comment.commentText,
+                writer: comment.writerName,
+                writerBusinessName: partners.get(comment.userId)?.businessName ?? null,
+            },
+            flags: flags.map((flag) => toFlag(flag, partners)),
         };
     }
 

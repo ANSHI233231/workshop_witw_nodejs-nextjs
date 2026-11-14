@@ -35,12 +35,24 @@ export type ConsoleFilters = {
     readonly hostId?: number;
 };
 
-export type PersonDto = { readonly id: number; readonly name: string; readonly initials: string };
+export type PartnerBadgeDto = {
+    readonly id: number;
+    readonly businessName: string;
+    readonly logoVersion: string | null;
+};
+
+export type PersonDto = {
+    readonly id: number;
+    readonly name: string;
+    readonly initials: string;
+    readonly partner: PartnerBadgeDto | null;
+};
 
 export type MemberDto = PersonDto & { readonly joinedAt: string; readonly leftAt: string | null };
 
 export type ViewerStateDto = {
     readonly signedIn: boolean;
+    readonly isPartner: boolean;
     readonly isHost: boolean;
     readonly joined: boolean;
     readonly hasLeft: boolean;
@@ -163,6 +175,7 @@ export type FlaggedCommentDto = {
     readonly safari: { readonly id: number; readonly title: string; readonly slug: string };
     readonly isReply: boolean;
     readonly writerName: string;
+    readonly writerBusinessName: string | null;
     readonly text: string;
     readonly reasons: readonly string[];
     readonly flagCount: number;
@@ -174,7 +187,18 @@ export type FlagDto = {
     readonly reason: string;
     readonly details: string;
     readonly flaggerName: string;
+    readonly flaggerBusinessName: string | null;
     readonly createdAt: string;
+};
+
+export type FlagsOfCommentDto = {
+    readonly comment: {
+        readonly id: number;
+        readonly text: string;
+        readonly writer: string;
+        readonly writerBusinessName: string | null;
+    };
+    readonly flags: FlagDto[];
 };
 
 export type Paged<T> = { readonly items: T[]; readonly total: number };

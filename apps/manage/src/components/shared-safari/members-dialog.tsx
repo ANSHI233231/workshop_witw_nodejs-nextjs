@@ -6,7 +6,7 @@ import { CloseIcon } from '@/components/ui/icons';
 import { useT } from '@/hooks/i18n/use-t';
 import { ApiError } from '@/services/api-error';
 import { getSharedSafari } from '@/services/shared-safari.service';
-import type { ConsoleSafari, Member } from '@/types/shared-safari.types';
+import { type ConsoleSafari, type Member, personLabel } from '@/types/shared-safari.types';
 
 import { NO_VALUE, stamp } from './shared-safari-format';
 
@@ -90,7 +90,7 @@ export function MembersDialog({
                                     <tbody>
                                         {rows.map((member) => (
                                             <tr key={member.id}>
-                                                <td>{member.name}</td>
+                                                <td>{personLabel(member)}</td>
                                                 <td>{memberTime(member, kind)}</td>
                                             </tr>
                                         ))}
@@ -107,7 +107,7 @@ export function MembersDialog({
                             <div className="ssc-list ssc-only-mobile">
                                 {rows.map((member) => (
                                     <div key={member.id} className="ssc-card">
-                                        <b>{member.name}</b>
+                                        <b>{personLabel(member)}</b>
                                         <span className="ss-cap">
                                             {column} {memberTime(member, kind)}
                                         </span>

@@ -1,6 +1,6 @@
 import type { RowDataPacket } from '../../../database/connection';
 
-export const AppLogSource = { API: 1, MANAGE: 2, WEB: 3 } as const;
+export const AppLogSource = { API: 1, MANAGE: 2, WEB: 3, PARTNER: 4 } as const;
 
 export type AppLogSourceCode = (typeof AppLogSource)[keyof typeof AppLogSource];
 
@@ -11,6 +11,7 @@ export type AppLogLevelCode = (typeof AppLogLevel)[keyof typeof AppLogLevel];
 export const INGEST_SOURCES = {
     manage: AppLogSource.MANAGE,
     web: AppLogSource.WEB,
+    partner: AppLogSource.PARTNER,
 } as const;
 
 export type IngestSourceKey = keyof typeof INGEST_SOURCES;

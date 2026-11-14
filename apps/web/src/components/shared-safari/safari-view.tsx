@@ -4,15 +4,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { initialsOf } from '@/components/partner/partner-rules';
 import { SITE_PATHS } from '@/components/website/witw-site-frame';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSiteToast } from '@/hooks/shared-safari/use-site-toast';
 import type { Translate } from '@/lib/i18n/locale';
 import { dateRange, priceRange, tripDays } from '@/lib/shared-safari-format';
 import { ApiError } from '@/services/api-error';
+import type { SitePartner } from '@/services/partner.service';
 import { deleteSafari, getSafari, joinSafari, leaveSafari, setSafariStatus } from '@/services/shared-safari.service';
 import {
     type HostStatus,
+    type Person,
     SAFARI_LIMITS,
     type SafariView as SafariViewValue,
     SafariStatus,
@@ -21,6 +24,7 @@ import {
 } from '@/types/shared-safari.types';
 
 import { OrganiseDialog } from './organise-dialog';
+import { PersonAvatar } from './person-avatar';
 import { coverSource } from './safari-cover';
 import {
     DeleteSafariDialog,
@@ -92,7 +96,25 @@ function NotAvailable() {
     );
 }
 
-export function SafariViewPage({ safariRef, meName }: { readonly safariRef: string; readonly meName: string }) {
+const meAsPerson = (meName: string, partner: SitePartner | null): Person =>
+    partner
+        ? {
+              id: 0,
+              name: partner.businessName,
+              initials: initialsOf(partner.businessName),
+              partner: { id: partner.id, businessName: partner.businessName, logoVersion: partner.logoVersion },
+          }
+        : { id: 0, name: meName, initials: meName.trim().charAt(0).toUpperCase(), partner: null };
+
+export function SafariViewPage({
+    safariRef,
+    meName,
+    mePartner,
+}: {
+    readonly safariRef: string;
+    readonly meName: string;
+    readonly mePartner: SitePartner | null;
+}) {
     const t = useT();
     const router = useRouter();
     const { toast, show, showError, hide } = useSiteToast();
@@ -169,7 +191,7 @@ export function SafariViewPage({ safariRef, meName }: { readonly safariRef: stri
     const moreMembers = members.length - firstMembers.length;
     const stay = STAY_OPTIONS.find((option) => option.value === safari.stayCategory);
     const theme = THEME_OPTIONS.find((option) => option.value === safari.theme);
-    const canJoinShown = !viewer.isHost && !viewer.joined && safari.status === SafariStatus.ACTIVE;
+    const canJoinShown = !viewer.isHost && !viewer.joined && !viewer.isPartner && safari.status === SafariStatus.ACTIVE;
 
     const facts = [
         { label: 'Trip Duration', value: durationOf(safari, t), Icon: CalendarIcon },
@@ -290,7 +312,7 @@ export function SafariViewPage({ safariRef, meName }: { readonly safariRef: stri
                     </div>
                     <SafariDiscussion
                         safari={safari}
-                        meInitial={meName.trim().charAt(0).toUpperCase()}
+                        me={meAsPerson(meName, mePartner)}
                         onChanged={load}
                         onMessage={show}
                         onError={showError}
@@ -312,9 +334,12 @@ export function SafariViewPage({ safariRef, meName }: { readonly safariRef: stri
                             {members.length > 0 ? (
                                 <div className="ss3-faces">
                                     {firstMembers.map((member) => (
-                                        <span key={member.id} className="avatar ss3-face" title={member.name}>
-                                            {member.initials}
-                                        </span>
+                                        <PersonAvatar
+                                            key={member.id}
+                                            person={member}
+                                            className="ss3-face"
+                                            title={member.name}
+                                        />
                                     ))}
                                     {moreMembers > 0 && <span className="avatar ss3-face ss3-more">+{moreMembers}</span>}
                                 </div>

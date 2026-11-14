@@ -10,9 +10,10 @@ export type SessionCookieKind = (typeof SESSION_COOKIES)[keyof typeof SESSION_CO
 export const SESSION_COOKIE_APP: Readonly<Partial<Record<ClientAppCode, string>>> = {
     [ClientApp.MANAGE]: 'manage_',
     [ClientApp.WEB]: 'web_',
+    [ClientApp.PARTNER]: 'partner_',
 };
 
-export const SESSION_APPS: ReadonlySet<ClientAppCode> = new Set([ClientApp.MANAGE, ClientApp.WEB]);
+export const SESSION_APPS: ReadonlySet<ClientAppCode> = new Set([ClientApp.MANAGE, ClientApp.WEB, ClientApp.PARTNER]);
 
 export const currentSessionApp = (): ClientAppCode | undefined => {
     const code = getRequestContext()?.clientApp;
@@ -49,7 +50,7 @@ export interface PasswordResetRow extends RowDataPacket {
     isExpired: number;
 }
 
-export type AppUrls = Readonly<Record<'manage' | 'web', string>>;
+export type AppUrls = Readonly<Record<'manage' | 'web' | 'partner', string>>;
 
 export type AuthSettings = {
     readonly accessTokenSecret: string;

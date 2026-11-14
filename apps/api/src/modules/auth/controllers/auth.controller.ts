@@ -48,19 +48,19 @@ export class AuthController {
 
     signIn = async (req: Request, res: Response): Promise<void> => {
         const session = await this.authService.signIn(req.body as SignInBody);
-        this.setCookies(res, session);
+        this.writeSessionCookies(res, session);
         ok(res, { user: session.user }, 'Signed in.');
     };
 
     signUp = async (req: Request, res: Response): Promise<void> => {
         const session = await this.authService.signUp(req.body as SignUpBody);
-        this.setCookies(res, session);
+        this.writeSessionCookies(res, session);
         created(res, { user: session.user }, 'Your account is created.');
     };
 
     refresh = async (req: Request, res: Response): Promise<void> => {
         const session = await this.authService.refresh(this.refreshCookie(req));
-        if (session.tokens) this.setCookies(res, session);
+        if (session.tokens) this.writeSessionCookies(res, session);
         ok(res, { user: session.user });
     };
 
@@ -143,7 +143,7 @@ export class AuthController {
         next();
     };
 
-    private setCookies(res: Response, session: SignedInSession): void {
+    writeSessionCookies(res: Response, session: SignedInSession): void {
         const accessName = this.cookieName(SESSION_COOKIES.ACCESS);
         const refreshName = this.cookieName(SESSION_COOKIES.REFRESH);
         if (!accessName || !refreshName) return;

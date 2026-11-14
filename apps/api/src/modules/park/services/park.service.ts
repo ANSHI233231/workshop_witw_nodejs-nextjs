@@ -7,6 +7,7 @@ import type { IParkService } from '../contracts/park-service.contract';
 import type {
     ParkDetailDto,
     ParkDto,
+    ParkFeatureImage,
     ParkFilters,
     ParkInput,
     ParkOptionDto,
@@ -14,9 +15,17 @@ import type {
     ParkStateDto,
     ParkUpdate,
 } from '../dto/park.dto';
-import { toPark, toParkDetail, toParkOption, toParkState } from '../mappers/park.mapper';
-import { PARK_LIMITS, PARK_SLUG_FALLBACK, PARK_TIME_ZONE, type ParkStatusCode } from '../types/park.types';
+import { editableFieldsOf, toPark, toParkDetail, toParkOption, toParkState } from '../mappers/park.mapper';
+import {
+    PARK_LIMITS,
+    PARK_SLUG_FALLBACK,
+    PARK_TIME_ZONE,
+    type ParkDetailRow,
+    type ParkStatusCode,
+} from '../types/park.types';
 import { PARK_MESSAGES } from '../validators/park.validators';
+import type { ParkImages } from './park-images';
+import { type ParkPrices, priceIn } from './park-prices';
 
 const notFound = (): NotFoundException => new NotFoundException(PARK_MESSAGES.NOT_FOUND, 'PARK_NOT_FOUND');
 
@@ -31,12 +40,13 @@ const TODAY_FORMAT = new Intl.DateTimeFormat('en-CA', {
 
 const todayInIndia = (): string => TODAY_FORMAT.format(new Date());
 
-const EDITABLE_FIELDS = ['name', 'region', 'avgSafariPriceMin', 'avgSafariPriceMax', 'status'] as const;
-
-const changesOf = (before: ParkDto, after: ParkUpdate): Record<string, unknown> => {
+const changesBetween = (
+    before: Readonly<Record<string, unknown>>,
+    after: Readonly<Record<string, unknown>>,
+): Record<string, unknown> => {
     const changes: Record<string, unknown> = {};
-    for (const field of EDITABLE_FIELDS) {
-        if (before[field] !== after[field]) changes[field] = { from: before[field], to: after[field] };
+    for (const [field, value] of Object.entries(after)) {
+        if (before[field] !== value) changes[field] = { from: before[field] ?? null, to: value };
     }
     return changes;
 };
@@ -52,6 +62,8 @@ export class ParkService implements IParkService {
         private readonly db: Database,
         private readonly repository: IParkRepository,
         private readonly auditService: IAuditService,
+        private readonly prices: ParkPrices,
+        private readonly images: ParkImages,
     ) {}
 
     async listActive(): Promise<ParkOptionDto[]> {
@@ -68,14 +80,19 @@ export class ParkService implements IParkService {
             this.repository.list(this.db, filters, pagination, todayInIndia()),
             this.repository.count(this.db, filters),
         ]);
-        return { items: rows.map(toPark), total };
+        const prices = await this.prices.of(rows.map((row) => row.id));
+        return { items: rows.map((row) => toPark(row, priceIn(prices, row.id))), total };
     }
 
     async detail(id: number): Promise<ParkDetailDto> {
         const today = todayInIndia();
         const row = await this.repository.findById(this.db, id, today);
         if (!row) throw notFound();
-        return toParkDetail(row, await this.repository.upcomingSafaris(this.db, id, today));
+        const [price, upcoming] = await Promise.all([
+            this.prices.ofOne(id),
+            this.repository.upcomingSafaris(this.db, id, today),
+        ]);
+        return toParkDetail(row, price, upcoming);
     }
 
     async create(input: ParkInput, actorId: number): Promise<ParkDto> {
@@ -85,28 +102,26 @@ export class ParkService implements IParkService {
                 this.repository.slugTaken(this.db, candidate),
             );
             const id = await this.repository.insert(this.db, input, slug, actorId);
-            const created = await this.current(id);
+            const created = await this.row(id);
             return {
-                result: created,
+                result: await this.toDto(created),
                 id,
-                changes: {
-                    name: { from: null, to: created.name },
-                    slug: { from: null, to: created.slug },
-                    region: { from: null, to: created.region },
-                    avgSafariPriceMin: { from: null, to: created.avgSafariPriceMin },
-                    avgSafariPriceMax: { from: null, to: created.avgSafariPriceMax },
-                    status: { from: null, to: created.status },
-                },
+                changes: changesBetween({}, { ...editableFieldsOf(created), slug: created.slug }),
             };
         });
     }
 
     async update(id: number, input: ParkUpdate, actorId: number): Promise<ParkDto> {
         return this.audited(AuditAction.PARK_UPDATED, AuditAction.PARK_UPDATE_FAILED, id, input, async () => {
-            const before = await this.current(id);
+            const before = await this.row(id);
             await this.refuseNameTaken(input.name, id);
             await this.repository.update(this.db, id, input, actorId);
-            return { result: await this.current(id), id, changes: changesOf(before, input) };
+            const after = await this.row(id);
+            return {
+                result: await this.toDto(after),
+                id,
+                changes: changesBetween(editableFieldsOf(before), editableFieldsOf(after)),
+            };
         });
     }
 
@@ -117,10 +132,10 @@ export class ParkService implements IParkService {
             id,
             { status },
             async () => {
-                const before = await this.current(id);
+                const before = await this.row(id);
                 await this.repository.updateStatus(this.db, id, status, actorId);
                 return {
-                    result: await this.current(id),
+                    result: await this.toDto(await this.row(id)),
                     id,
                     changes: before.status === status ? {} : { status: { from: before.status, to: status } },
                 };
@@ -128,10 +143,45 @@ export class ParkService implements IParkService {
         );
     }
 
-    private async current(id: number): Promise<ParkDto> {
+    async setFeatureImage(id: number, content: Buffer, actorId: number): Promise<ParkDto> {
+        const current = await this.repository.featureImageById(this.db, id);
+        if (!current) throw notFound();
+        const fileName = await this.images.store(id, content);
+        try {
+            return await this.audited(
+                AuditAction.PARK_UPDATED,
+                AuditAction.PARK_UPDATE_FAILED,
+                id,
+                { featureImage: fileName },
+                async () => {
+                    await this.repository.updateFeatureImage(this.db, id, fileName, actorId);
+                    return {
+                        result: await this.toDto(await this.row(id)),
+                        id,
+                        changes: { featureImage: { from: current.feature_image, to: fileName } },
+                    };
+                },
+            );
+        } catch (error) {
+            await this.images.discard(id, fileName);
+            throw error;
+        }
+    }
+
+    async featureImage(id: number): Promise<ParkFeatureImage> {
+        const row = await this.repository.featureImageById(this.db, id);
+        if (!row) throw notFound();
+        return this.images.read(row.id, row.feature_image);
+    }
+
+    private async row(id: number): Promise<ParkDetailRow> {
         const row = await this.repository.findById(this.db, id, todayInIndia());
         if (!row) throw notFound();
-        return toPark(row);
+        return row;
+    }
+
+    private async toDto(row: ParkDetailRow): Promise<ParkDto> {
+        return toPark(row, await this.prices.ofOne(row.id));
     }
 
     private async refuseNameTaken(name: string, exceptId: number): Promise<void> {

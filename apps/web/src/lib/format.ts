@@ -52,3 +52,18 @@ export const formatFileSize = (bytes: number): string => {
     }
     return unit === 0 ? `${value} B` : `${value.toFixed(1)} ${SIZE_UNITS[unit]}`;
 };
+
+const STAMP_PARTS = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'Asia/Kolkata',
+});
+
+export const formatStamp = (isoDateTime: string): string => {
+    const parts = Object.fromEntries(STAMP_PARTS.formatToParts(new Date(isoDateTime)).map((part) => [part.type, part.value]));
+    return `${parts['day']} ${MONTHS[Number(parts['month']) - 1]} ${parts['year']} ${parts['hour']}:${parts['minute']}`;
+};

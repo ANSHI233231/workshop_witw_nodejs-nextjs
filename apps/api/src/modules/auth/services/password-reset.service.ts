@@ -26,7 +26,12 @@ const PASSWORD_HASH_ROUNDS = 10;
 
 const RESET_LINK_INVALID = 'This password reset link is not valid any more. Please ask for a new one.';
 
-const appNameOf = (clientApp: ClientAppCode): string => (clientApp === ClientApp.MANAGE ? 'Admin Console' : 'Portal');
+const APP_NAMES: Readonly<Partial<Record<ClientAppCode, string>>> = {
+    [ClientApp.MANAGE]: 'Admin Console',
+    [ClientApp.PARTNER]: 'Partner Portal',
+};
+
+const appNameOf = (clientApp: ClientAppCode): string => APP_NAMES[clientApp] ?? 'Portal';
 
 const maskEmail = (email: string): string => {
     const [local = '', domain = ''] = email.split('@');
@@ -137,6 +142,7 @@ export class PasswordResetService implements IPasswordResetService {
     }
 
     private urlOf(clientApp: ClientAppCode): string {
-        return clientApp === ClientApp.MANAGE ? this.appUrls.manage : this.appUrls.web;
+        if (clientApp === ClientApp.MANAGE) return this.appUrls.manage;
+        return clientApp === ClientApp.PARTNER ? this.appUrls.partner : this.appUrls.web;
     }
 }

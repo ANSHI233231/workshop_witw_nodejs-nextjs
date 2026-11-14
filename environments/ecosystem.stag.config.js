@@ -19,5 +19,6 @@ module.exports = {
         },
         nextApp('stag-web', 'web', 4100),
         nextApp('stag-manage', 'manage', 4101),
+        nextApp('stag-partner', 'partner', 4102),
     ],
 };

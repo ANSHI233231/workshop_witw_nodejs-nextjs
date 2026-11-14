@@ -71,7 +71,23 @@ export const ADMIN_DELETE_REASON_LABEL: Readonly<Record<number, string>> = {
 
 export const SHARED_SAFARI_LIMITS = { SEARCH: 100, DELETE_DETAILS_MAX: 1000 } as const;
 
-export type Person = { readonly id: number; readonly name: string; readonly initials: string };
+export type PersonPartner = {
+    readonly id: number;
+    readonly businessName: string;
+    readonly logoVersion: string | null;
+};
+
+export type Person = {
+    readonly id: number;
+    readonly name: string;
+    readonly initials: string;
+    readonly partner: PersonPartner | null;
+};
+
+export const withBusiness = (name: string, businessName: string | null | undefined): string =>
+    businessName ? `${name} (${businessName})` : name;
+
+export const personLabel = (person: Person): string => withBusiness(person.name, person.partner?.businessName);
 
 export type Member = Person & { readonly joinedAt: string; readonly leftAt: string | null };
 
@@ -138,6 +154,7 @@ export type FlaggedComment = {
     readonly safari: { readonly id: number; readonly title: string; readonly slug: string };
     readonly isReply: boolean;
     readonly writerName: string;
+    readonly writerBusinessName: string | null;
     readonly text: string;
     readonly reasons: readonly string[];
     readonly flagCount: number;
@@ -149,11 +166,12 @@ export type CommentFlag = {
     readonly reason: string;
     readonly details: string;
     readonly flaggerName: string;
+    readonly flaggerBusinessName: string | null;
     readonly createdAt: string;
 };
 
 export type CommentFlags = {
-    readonly comment: { readonly id: number; readonly text: string; readonly writer: string };
+    readonly comment: { readonly id: number; readonly text: string; readonly writer: string; readonly writerBusinessName: string | null };
     readonly flags: readonly CommentFlag[];
 };
 

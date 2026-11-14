@@ -77,6 +77,7 @@ export function SiteNotificationList({
     page,
     counts,
     result,
+    now,
 }: {
     readonly userName: string;
     readonly feedPath: string;
@@ -87,12 +88,12 @@ export function SiteNotificationList({
     readonly page: number;
     readonly counts: NotificationCounts;
     readonly result: Paginated<NotificationItem>;
+    readonly now: number;
 }) {
     const t = useT();
     const router = useRouter();
     const [readState, setReadState] = useState<Readonly<Record<number, boolean>>>({});
     const [notice, setNotice] = useState<{ readonly message: string; readonly isError: boolean } | null>(null);
-    const [now] = useState(() => Date.now());
 
     const isRead = (item: NotificationItem): boolean => readState[item.id] ?? item.isRead;
     const unread = counts.unread;

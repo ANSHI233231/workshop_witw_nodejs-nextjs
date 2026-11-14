@@ -29,8 +29,15 @@ export const PARK_STATUSES: readonly ParkStatusCode[] = Object.values(ParkStatus
 export const PARK_LIMITS = {
     NAME_MAX: 150,
     SEARCH: 100,
-    PRICE_MAX: 1_000_000,
+    DESCRIPTION_MAX: 1000,
+    LATITUDE_MAX: 90,
+    LONGITUDE_MAX: 180,
+    IMAGE_MAX_BYTES: 250 * 1024,
 } as const;
+
+export const PARK_IMAGE_ACCEPT = '.jpg,.jpeg,.png';
+
+export const PARK_IMAGE_EXTENSION = /\.(jpe?g|png)$/i;
 
 export const UpcomingSafariStatus = { ACTIVE: 1, SEAT_FULL: 3 } as const;
 
@@ -39,8 +46,10 @@ export type Park = {
     readonly name: string;
     readonly slug: string;
     readonly region: ParkRegionCode;
+    readonly featureImage: string | null;
     readonly avgSafariPriceMin: number | null;
     readonly avgSafariPriceMax: number | null;
+    readonly packageCount: number;
     readonly upcomingSafariCount: number;
     readonly status: ParkStatusCode;
 };
@@ -56,7 +65,6 @@ export type UpcomingSafari = {
 
 export type ParkDetail = Park & {
     readonly shortDescription: string | null;
-    readonly featureImage: string | null;
     readonly latitude: number | null;
     readonly longitude: number | null;
     readonly officialWebsite: string | null;
@@ -66,8 +74,9 @@ export type ParkDetail = Park & {
 export type ParkInput = {
     readonly name: string;
     readonly region: ParkRegionCode | null;
-    readonly avgSafariPriceMin: number | null;
-    readonly avgSafariPriceMax: number | null;
+    readonly shortDescription: string | null;
+    readonly latitude: number | null;
+    readonly longitude: number | null;
 };
 
 export type ParkUpdate = ParkInput & { readonly status: ParkStatusCode };

@@ -7,7 +7,7 @@ import type { Database } from '../../../database/connection';
 import type { IFileStorage } from '../../../infrastructure/storage';
 import { AuditAction, type AuditActionCode, AuditEntity, type IAuditService } from '../../audit';
 import { type INotificationService, NotificationKind } from '../../notification';
-import type { ParkLookup } from '../contracts/shared-safari-module.contract';
+import type { ParkLookup, PartnerLookup } from '../contracts/shared-safari-module.contract';
 import type { IWebsiteSafariService } from '../contracts/website-safari-service.contract';
 import type {
     CoverImage,
@@ -22,10 +22,12 @@ import type {
 import {
     maskContacts,
     memberOf,
+    shownOnWebsite,
     todayInIndia,
     toCard,
     toEdit,
     toThread,
+    type ViewerOfSafari,
     viewerStateOf,
 } from '../mappers/shared-safari.mapper';
 import type { SharedSafariRepository } from '../repositories/shared-safari.repository';
@@ -36,6 +38,7 @@ import {
     HOST_STATUSES,
     MyTab,
     type MyTabCode,
+    type PartnersByUser,
     PUBLIC_STATUSES,
     type SafariRow,
     SHARED_SAFARI_LIMITS,
@@ -48,6 +51,9 @@ const notAvailable = (): NotFoundException =>
 
 const notHost = (): ForbiddenException =>
     new ForbiddenException('Only the host can change this safari.', 'SHARED_SAFARI_NOT_HOST');
+
+const partnerRefused = (message: string): ForbiddenException =>
+    new ForbiddenException(message, 'SHARED_SAFARI_PARTNER');
 
 const fieldError = (field: string, message: string, code = 'SHARED_SAFARI_INVALID'): ValidationException =>
     new ValidationException(message, [{ field, message }], code);
@@ -71,6 +77,11 @@ export const visibleTo = (row: SafariRow, viewer: Viewer): boolean => {
     if (isOpen(row)) return true;
     return viewer !== null && row.userId === viewer.id && row.status === SharedSafariStatus.INACTIVE;
 };
+
+const viewerOf = (viewer: Viewer, partners: PartnersByUser): ViewerOfSafari => ({
+    id: viewer?.id ?? null,
+    isPartner: viewer !== null && partners.has(viewer.id),
+});
 
 const changesOf = (before: SafariRow, after: SafariInput): Record<string, unknown> => {
     const pairs: ReadonlyArray<readonly [string, unknown, unknown]> = [
@@ -100,6 +111,7 @@ export class WebsiteSafariService implements IWebsiteSafariService {
         private readonly notificationService: INotificationService,
         private readonly fileStorage: IFileStorage,
         private readonly parkService: ParkLookup,
+        private readonly partnerService: PartnerLookup,
     ) {}
 
     async list(filters: PublicFilters, page: number, viewer: Viewer): Promise<PublicPage> {
@@ -130,9 +142,17 @@ export class WebsiteSafariService implements IWebsiteSafariService {
             this.repository.commentsOf(this.db, row.id),
             viewer ? this.repository.findMember(this.db, row.id, viewer.id) : Promise.resolve(undefined),
         ]);
+        const partners = await this.partnerService.partnersOf([
+            row.userId,
+            ...faces.map((face) => face.userId),
+            ...comments.map((comment) => comment.userId),
+            ...(viewer ? [viewer.id] : []),
+        ]);
+        const show = shownOnWebsite(partners);
+        const viewerOfSafari = viewerOf(viewer, partners);
         const current = faces.filter((face) => face.userId !== row.userId);
-        const card = toCard(row, current, viewer?.id ?? null, member, today);
-        const state = viewerStateOf(row, viewer?.id ?? null, member);
+        const card = toCard(row, current, viewerOfSafari, member, today, show);
+        const state = viewerStateOf(row, viewerOfSafari, member);
         const visibleComments = comments.filter(
             (comment) =>
                 comment.sharedSafariCommentId === null ||
@@ -142,11 +162,12 @@ export class WebsiteSafariService implements IWebsiteSafariService {
             ...card,
             safariPlan: maskContacts(row.safariPlan),
             commentCount: visibleComments.length,
-            interested: current.map(memberOf),
+            interested: current.map((face) => memberOf(face, show)),
             comments: toThread(visibleComments, {
                 viewerId: viewer?.id ?? null,
                 hostId: row.userId,
                 viewerMayEdit: isOpen(row) && (state.isHost || state.joined),
+                show,
             }),
         };
     }
@@ -158,6 +179,7 @@ export class WebsiteSafariService implements IWebsiteSafariService {
     async create(input: SafariInput, viewer: { readonly id: number }): Promise<{ id: number; slug: string }> {
         try {
             return await this.db.transaction(async () => {
+                await this.refusePartner(viewer.id, "Partners can't organise a shared safari.");
                 await this.checkPark(input.masterParkId);
                 this.checkDates(input, null);
                 const slug = await freeSlug(
@@ -270,6 +292,7 @@ export class WebsiteSafariService implements IWebsiteSafariService {
             }
             const member = await this.repository.findMember(this.db, id, viewer.id);
             if (member?.status === SharedSafariMemberStatus.JOINED) return { result: null, changes: {} };
+            await this.refusePartner(viewer.id, "Partners can't join a shared safari.");
             if (member) {
                 await this.repository.rejoin(this.db, member.id, viewer.id);
             } else {
@@ -312,15 +335,27 @@ export class WebsiteSafariService implements IWebsiteSafariService {
             this.repository.currentMembers(this.db, ids),
             viewer ? this.repository.viewerMemberships(this.db, viewer.id, ids) : Promise.resolve([]),
         ]);
+        const partners = await this.partnerService.partnersOf([
+            ...rows.map((row) => row.userId),
+            ...faces.map((face) => face.userId),
+            ...(viewer ? [viewer.id] : []),
+        ]);
+        const show = shownOnWebsite(partners);
+        const viewerOfSafari = viewerOf(viewer, partners);
         return rows.map((row) =>
             toCard(
                 row,
                 faces.filter((face) => face.sharedSafariId === row.id && face.userId !== row.userId),
-                viewer?.id ?? null,
+                viewerOfSafari,
                 memberships.find((member) => member.sharedSafariId === row.id),
                 today,
+                show,
             ),
         );
+    }
+
+    private async refusePartner(userId: number, message: string): Promise<void> {
+        if (await this.partnerService.partnerOf(userId)) throw partnerRefused(message);
     }
 
     private async findByRef(ref: string): Promise<SafariRow | undefined> {

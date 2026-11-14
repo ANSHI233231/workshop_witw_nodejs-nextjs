@@ -40,3 +40,12 @@ export const updatePark = (id: number, input: ParkUpdate): Promise<Park> =>
 
 export const setParkStatus = (id: number, status: ParkStatusCode): Promise<Park> =>
     apiClient.patch<Park>(`${PARK_PATH}/${id}/status`, { status });
+
+export const uploadParkFeatureImage = (id: number, image: File): Promise<Park> => {
+    const body = new FormData();
+    body.append('image', image);
+    return apiClient.put<Park>(`${PARK_PATH}/${id}/feature-image`, body);
+};
+
+export const parkFeatureImageUrl = (id: number, featureImage: string): string =>
+    apiClient.fileUrl(`${PARK_PATH}/${id}/feature-image`, { v: featureImage });

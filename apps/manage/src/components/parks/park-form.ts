@@ -1,31 +1,38 @@
 import type { Translate } from '@/lib/i18n/locale';
 import { ApiError } from '@/services/api-error';
-import { PARK_LIMITS, PARK_REGIONS, type ParkInput, type ParkRegionCode } from '@/types/park.types';
+import {
+    PARK_IMAGE_EXTENSION,
+    PARK_LIMITS,
+    PARK_REGIONS,
+    type ParkInput,
+    type ParkRegionCode,
+} from '@/types/park.types';
 
-export type ParkField = 'name' | 'region' | 'avgSafariPriceMin' | 'avgSafariPriceMax';
+export type ParkField = 'name' | 'region' | 'shortDescription' | 'latitude' | 'longitude' | 'image';
 
 export type ParkFieldErrors = Partial<Readonly<Record<ParkField, string>>>;
 
 export type ParkFormValues = {
     readonly name: string;
     readonly region: string;
-    readonly min: string;
-    readonly max: string;
+    readonly shortDescription: string;
+    readonly latitude: string;
+    readonly longitude: string;
 };
 
-const PARK_FIELDS: readonly ParkField[] = ['name', 'region', 'avgSafariPriceMin', 'avgSafariPriceMax'];
+const PARK_FIELDS: readonly ParkField[] = ['name', 'region', 'shortDescription', 'latitude', 'longitude', 'image'];
 
-const WHOLE_RUPEES = /^\d+$/;
+const DECIMAL = /^-?\d+(\.\d+)?$/;
 
 const regionOf = (value: string): ParkRegionCode | null =>
     PARK_REGIONS.find((region) => String(region) === value) ?? null;
 
-const priceOf = (text: string): number | null | undefined => {
-    const trimmed = text.trim();
-    if (trimmed === '') return null;
-    if (!WHOLE_RUPEES.test(trimmed)) return undefined;
-    const amount = Number(trimmed);
-    return amount <= PARK_LIMITS.PRICE_MAX ? amount : undefined;
+const isCoordinate = (text: string, limit: number): boolean => DECIMAL.test(text) && Math.abs(Number(text)) <= limit;
+
+export const checkParkImage = (file: File, t: Translate): string | null => {
+    if (!PARK_IMAGE_EXTENSION.test(file.name)) return t('Use a JPG, JPEG or PNG image.');
+    if (file.size > PARK_LIMITS.IMAGE_MAX_BYTES) return t('Use an image up to 250 KB.');
+    return null;
 };
 
 export const checkParkForm = (
@@ -35,24 +42,28 @@ export const checkParkForm = (
     const errors: Partial<Record<ParkField, string>> = {};
     const name = values.name.trim();
     const region = regionOf(values.region);
-    const min = priceOf(values.min);
-    const max = priceOf(values.max);
+    const description = values.shortDescription.trim();
+    const latitude = values.latitude.trim();
+    const longitude = values.longitude.trim();
     if (!name) errors.name = t('Enter the park name.');
     else if (name.length > PARK_LIMITS.NAME_MAX)
         errors.name = t('Park name can be at most {max} characters.', { max: PARK_LIMITS.NAME_MAX });
     if (region === null) errors.region = t('Select a region.');
-    if (min === undefined) errors.avgSafariPriceMin = t('Enter whole rupees, up to ₹10,00,000.');
-    if (max === undefined) errors.avgSafariPriceMax = t('Enter whole rupees, up to ₹10,00,000.');
-    if (min !== undefined && max !== undefined) {
-        if (min !== null && max !== null && max < min)
-            errors.avgSafariPriceMax = t('Max. price must be at least the min. price.');
-        if ((min === null) !== (max === null))
-            errors[min === null ? 'avgSafariPriceMin' : 'avgSafariPriceMax'] = t(
-                'Enter both prices, or leave both empty.',
-            );
-    }
+    if (description.length > PARK_LIMITS.DESCRIPTION_MAX) errors.shortDescription = t('Use up to 1,000 characters.');
+    if (latitude && !isCoordinate(latitude, PARK_LIMITS.LATITUDE_MAX))
+        errors.latitude = t('Enter a latitude from -90 to 90.');
+    if (longitude && !isCoordinate(longitude, PARK_LIMITS.LONGITUDE_MAX))
+        errors.longitude = t('Enter a longitude from -180 to 180.');
+    if (!latitude !== !longitude && !errors.latitude && !errors.longitude)
+        errors[latitude ? 'longitude' : 'latitude'] = t('Enter both latitude and longitude, or leave both empty.');
     return {
-        input: { name, region, avgSafariPriceMin: min ?? null, avgSafariPriceMax: max ?? null },
+        input: {
+            name,
+            region,
+            shortDescription: description || null,
+            latitude: latitude ? Number(latitude) : null,
+            longitude: longitude ? Number(longitude) : null,
+        },
         errors,
     };
 };

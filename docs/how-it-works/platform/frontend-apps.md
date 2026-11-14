@@ -1,8 +1,8 @@
 # Frontend apps
 
-**What it is.** The web apps people use: `manage` (the Super Admin console, port 3041 locally) and `web` (the example portal, port 3040). Each is a separate Next.js app with **the same folder structure and rules**. They share no code: not with each other, not with the API. Everything they know comes from the API over HTTP.
+**What it is.** The web apps people use: `manage` (the Super Admin console, port 3041 locally), `web` (the example portal, port 3040) and `partner` (the Partner portal, port 3042, [partner-portal.md](partner-portal.md)). Each is a separate Next.js app with **the same folder structure and rules**. They share no code: not with each other, not with the API. Everything they know comes from the API over HTTP.
 
-**Who uses it.** Developers working in `apps/manage`, `apps/web` and every app a project adds (a new app starts as a copy of `web`).
+**Who uses it.** Developers working in `apps/manage`, `apps/web`, `apps/partner` and every app a project adds (a new app starts as a copy of `web`).
 
 ## The flow: how a screen gets its data
 
@@ -50,6 +50,8 @@ Named by who may open them, not by what the pages are:
 | manage | `(dashboard)` | a signed-in Super Admin, from `/` ([manage-console.md](manage-console.md)) |
 | web | `(site)` | anyone, the viewer recognised when signed in: Shared Safaris at `/` (sign-in lands there) and a safari's page `/shared-safaris/<slug>` |
 | web | `(portal)` | any signed-in user: Notifications, My Shared Safaris |
+| partner | `(public)` | anyone: login, forgot / reset password (no Sign Up) |
+| partner | `(portal)` | a signed-in user; pages for Active partners call `requireActivePartner()`, everyone else is sent to `/partner-request` ([partner-portal.md](partner-portal.md)) |
 
 ## Rules
 
@@ -62,7 +64,7 @@ Named by who may open them, not by what the pages are:
 - **Design tokens live in `src/app/globals.css`.** Never raw hex values in components. Tailwind v4 silently ignores a class whose token is missing, so add the token first.
 - **Types mirror the API.** When an API response shape changes, the matching `types/` file in every app that uses it changes in the same commit.
 - **No shared code between apps.** A component needed in two apps is copied, and the copies are kept identical (same path and name).
-- **One session per app:** the API sets a cookie pair named after the app (`web_access_token` / `web_refresh_token`, `manage_access_token` / `manage_refresh_token`) on the parent domain (`AUTH_COOKIE_DOMAIN`), so each app is signed in on its own: opening the console from the website shows the console Login. Each app's server reads its own `ACCESS_TOKEN_COOKIE` (`lib/config.ts`, with `NEXT_PUBLIC_AUTH_COOKIE_PREFIX` in front, the same as the API's `AUTH_COOKIE_PREFIX`).
+- **One session per app:** the API sets a cookie pair named after the app (`web_access_token` / `web_refresh_token`, `manage_access_token` / `manage_refresh_token`, `partner_access_token` / `partner_refresh_token`) on the parent domain (`AUTH_COOKIE_DOMAIN`), so each app is signed in on its own: opening the console from the website shows the console Login. Each app's server reads its own `ACCESS_TOKEN_COOKIE` (`lib/config.ts`, with `NEXT_PUBLIC_AUTH_COOKIE_PREFIX` in front, the same as the API's `AUTH_COOKIE_PREFIX`).
 - **A tab whose session changed goes to `/login`:** the signed-in frame calls `useSessionWatch(user.id)`, and the api-client sends `X-Session-User` on every browser call; the API answers `SESSION_CHANGED` when another tab signed in as someone else.
 - **Toasts close by themselves** after 5 seconds.
 - **Save takes the person to the first error** (`hooks/ui/use-reveal-first-error.ts`), and errors are shown under their field.
@@ -79,7 +81,7 @@ A blur behind a popup or menu is written `-webkit-backdrop-filter:…;backdrop-f
 
 ## Where it lives
 
-- **Apps:** `apps/manage/`, `apps/web/` (each with a README)
+- **Apps:** `apps/manage/`, `apps/web/`, `apps/partner/` (each with a README)
 - **API client:** `src/services/api-client.ts`, `src/services/api-error.ts`, `src/services/session-user.ts`, `src/hooks/session/use-session-watch.ts` in each app
 - **Config:** `src/lib/config.ts` and `.env.example` in each app
 - **Lint rules:** `eslint.config.mjs` in each app

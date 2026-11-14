@@ -7,3 +7,9 @@ export type UsersModuleDependencies = {
     readonly auditService: IAuditService;
     readonly notificationService: INotificationService;
 };
+
+export type UsersTestDataModuleDependencies = {
+    readonly db: Database;
+    readonly auditService: IAuditService;
+    readonly isProduction: boolean;
+};

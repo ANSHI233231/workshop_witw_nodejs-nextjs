@@ -13,12 +13,14 @@ export const SOURCE_LABELS: Readonly<Record<AppLogSourceCode, string>> = {
     [AppLogSource.API]: 'API',
     [AppLogSource.MANAGE]: 'Admin Console',
     [AppLogSource.WEB]: 'Web',
+    [AppLogSource.PARTNER]: 'Partner Portal',
 };
 
 export const SOURCE_OPTIONS: readonly AppLogSourceCode[] = [
     AppLogSource.API,
     AppLogSource.MANAGE,
     AppLogSource.WEB,
+    AppLogSource.PARTNER,
 ];
 
 export const LEVEL_MARKS: Readonly<Record<AppLogLevelCode, { readonly tone: string; readonly label: string }>> = {

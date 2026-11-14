@@ -36,6 +36,16 @@ apps/web/logs/
 apps/web/translations/
 
 
+# partner (Next.js)
+apps/partner/.next/
+apps/partner/out/
+apps/partner/build/
+apps/partner/*.tsbuildinfo
+apps/partner/next-env.d.ts
+apps/partner/logs/
+apps/partner/translations/
+
+
 # env files
 .env
 .env.*
@@ -52,3 +62,6 @@ yarn-error.log*
 *.pem
 .vscode/
 .idea/
+
+# Local screenshots of the prototype vs the app (kept on the developer machine, never committed)
+/docs/screenshots/

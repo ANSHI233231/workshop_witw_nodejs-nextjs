@@ -3,6 +3,7 @@ export const ClientApp = {
     WEB: 2,
     CLI: 3,
     SYSTEM: 4,
+    PARTNER: 5,
 } as const;
 
 export type ClientAppCode = (typeof ClientApp)[keyof typeof ClientApp];
@@ -12,6 +13,7 @@ export const CLIENT_APP_HEADER = 'x-client-app';
 const BY_HEADER_VALUE: Readonly<Record<string, ClientAppCode>> = {
     manage: ClientApp.MANAGE,
     web: ClientApp.WEB,
+    partner: ClientApp.PARTNER,
 };
 
 export const CLIENT_APP_QUERY = 'app';

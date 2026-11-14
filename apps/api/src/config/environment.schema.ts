@@ -21,7 +21,7 @@ const duration = z
             Number(value.slice(0, -1)) * DURATION_UNIT_SECONDS[value.slice(-1) as keyof typeof DURATION_UNIT_SECONDS],
     );
 
-const LOG_VIEWER_APPS = ['api', 'manage', 'web'] as const;
+const LOG_VIEWER_APPS = ['api', 'manage', 'web', 'partner'] as const;
 const TRANSLATION_APPS = ['manage', 'web'] as const;
 const appFolders = <App extends string>(apps: readonly App[]) =>
     z.string().transform((value, context) => {
@@ -118,6 +118,7 @@ export const environmentSchema = z
         // Public address of each app, used in links inside mails (e.g. the password reset link).
         APP_URL_MANAGE: z.string().url(),
         APP_URL_WEB: z.string().url(),
+        APP_URL_PARTNER: z.string().url(),
 
         // Logging: the two everyday settings (see .env.example).
         LOG_ENABLED: booleanString,

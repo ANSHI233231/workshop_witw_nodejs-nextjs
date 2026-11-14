@@ -22,9 +22,23 @@ export const PARK_TIME_ZONE = 'Asia/Kolkata';
 export const PARK_LIMITS = {
     NAME_MAX: 150,
     SEARCH: 100,
-    PRICE_MAX: 1_000_000,
     SLUG_MAX: 150,
+    DESCRIPTION_MAX: 1000,
+    LATITUDE_MAX: 90,
+    LONGITUDE_MAX: 180,
+    FEATURE_IMAGE_MAX_BYTES: 250 * 1024,
+    WEBSITE_PAGE_SIZE: 12,
 } as const;
+
+export const FEATURE_IMAGE_FOLDER = { PARENT: 'park', FEATURE: 'feature_image' } as const;
+
+export const FEATURE_IMAGE_FIELD = 'image';
+
+export const FEATURE_IMAGE_CONTENT_TYPES: readonly string[] = ['image/jpeg', 'image/png'];
+
+export const ParkWebsiteSort = { A_TO_Z: 'az', Z_TO_A: 'za' } as const;
+
+export type ParkWebsiteSortKey = (typeof ParkWebsiteSort)[keyof typeof ParkWebsiteSort];
 
 export const PARK_SLUG_FALLBACK = 'park';
 
@@ -33,15 +47,13 @@ export interface ParkRow extends RowDataPacket {
     name: string;
     slug: string;
     region: ParkRegionCode;
-    avg_safari_price_min: number | null;
-    avg_safari_price_max: number | null;
+    feature_image: string | null;
     status: ParkStatusCode;
     upcoming_safari_count: number;
 }
 
 export interface ParkDetailRow extends ParkRow {
     short_description: string | null;
-    feature_image: string | null;
     latitude: string | null;
     longitude: string | null;
     official_website: string | null;
@@ -50,6 +62,26 @@ export interface ParkDetailRow extends ParkRow {
 export interface ParkOptionRow extends RowDataPacket {
     id: number;
     name: string;
+}
+
+export interface WebsiteParkRow extends RowDataPacket {
+    id: number;
+    name: string;
+    slug: string;
+    region: ParkRegionCode;
+    feature_image: string | null;
+}
+
+export interface WebsiteParkPageRow extends WebsiteParkRow {
+    short_description: string | null;
+    latitude: string | null;
+    longitude: string | null;
+    official_website: string | null;
+}
+
+export interface FeatureImageRow extends RowDataPacket {
+    id: number;
+    feature_image: string | null;
 }
 
 export interface ParkStateRow extends RowDataPacket {

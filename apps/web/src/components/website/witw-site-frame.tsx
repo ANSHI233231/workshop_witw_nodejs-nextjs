@@ -7,26 +7,57 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ChangePasswordDialog } from '@/components/console/change-password-dialog';
 import { PORTAL_NOTIFICATION_LINKS, PORTAL_NOTIFICATIONS_PATH } from '@/components/console/portal-notifications';
 import { NotificationFeedBell } from '@/components/notification-feed/notification-feed-bell';
+import { initialsOf } from '@/components/partner/partner-rules';
 import { Toast } from '@/components/ui/toast';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSessionWatch } from '@/hooks/session/use-session-watch';
+import { config } from '@/lib/config';
 import { signOut } from '@/services/auth.service';
+import { partnerLogoUrl, type SitePartner } from '@/services/partner.service';
 import type { AuthUser } from '@/types/auth.types';
 
-import { BinocularsIcon, InstagramIcon, LockIcon, LogOutIcon, UserCircleIcon } from './site-icons';
+import { BinocularsIcon, ExternalLinkIcon, InstagramIcon, LockIcon, LogOutIcon, MailIcon, UserCircleIcon } from './site-icons';
 
 export const SITE_PATHS = {
     home: '/',
     signIn: '/login',
     mySharedSafaris: '/my-shared-safaris',
+    becomePartner: '/become-a-partner',
+    plans: '/parks',
+    packages: '/packages',
+    myQuoteRequests: '/my-quote-requests',
 } as const;
+
+const NavSection = { PLAN: 'plan', PACKAGES: 'packages', SHARED: 'shared', NONE: 'none' } as const;
+
+type NavSectionKey = (typeof NavSection)[keyof typeof NavSection];
+
+const PACKAGE_SECTION_PATHS: readonly string[] = [
+    SITE_PATHS.packages,
+    SITE_PATHS.becomePartner,
+    SITE_PATHS.myQuoteRequests,
+];
+
+const startsWithPath = (pathname: string, path: string): boolean => pathname === path || pathname.startsWith(`${path}/`);
+
+const sectionOf = (pathname: string): NavSectionKey => {
+    if (AUTH_PATHS.includes(pathname)) return NavSection.NONE;
+    if (startsWithPath(pathname, SITE_PATHS.plans)) return NavSection.PLAN;
+    if (PACKAGE_SECTION_PATHS.some((path) => startsWithPath(pathname, path))) return NavSection.PACKAGES;
+    return NavSection.SHARED;
+};
 
 const AUTH_PATHS: readonly string[] = ['/login', '/sign-up', '/forgot-password'];
 
 const NAV = [
-    { label: 'Plan Safari', icon: '/witw/nav-plan-safari.png', href: null },
-    { label: 'Safari Packages', icon: '/witw/nav-safari-packages.png', href: null },
-    { label: 'Shared Safari', icon: '/witw/nav-shared-safari.png', href: SITE_PATHS.home },
+    { label: 'Plan Safari', icon: '/witw/nav-plan-safari.png', href: SITE_PATHS.plans, section: NavSection.PLAN },
+    {
+        label: 'Safari Packages',
+        icon: '/witw/nav-safari-packages.png',
+        href: SITE_PATHS.packages,
+        section: NavSection.PACKAGES,
+    },
+    { label: 'Shared Safari', icon: '/witw/nav-shared-safari.png', href: SITE_PATHS.home, section: NavSection.SHARED },
 ] as const;
 
 function WatchSession({ userId }: { readonly userId: number }) {
@@ -34,7 +65,15 @@ function WatchSession({ userId }: { readonly userId: number }) {
     return null;
 }
 
-function AccountMenu({ user, onChangePassword }: { readonly user: AuthUser; readonly onChangePassword: () => void }) {
+function AccountMenu({
+    user,
+    partner,
+    onChangePassword,
+}: {
+    readonly user: AuthUser;
+    readonly partner: SitePartner | null;
+    readonly onChangePassword: () => void;
+}) {
     const t = useT();
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -71,24 +110,43 @@ function AccountMenu({ user, onChangePassword }: { readonly user: AuthUser; read
             <button
                 type="button"
                 className="wb-ic"
-                aria-label={t('Account: {name}', { name: user.name })}
+                aria-label={t('Account: {name}', { name: partner?.businessName ?? user.name })}
                 aria-haspopup="true"
                 aria-expanded={open}
                 onClick={() => setOpen((shown) => !shown)}
             >
-                <span className="wb-me">{user.name.trim().charAt(0).toUpperCase()}</span>
+                <span className="wb-me">
+                    {partner?.logoVersion ? (
+                        <img className="avatar-photo" src={partnerLogoUrl(partner.id, partner.logoVersion)} alt="" />
+                    ) : partner ? (
+                        initialsOf(partner.businessName)
+                    ) : (
+                        user.name.trim().charAt(0).toUpperCase()
+                    )}
+                </span>
             </button>
             {open && (
                 <div className="wb-pop">
                     <div className="dd" role="menu">
                         <div className="dd-who">
-                            <div className="list-title">{user.name}</div>
+                            <div className="list-title">{partner?.businessName ?? user.name}</div>
                             <div className="list-meta">{user.email ?? user.username ?? ''}</div>
                         </div>
                         <Link className="mega-link" href={SITE_PATHS.mySharedSafaris} onClick={() => setOpen(false)}>
                             <BinocularsIcon />
                             {t('My Shared Safaris')}
                         </Link>
+                        {partner ? (
+                            <a className="mega-link" href={config.partnerPortalUrl} onClick={() => setOpen(false)}>
+                                <ExternalLinkIcon />
+                                {t('Partner portal')}
+                            </a>
+                        ) : (
+                            <Link className="mega-link" href={SITE_PATHS.myQuoteRequests} onClick={() => setOpen(false)}>
+                                <MailIcon />
+                                {t('My Quote Requests')}
+                            </Link>
+                        )}
                         <button
                             type="button"
                             className="mega-link dd-btn"
@@ -139,6 +197,8 @@ function SiteFooter() {
                 </div>
                 <div>
                     <h2>{t('Useful Links')}</h2>
+                    <Link href={SITE_PATHS.plans}>{t('Parks')}</Link>
+                    <Link href={SITE_PATHS.becomePartner}>{t('Become a Partner')}</Link>
                     <a className="is-off">{t('About Us')}</a>
                     <a className="is-off">{t('Contact us')}</a>
                     <a className="is-off">{t('FAQs')}</a>
@@ -168,22 +228,41 @@ function SiteFooter() {
     );
 }
 
-export function SiteBanner({ title, text }: { readonly title: string; readonly text?: string }) {
+const BANNER_SHADE = 'linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45))';
+
+export function SiteBanner({
+    title,
+    text,
+    image,
+}: {
+    readonly title: string;
+    readonly text?: string;
+    readonly image?: string;
+}) {
     return (
-        <section className="wb-hero">
+        <section className="wb-hero" style={image ? { backgroundImage: `${BANNER_SHADE}, url("${image}")` } : undefined}>
             <h1>{title}</h1>
             {text && <p>{text}</p>}
         </section>
     );
 }
 
-export function WitwSiteFrame({ user, children }: { readonly user: AuthUser | null; readonly children: ReactNode }) {
+export function WitwSiteFrame({
+    user,
+    partner,
+    children,
+}: {
+    readonly user: AuthUser | null;
+    readonly partner: SitePartner | null;
+    readonly children: ReactNode;
+}) {
     const t = useT();
     const router = useRouter();
     const pathname = usePathname();
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
-    const onAuthPage = AUTH_PATHS.includes(pathname);
+    const section = sectionOf(pathname);
+    const onAuthPage = section === NavSection.NONE;
 
     return (
         <div className="wb">
@@ -207,21 +286,21 @@ export function WitwSiteFrame({ user, children }: { readonly user: AuthUser | nu
                 </Link>
                 <nav className="wb-nav" aria-label={t('Website')}>
                     {NAV.map((item) =>
-                        item.href ? (
+                        onAuthPage && item.section !== NavSection.SHARED ? (
+                            <a key={item.label} className="is-off">
+                                <img src={item.icon} alt="" />
+                                {t(item.label)}
+                            </a>
+                        ) : (
                             <Link
                                 key={item.label}
-                                className={onAuthPage ? undefined : 'is-on'}
-                                aria-current={onAuthPage ? undefined : 'page'}
+                                className={item.section === section ? 'is-on' : undefined}
+                                aria-current={item.section === section ? 'page' : undefined}
                                 href={item.href}
                             >
                                 <img src={item.icon} alt="" />
                                 {t(item.label)}
                             </Link>
-                        ) : (
-                            <a key={item.label} className="is-off">
-                                <img src={item.icon} alt="" />
-                                {t(item.label)}
-                            </a>
                         ),
                     )}
                 </nav>
@@ -234,7 +313,7 @@ export function WitwSiteFrame({ user, children }: { readonly user: AuthUser | nu
                                 links={PORTAL_NOTIFICATION_LINKS}
                                 look="site"
                             />
-                            <AccountMenu user={user} onChangePassword={() => setChangePasswordOpen(true)} />
+                            <AccountMenu user={user} partner={partner} onChangePassword={() => setChangePasswordOpen(true)} />
                         </>
                     ) : (
                         <Link

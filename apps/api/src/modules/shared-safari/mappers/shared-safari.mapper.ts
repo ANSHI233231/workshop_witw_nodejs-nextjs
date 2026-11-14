@@ -6,6 +6,7 @@ import type {
     FlagDto,
     FlaggedCommentDto,
     MemberDto,
+    PartnerBadgeDto,
     PersonDto,
     SafariCardDto,
     SafariEditDto,
@@ -18,6 +19,8 @@ import {
     type FlagRow,
     INDIA_TIME_ZONE,
     type MemberRow,
+    type PartnerIdentity,
+    type PartnersByUser,
     type SafariRow,
     SHARED_SAFARI_LIMITS,
     SharedSafariMemberStatus,
@@ -59,27 +62,47 @@ const iso = (value: Date | string | null): string | null =>
 
 const isoOf = (value: Date | string): string => iso(value) ?? '';
 
-export const personOf = (id: number, name: string): PersonDto => ({ id, name, initials: initialsOf(name) });
+const badgeOf = (partner: PartnerIdentity | undefined): PartnerBadgeDto | null =>
+    partner ? { id: partner.id, businessName: partner.businessName, logoVersion: partner.logoVersion } : null;
 
-export const memberOf = (row: FaceRow): MemberDto => ({
-    ...personOf(row.userId, row.name),
+export type PersonShown = (id: number, name: string) => PersonDto;
+
+export const shownOnWebsite =
+    (partners: PartnersByUser): PersonShown =>
+    (id, name) => {
+        const partner = partners.get(id);
+        const shownName = partner?.businessName ?? name;
+        return { id, name: shownName, initials: initialsOf(shownName), partner: badgeOf(partner) };
+    };
+
+export const shownInConsole =
+    (partners: PartnersByUser): PersonShown =>
+    (id, name) => ({ id, name, initials: initialsOf(name), partner: badgeOf(partners.get(id)) });
+
+export const memberOf = (row: FaceRow, show: PersonShown): MemberDto => ({
+    ...show(row.userId, row.name),
     joinedAt: isoOf(row.joinedAt),
     leftAt: iso(row.leftAt),
 });
 
 const coverVersionOf = (row: SafariRow): string | null => row.coverImage;
 
-export const viewerStateOf = (row: SafariRow, viewerId: number | null, member: MemberRow | undefined): ViewerStateDto => {
+export type ViewerOfSafari = { readonly id: number | null; readonly isPartner: boolean };
+
+export const viewerStateOf = (row: SafariRow, viewer: ViewerOfSafari, member: MemberRow | undefined): ViewerStateDto => {
+    const viewerId = viewer.id;
     const isHost = viewerId !== null && row.userId === viewerId;
     const joined = member?.status === SharedSafariMemberStatus.JOINED;
     const hasLeft = member?.status === SharedSafariMemberStatus.LEFT;
     const open = row.status === SharedSafariStatus.ACTIVE || row.status === SharedSafariStatus.SEAT_FULL;
     return {
         signedIn: viewerId !== null,
+        isPartner: viewer.isPartner,
         isHost,
         joined,
         hasLeft,
-        canJoin: viewerId !== null && !isHost && !joined && row.status === SharedSafariStatus.ACTIVE,
+        canJoin:
+            viewerId !== null && !viewer.isPartner && !isHost && !joined && row.status === SharedSafariStatus.ACTIVE,
         canComment: viewerId !== null && open && (isHost || member !== undefined),
     };
 };
@@ -87,14 +110,15 @@ export const viewerStateOf = (row: SafariRow, viewerId: number | null, member: M
 export const toCard = (
     row: SafariRow,
     faces: readonly FaceRow[],
-    viewerId: number | null,
+    viewer: ViewerOfSafari,
     member: MemberRow | undefined,
     today: string,
+    show: PersonShown,
 ): SafariCardDto => ({
     id: row.id,
     slug: row.slug,
     title: row.title,
-    host: personOf(row.userId, row.hostName),
+    host: show(row.userId, row.hostName),
     park: { id: row.masterParkId, name: row.parkName },
     startDate: row.startDate,
     endDate: row.endDate,
@@ -110,9 +134,9 @@ export const toCard = (
     status: row.status,
     isStarted: row.startDate < today,
     joinedCount: Number(row.joinedCount),
-    faces: faces.slice(0, SHARED_SAFARI_LIMITS.CARD_FACES).map((face) => personOf(face.userId, face.name)),
+    faces: faces.slice(0, SHARED_SAFARI_LIMITS.CARD_FACES).map((face) => show(face.userId, face.name)),
     createdAt: isoOf(row.createdAt),
-    viewer: viewerStateOf(row, viewerId, member),
+    viewer: viewerStateOf(row, viewer, member),
 });
 
 export const toEdit = (row: SafariRow): SafariEditDto => ({
@@ -140,13 +164,14 @@ export type CommentRules = {
     readonly viewerId: number | null;
     readonly hostId: number;
     readonly viewerMayEdit: boolean;
+    readonly show: PersonShown;
 };
 
 const commentOf = (row: CommentRow, rules: CommentRules, replies: readonly CommentDto[]): CommentDto => {
     const isMine = rules.viewerId !== null && row.userId === rules.viewerId;
     return {
         id: row.id,
-        writer: personOf(row.userId, row.writerName),
+        writer: rules.show(row.userId, row.writerName),
         isHost: row.userId === rules.hostId,
         text: row.commentText,
         createdAt: isoOf(row.createdAt),
@@ -172,9 +197,10 @@ const consoleCommentOf = (
     row: CommentRow,
     hostId: number,
     replies: readonly ConsoleCommentDto[],
+    show: PersonShown,
 ): ConsoleCommentDto => ({
     id: row.id,
-    writer: personOf(row.userId, row.writerName),
+    writer: show(row.userId, row.writerName),
     isHost: row.userId === hostId,
     text: row.commentText,
     createdAt: isoOf(row.createdAt),
@@ -184,7 +210,7 @@ const consoleCommentOf = (
     replies,
 });
 
-export const toConsoleThread = (rows: readonly CommentRow[], hostId: number): ConsoleCommentDto[] =>
+export const toConsoleThread = (rows: readonly CommentRow[], hostId: number, show: PersonShown): ConsoleCommentDto[] =>
     rows
         .filter((row) => row.sharedSafariCommentId === null)
         .map((top) =>
@@ -193,15 +219,16 @@ export const toConsoleThread = (rows: readonly CommentRow[], hostId: number): Co
                 hostId,
                 rows
                     .filter((row) => row.sharedSafariCommentId === top.id)
-                    .map((reply) => consoleCommentOf(reply, hostId, [])),
+                    .map((reply) => consoleCommentOf(reply, hostId, [], show)),
+                show,
             ),
         );
 
-export const toConsoleSafari = (row: SafariRow): ConsoleSafariDto => ({
+export const toConsoleSafari = (row: SafariRow, show: PersonShown): ConsoleSafariDto => ({
     id: row.id,
     slug: row.slug,
     title: row.title,
-    host: { ...personOf(row.userId, row.hostName), isActive: row.hostStatus === 1 },
+    host: { ...show(row.userId, row.hostName), isActive: row.hostStatus === 1 },
     park: { id: row.masterParkId, name: row.parkName },
     startDate: row.startDate,
     endDate: row.endDate,
@@ -219,8 +246,9 @@ export const toConsoleDetail = (
     joined: readonly FaceRow[],
     left: readonly FaceRow[],
     comments: readonly CommentRow[],
+    show: PersonShown,
 ): ConsoleSafariDetailDto => ({
-    ...toConsoleSafari(row),
+    ...toConsoleSafari(row, show),
     hostEmail: row.hostEmail,
     updatedAt: isoOf(row.updatedAt),
     theme: row.theme,
@@ -235,26 +263,28 @@ export const toConsoleDetail = (
     deleteDetails: row.deleteDetails,
     deletedAt: iso(row.deletedAt),
     deletedByName: row.deletedByName,
-    joined: joined.map(memberOf),
-    left: left.map(memberOf),
-    comments: toConsoleThread(comments, row.userId),
+    joined: joined.map((member) => memberOf(member, show)),
+    left: left.map((member) => memberOf(member, show)),
+    comments: toConsoleThread(comments, row.userId, show),
 });
 
-export const toFlagged = (row: FlaggedRow): FlaggedCommentDto => ({
+export const toFlagged = (row: FlaggedRow, partners: PartnersByUser): FlaggedCommentDto => ({
     id: row.id,
     safari: { id: row.sharedSafariId, title: row.safariTitle, slug: row.safariSlug },
     isReply: row.sharedSafariCommentId !== null,
     writerName: row.writerName,
+    writerBusinessName: partners.get(row.userId)?.businessName ?? null,
     text: row.commentText,
     reasons: row.reasons ? row.reasons.split('\n') : [],
     flagCount: Number(row.openFlags),
     lastFlaggedAt: isoOf(row.lastFlaggedAt),
 });
 
-export const toFlag = (row: FlagRow): FlagDto => ({
+export const toFlag = (row: FlagRow, partners: PartnersByUser): FlagDto => ({
     id: row.id,
     reason: row.reasonName,
     details: row.details,
     flaggerName: row.flaggerName,
+    flaggerBusinessName: partners.get(row.userId)?.businessName ?? null,
     createdAt: isoOf(row.createdAt),
 });

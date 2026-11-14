@@ -2,6 +2,7 @@ export interface IFileStorage {
     save(path: string, content: Buffer): Promise<void>;
     read(path: string): Promise<Buffer>;
     remove(path: string): Promise<void>;
+    removeFolder(path: string): Promise<void>;
 }
 
 export class StoredFileNotFoundError extends Error {

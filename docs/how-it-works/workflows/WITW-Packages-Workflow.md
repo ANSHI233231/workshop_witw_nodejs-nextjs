@@ -2,7 +2,7 @@
 
 Safari operators (**partners**) sell ready-made safari packages: a trip to one or more parks with its days, stay, inclusions and price. A person applies to become a partner, the Super Admin approves them, and they build packages and photo galleries in a new **Partner portal**. The Super Admin approves every package version and every gallery before it is used. On the website, users browse packages and parks and send a **quote request** to a package's partner. Nothing is paid in the app.
 
-**Status: in sync with the requirements** (`WITW-Packages-Requirements.docx`), in the same shape as the Shared Safari workflow. The requirements are the source: every rule here comes from them. Anything marked *(proposed)* (messages, screen names, rules) is not in the requirements yet; it is listed in §16 and goes into the requirements once signed off.
+**Status: in sync with the requirements** (`WITW-Packages-Requirements.docx`), in the same shape as the Shared Safari workflow. The requirements are the source: every rule here comes from them. Anything marked *(proposed)* (messages, screen names, rules) is not in the requirements yet; it is listed in §16 and goes into the requirements once signed off. Decided by the user on 2026-11-14 and no longer proposed: the Package Delete Reasons starting list (§16 #1), Hot / Cold can't be cleared (#8), the Super Admin's notification text (#10), the Super Admin edits all five sections (#17) and the park's calculated average price (§10).
 
 **Apps:** Website · **Partner portal** (new) · Console.
 **Roles:** Guest, User, Applicant, Partner, Super Admin.
@@ -20,7 +20,7 @@ Safari operators (**partners**) sell ready-made safari packages: a trip to one o
 | Package list | "Safari Packages" (`/package`) | Search, filters (park, price, nights, safaris, stay, features, inclusions), chips, 5 sorts, 12 per page |
 | Package page | — | Top details, price box with **Request a quote**, 5 tabs, gallery slider, disclaimer |
 | Quote requests | None | Users send one to the partner; partner marks **Hot / Cold**; Super Admin oversees all |
-| Parks on the website | Park cards linking to `/park/<slug>` | Park list (search, region, A–Z / Z–A) and park page tabs **Overview (with a Leaflet map) · Packages · Shared Safaris** |
+| Parks on the website | Park cards linking to `/park/<slug>` | Park list (search, region, A–Z / Z–A) and park page tabs **Overview (with a Leaflet map) · Packages · Shared Safaris**; a park's **average safari price is calculated** from its packages (lowest – highest price per person), not entered |
 | Partner on the website | — | Shown as their **business** (name and logo), including in Shared Safari comments |
 | Console | — | Partner Requests, Partners, Package Approvals, Packages, Package Delete Reasons, Gallery Approvals, Galleries, Quote Requests |
 
@@ -343,7 +343,7 @@ The partner can **add, edit and delete** FAQs; there is no limit on the number.
 - **Any change** to an approved package (a price, a day, a photo, an FAQ, anything in the five sections) is made in a **new version**, a copy of the live one.
 - At most **one live version** and **one working version** at a time. The partner and the Super Admin always see which is which. Every version is kept, with its number, status and dates.
 - **Send** is possible from Draft or Rejected.
-- **Super Admin:** can **edit** the waiting version, then **approves** or **rejects** it **as a whole** (reason required; the partner sees it on the package). Which fields the Super Admin can edit: §16 #17.
+- **Super Admin:** can **edit** all five sections (Basic, Itinerary, Inclusions, Getting there, FAQs) of the waiting version, then **approves** or **rejects** it **as a whole** (reason required; the partner sees it on the package). A version the Super Admin edited is marked **edited by Super Admin**.
 - **Approve:** the version goes live **at once**; the older live version becomes **Replaced**. Until then the website shows the live version unchanged.
 - **Delete:** throws the working version away; a package **never live** is deleted with it.
 
@@ -455,7 +455,7 @@ Shown only when the package has a **live version**, is **Active**, and its partn
 | Element | Rule |
 |---|---|
 | List | The partner's **active** requests: user · package · travellers · start date · notes · date received |
-| Mark | **Hot** or **Cold**; a new request has no mark |
+| Mark | **Hot** or **Cold** only; a new request has no mark. Once marked it **can't be cleared** back to no mark; it can be switched between Hot and Cold |
 | Contact | The user's **name** always. **Phone** only if the Super Admin turned on **Show phone numbers** for that partner. The **email is never shown** |
 
 ### 9.3 Quote request statuses
@@ -471,10 +471,12 @@ The Super Admin keeps the parks in the console (Console › Parks, as in the Sha
 
 | Page | Content |
 |---|---|
-| **Park list** | Card: feature image · name · region · average safari price range. **12 per page**, more on scroll. Search by name · filter by region · sort **A–Z** (default) or Z–A |
+| **Park list** | Card: feature image · name · region · average safari price range, **per person**. **12 per page**, more on scroll. Search by name · filter by region · sort **A–Z** (default) or Z–A |
 | **Park page › Overview** | Description and a **map of the park's location**, using **Leaflet** |
 | **Park page › Packages** | The park's shown packages, with the package list's filters (**except park and search**) and sorts |
 | **Park page › Shared Safaris** | The park's shared safaris, the same ones the Shared Safari list shows |
+
+**A park's average safari price is calculated, not entered.** It is the **lowest and highest price per person** of the park's packages that are shown on the website, written as a range and labelled **per person**. A park with no shown package shows **"Price not set"**. The Super Admin doesn't enter it in the console (Console › Parks has no price fields); it changes by itself when a package goes live, is made active or inactive, or is deleted.
 
 ## 11. Notifications
 
@@ -516,7 +518,7 @@ The sidebar gets a **Packages** group *(proposed name)* with the pages below. Li
 | Action | Detail |
 |---|---|
 | Preview | The waiting version as it would look |
-| Edit | Change the waiting version before deciding (which fields: §16 #17) |
+| Edit | Change any of the five sections of the waiting version before deciding; the version is marked **edited by Super Admin** |
 | Approve | Goes live at once; the older live version becomes Replaced; Popular cleared |
 | Reject | Reason required; shown to the partner on the package |
 
@@ -525,7 +527,7 @@ The sidebar gets a **Packages** group *(proposed name)* with the pages below. Li
 | Action | Detail |
 |---|---|
 | View | All versions with numbers, statuses and dates |
-| Edit | The live package directly, **no approval step** (which fields: §16 #17) |
+| Edit | Any of the five sections of the live package directly, **no approval step**; the change **shows at once** and the version is marked **edited by Super Admin** |
 | Delete | A reason from **Package Delete Reasons** (active only) and details; final |
 | Popular | On / off; cleared by every approval |
 | Best deal | Shows the **Best deal** badge on the card |
@@ -536,6 +538,7 @@ The sidebar gets a **Packages** group *(proposed name)* with the pages below. Li
 |---|---|
 | Actions | **Add** · **Edit** · **Make active / inactive** |
 | Use | Only **active** reasons can be chosen when deleting a package |
+| Starting list | Misleading information · Duplicate package · Wrong prices · Partner asked to delete · Other |
 
 ### 12.6 Gallery Approvals
 
@@ -559,7 +562,7 @@ The sidebar gets a **Packages** group *(proposed name)* with the pages below. Li
 | List | **All** requests, active and inactive |
 | View | Full request with the user's contact details |
 | Make inactive / active | An inactive request is hidden from the partner and the user |
-| Send a notification | An in-app notification to the partner |
+| Send a notification | An in-app notification to the partner: **free text, up to 255 characters**, shown to the partner as "From the Super Admin about {user}'s request: {message}" |
 
 ## 13. Reference lists
 
@@ -598,24 +601,24 @@ Each screen has a desktop (1366 px) and a mobile (390 px) board, in the WITW des
 
 ## 16. Open points to confirm
 
-These points are **not in the requirements**. Each stays *(proposed)* in this workflow until it is signed off and added to the requirements, so the two documents never disagree. The prototype boards decide the screens; the package pages are at `/packages` *(proposed)*. The park page map follows the requirements (Leaflet).
+These points are **not in the requirements**. Each stays *(proposed)* in this workflow until it is signed off (those marked **Decided** below are signed off) and added to the requirements, so the two documents never disagree. The prototype boards decide the screens; the package pages are at `/packages` *(proposed)*. The park page map follows the requirements (Leaflet).
 
 | # | Point | Proposal (for sign-off) |
 |---|---|---|
-| 1 | Package Delete Reasons starting list | Not given. Proposal: Duplicate package · Wrong or misleading details · Partner request · Violates guidelines · Other. |
+| 1 | Package Delete Reasons starting list | **Decided 2026-11-14:** Misleading information · Duplicate package · Wrong prices · Partner asked to delete · Other (the board's list). |
 | 2 | Error messages | The requirements give rules, not wording. Messages marked *(proposed)* follow the Shared Safari style; the prototype decides. |
 | 3 | A park made inactive, or removed from a partner | What happens to their live packages and galleries for that park? Proposal: live packages stay; on the next edit the partner must pick an active park of their own (as Shared Safari #32). |
 | 4 | Main park | Which park is the "main park" on the card and for the default image? Proposal: the first park chosen. |
 | 5 | Reducing the number of days | Are the extra itinerary day blocks removed? Proposal: yes, with a confirmation; increasing adds empty blocks. |
 | 6 | Price checks | Should total price be at least the price per person, and price before discount higher than the price per person? Proposal: yes to both. |
 | 7 | Quote request when the package later goes Inactive or is deleted | Does the partner still see it? Proposal: yes, while the request is Active. |
-| 8 | Hot / Cold | Can the partner clear the mark back to none? Proposal: yes. |
+| 8 | Hot / Cold | **Decided 2026-11-14:** Hot or Cold only; once marked it can't be cleared back to no mark (it can be switched between Hot and Cold). |
 | 9 | Guest clicks Request a quote | Proposal: goes to Login, then back to the package. |
-| 10 | Super Admin "Send a notification" | Free text or fixed text? Proposal: free text, up to 255 characters. |
+| 10 | Super Admin "Send a notification" | **Decided 2026-11-14:** free text, up to 255 characters, shown to the partner as "From the Super Admin about {user}'s request: {message}". |
 | 11 | Audit Log | Not mentioned. Proposal: record every console action (approve, reject, edit, delete, Popular, Best deal, partner and park changes), as Shared Safari §11.6. |
 | 12 | Image storage | Proposal: local storage as Shared Safari: `package/<package id>/<version>/…`, `partner/<partner id>/logo/…`, `gallery/<gallery id>/…`; file names only in the database. |
 | 13 | Wishlist | The live site has a Wishlist. Not in the requirements. Proposal: no Wishlist for packages in this version. |
 | 14 | Replaced versions | Can the partner open old versions read-only? Proposal: yes, View only. |
 | 15 | My Quote Requests columns | Proposal: Package · Travellers · Start date · Notes · Sent on. |
 | 16 | Deactivated partner's quote requests | Proposal: kept; visible again when the partner is activated. |
-| 17 | Fields the Super Admin can edit (waiting version and live package) | The requirements say only "edit". Proposal: name, price per person, total price, price before discount, activity message, price message, overview and getting there; the other parts only the partner changes. |
+| 17 | Fields the Super Admin can edit (waiting version and live package) | **Decided 2026-11-14:** all five sections (Basic, Itinerary, Inclusions, Getting there, FAQs), in the waiting version and in the live package. A live edit shows at once and the version is marked "edited by Super Admin". |

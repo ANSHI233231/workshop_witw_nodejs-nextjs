@@ -43,6 +43,7 @@
 .wb-ic:hover{background:rgba(255,255,255,.12);color:#fff}
 .wb-ic .icon{width:30px;height:30px}
 .wb-ic.is-bell .icon{width:30px;height:30px}
+.wb-me:has(> .avatar-photo){overflow:hidden;padding:0}
 .wb-me{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--color-success);color:#fff;font:500 20px/1 var(--font-sans)}
 .wb-cnt{position:absolute;top:6px;right:6px;min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-full);background:var(--color-accent-2);color:#fff;font:600 10px/16px var(--font-sans);text-align:center}
 .wb-wrap{position:relative}

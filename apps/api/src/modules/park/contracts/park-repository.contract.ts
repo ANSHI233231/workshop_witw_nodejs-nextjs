@@ -1,13 +1,16 @@
 import type { PaginationQuery } from '../../../core/validation';
 import type { DbExecutor } from '../../../database/connection';
-import type { ParkFilters, ParkInput, ParkUpdate } from '../dto/park.dto';
+import type { ParkFilters, ParkInput, ParkUpdate, WebsiteParkQuery } from '../dto/park.dto';
 import type {
+    FeatureImageRow,
     ParkDetailRow,
     ParkOptionRow,
     ParkRow,
     ParkStateRow,
     ParkStatusCode,
     UpcomingSafariRow,
+    WebsiteParkPageRow,
+    WebsiteParkRow,
 } from '../types/park.types';
 
 export interface IParkRepository {
@@ -22,4 +25,10 @@ export interface IParkRepository {
     insert(db: DbExecutor, input: ParkInput, slug: string, actorId: number): Promise<number>;
     update(db: DbExecutor, id: number, input: ParkUpdate, actorId: number): Promise<void>;
     updateStatus(db: DbExecutor, id: number, status: ParkStatusCode, actorId: number): Promise<void>;
+    updateFeatureImage(db: DbExecutor, id: number, fileName: string, actorId: number): Promise<void>;
+    featureImageById(db: DbExecutor, id: number): Promise<FeatureImageRow | undefined>;
+    featureImageOfActive(db: DbExecutor, slug: string): Promise<FeatureImageRow | undefined>;
+    websiteList(db: DbExecutor, query: WebsiteParkQuery, limit: number): Promise<WebsiteParkRow[]>;
+    websiteCount(db: DbExecutor, query: WebsiteParkQuery): Promise<number>;
+    websitePage(db: DbExecutor, slug: string): Promise<WebsiteParkPageRow | undefined>;
 }

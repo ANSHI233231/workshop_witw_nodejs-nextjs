@@ -1,12 +1,19 @@
-import type { UsersModuleDependencies } from './contracts/users-module.contract';
+import type { UsersDemoModuleDependencies } from './contracts/users-demo-module.contract';
+import type { IUsersDemoService } from './contracts/users-demo-service.contract';
+import type { UsersModuleDependencies, UsersTestDataModuleDependencies } from './contracts/users-module.contract';
 import type { UsersSeedModuleDependencies } from './contracts/users-seed-module.contract';
+import type { IUsersTestDataService } from './contracts/users-test-data-service.contract';
 import type { IUsersSeedService } from './contracts/users-seed-service.contract';
 import type { IUsersService } from './contracts/users-service.contract';
 import { UsersController } from './controllers/users.controller';
+import { UsersDemoRepository } from './repositories/users-demo.repository';
 import { UsersSeedRepository } from './repositories/users-seed.repository';
+import { UsersTestDataRepository } from './repositories/users-test-data.repository';
 import { UsersRepository } from './repositories/users.repository';
 import { createUsersRouter, type UsersGuards } from './routes/users.routes';
+import { UsersDemoService } from './services/users-demo.service';
 import { UsersSeedService } from './services/users-seed.service';
+import { UsersTestDataService } from './services/users-test-data.service';
 import { UsersService } from './services/users.service';
 
 export type { UsersModuleDependencies } from './contracts/users-module.contract';
@@ -43,6 +50,33 @@ export const createUsersSeedModule = (dependencies: UsersSeedModuleDependencies)
         dependencies.isProduction,
     );
     return { usersSeedService };
+};
+
+export type { IUsersDemoService } from './contracts/users-demo-service.contract';
+export type { DemoAccount, DemoAccountState } from './dto/users-demo.dto';
+
+export const createUsersDemoModule = (dependencies: UsersDemoModuleDependencies) => {
+    const usersDemoService: IUsersDemoService = new UsersDemoService(
+        dependencies.db,
+        new UsersRepository(),
+        new UsersDemoRepository(),
+        dependencies.auditService,
+        dependencies.isProduction,
+    );
+    return { usersDemoService };
+};
+
+export type { IUsersTestDataService } from './contracts/users-test-data-service.contract';
+export type { TestAccountMarker, TestDataRow, TestDataTable, UsersTestData } from './dto/users-test-data.dto';
+
+export const createUsersTestDataModule = (dependencies: UsersTestDataModuleDependencies) => {
+    const usersTestDataService: IUsersTestDataService = new UsersTestDataService(
+        dependencies.db,
+        new UsersTestDataRepository(),
+        dependencies.auditService,
+        dependencies.isProduction,
+    );
+    return { usersTestDataService };
 };
 
 export const createUsersModule = (dependencies: UsersModuleDependencies) => {

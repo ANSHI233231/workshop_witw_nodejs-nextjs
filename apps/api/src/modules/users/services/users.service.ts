@@ -32,6 +32,7 @@ import {
     type SystemRoleRow,
     UserRoleStatus,
     PASSWORD_HASH_ROUNDS,
+    type MetaRoleId,
     type UserStatusCode,
 } from '../types/users.types';
 
@@ -335,6 +336,25 @@ export class UsersService implements IUsersService {
                     entityType: AuditEntity.USER,
                     details: { email: account.email, mobile: account.mobile },
                 },
+                error,
+            );
+            throw error;
+        }
+    }
+
+    async grantRole(userId: number, metaRoleId: MetaRoleId, actorId: number | null): Promise<void> {
+        const event = { action: AuditAction.USER_UPDATED, entityType: AuditEntity.USER, entityId: userId } as const;
+        try {
+            await this.db.transaction(async () => {
+                if (!(await this.usersRepository.findUserDetail(this.db, userId))) throw userNotFound();
+                const before = await this.usersRepository.listActiveRoles(this.db, userId, [metaRoleId]);
+                if (before.length > 0) return;
+                await this.usersRepository.setUserRoleStatus(this.db, userId, metaRoleId, UserRoleStatus.ACTIVE, actorId);
+                await this.auditService.record({ ...event, details: { rolesAdded: [metaRoleId] } });
+            });
+        } catch (error) {
+            await this.auditService.recordFailure(
+                { ...event, action: AuditAction.USER_UPDATE_FAILED, details: { rolesAdded: [metaRoleId] } },
                 error,
             );
             throw error;

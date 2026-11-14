@@ -14,6 +14,7 @@ import { deleteSafariComment, sharedSafariCoverUrl } from '@/services/shared-saf
 import {
     type ConsoleComment,
     type ConsoleSafariDetail,
+    personLabel,
     SafariStatus,
     SAFARI_THEME_LABEL,
     STAY_CATEGORY_LABEL,
@@ -57,7 +58,7 @@ function Details({ safari }: { readonly safari: ConsoleSafariDetail }) {
             <span className="ss-group">{t('Details')}</span>
             <dl className="ssc-dl">
                 <dt>{t('Host')}</dt>
-                <dd>{safari.hostEmail ? `${safari.host.name} (${safari.hostEmail})` : safari.host.name}</dd>
+                <dd>{safari.hostEmail ? `${personLabel(safari.host)} (${safari.hostEmail})` : personLabel(safari.host)}</dd>
                 <dt>{t('Park')}</dt>
                 <dd>{safari.park.name}</dd>
                 <dt>{t('Theme')}</dt>
@@ -106,7 +107,7 @@ function People({ safari, tab }: { readonly safari: ConsoleSafariDetail; readonl
                     <tbody>
                         {people.map((member) => (
                             <tr key={member.id}>
-                                <td>{member.name}</td>
+                                <td>{personLabel(member)}</td>
                                 <td>{memberTime(member, tab)}</td>
                             </tr>
                         ))}
@@ -123,7 +124,7 @@ function People({ safari, tab }: { readonly safari: ConsoleSafariDetail; readonl
             <div className="ssc-list ssc-only-mobile">
                 {people.map((member) => (
                     <div key={member.id} className="ssc-card">
-                        <b>{member.name}</b>
+                        <b>{personLabel(member)}</b>
                         <span className="ss-cap">
                             {column} {memberTime(member, tab)}
                         </span>
@@ -177,7 +178,7 @@ function Comments({
                                 <td>
                                     <span className={row.isReply ? 'ssc-reply' : ''}>{text(row)}</span>
                                 </td>
-                                <td>{row.comment.writer.name}</td>
+                                <td>{personLabel(row.comment.writer)}</td>
                                 <td className="col-center">{replies(row)}</td>
                                 <td className="col-center">{formatCount(row.comment.openFlagCount)}</td>
                                 <td className="col-actions">
@@ -209,7 +210,7 @@ function Comments({
                 {rows.map((row) => (
                     <div key={row.comment.id} className="ssc-card">
                         <div className="ss-between">
-                            <b>{row.comment.writer.name}</b>
+                            <b>{personLabel(row.comment.writer)}</b>
                             {!readOnly && (
                                 <button
                                     type="button"

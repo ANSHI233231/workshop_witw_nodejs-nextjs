@@ -18,6 +18,7 @@ const optionalLink = z
 const schema = z.object({
     NEXT_PUBLIC_API_URL: z.string().url(),
     NEXT_PUBLIC_SUPPORT_URL: optionalLink,
+    NEXT_PUBLIC_PARTNER_PORTAL_URL: optionalLink,
     NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN: z
         .string()
         .trim()
@@ -34,6 +35,7 @@ const schema = z.object({
 const parsed = schema.safeParse({
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_SUPPORT_URL: process.env.NEXT_PUBLIC_SUPPORT_URL,
+    NEXT_PUBLIC_PARTNER_PORTAL_URL: process.env.NEXT_PUBLIC_PARTNER_PORTAL_URL,
     NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN: process.env.NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN,
     NEXT_PUBLIC_AUTH_COOKIE_PREFIX: process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX,
 });
@@ -47,6 +49,7 @@ export const config = Object.freeze({
     /** e.g. http://localhost:8030/api, no trailing slash. */
     apiUrl: parsed.data.NEXT_PUBLIC_API_URL.replace(/\/+$/, ''),
     supportUrl: parsed.data.NEXT_PUBLIC_SUPPORT_URL,
+    partnerPortalUrl: parsed.data.NEXT_PUBLIC_PARTNER_PORTAL_URL,
     localeCookieDomain: parsed.data.NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN,
 });
 

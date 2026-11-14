@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { consoleSession } from '@/lib/console-session';
+import { currentSitePartner } from '@/lib/site-partner';
 
 import { WitwSiteFrame } from './witw-site-frame';
 
@@ -8,7 +9,12 @@ import styles from './website.module.css';
 
 export async function WebsiteShell({ children }: { readonly children: ReactNode }) {
     const session = await consoleSession();
-    return <WitwSiteFrame user={session?.user ?? null}>{children}</WitwSiteFrame>;
+    const partner = session ? await currentSitePartner() : null;
+    return (
+        <WitwSiteFrame user={session?.user ?? null} partner={partner}>
+            {children}
+        </WitwSiteFrame>
+    );
 }
 
 export async function WebsiteAuth({ children }: { readonly children: ReactNode }) {

@@ -43,7 +43,7 @@ const badgeOf = (safari: SafariCard): { readonly label: string; readonly classNa
     return { label: statusLabel(safari.status), className: 'badge badge-neutral' };
 };
 
-export function MySharedSafaris() {
+export function MySharedSafaris({ isPartner }: { readonly isPartner: boolean }) {
     const t = useT();
     const router = useRouter();
     const isPhone = useIsPhone();
@@ -156,12 +156,14 @@ export function MySharedSafaris() {
                 </nav>
                 <div className="page-head">
                     <h1 className="page-title">{t('My Shared Safaris')}</h1>
-                    <div className="actions">
-                        <button type="button" className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
-                            <PlusIcon />
-                            {t('Organise a Safari')}
-                        </button>
-                    </div>
+                    {!isPartner && (
+                        <div className="actions">
+                            <button type="button" className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
+                                <PlusIcon />
+                                {t('Organise a Safari')}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="nt-card ss9">
@@ -242,10 +244,12 @@ export function MySharedSafaris() {
                     <div className="state">
                         <BinocularsStateIcon className="icon state-icon" />
                         <p className="state-title">{t("You haven't organised a safari yet.")}</p>
-                        <button type="button" className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
-                            <PlusIcon />
-                            {t('Organise a Safari')}
-                        </button>
+                        {!isPartner && (
+                            <button type="button" className="btn btn-primary" onClick={() => setDialog({ kind: 'new' })}>
+                                <PlusIcon />
+                                {t('Organise a Safari')}
+                            </button>
+                        )}
                     </div>
                 )}
                 {lists && rows.length === 0 && tab === 'joined' && (

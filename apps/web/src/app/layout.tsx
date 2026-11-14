@@ -11,6 +11,7 @@ import './console-mobile.css';
 import './console-drawer-tools.css';
 import './console-responsive-fixes.css';
 import './witw-site.css';
+import './witw-packages.css';
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const { t } = await serverTranslator();

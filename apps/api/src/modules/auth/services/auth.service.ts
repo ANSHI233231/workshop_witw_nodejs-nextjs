@@ -13,7 +13,12 @@ import {
     UserStatus,
 } from '../../users';
 import type { IAuthRepository } from '../contracts/auth-repository.contract';
-import type { IAuthService, RefreshedSession, SignedInSession } from '../contracts/auth-service.contract';
+import type {
+    IAuthService,
+    RefreshedSession,
+    SignedInSession,
+    SignedUpWith,
+} from '../contracts/auth-service.contract';
 import type { AuthUserDto } from '../dto/auth.dto';
 import { toAuthUser } from '../mappers/auth.mapper';
 import { type AuthSettings, currentSessionApp, REFRESH_REUSE_GRACE_SECONDS } from '../types/auth.types';
@@ -60,6 +65,12 @@ const sessionAppOrExpired = (): ClientAppCode => {
     const app = currentSessionApp();
     if (!app) throw new UnauthenticatedException(SESSION_EXPIRED);
     return app;
+};
+
+const refuseOutsideWebsite = (): void => {
+    if (sessionAppOrRefuse() !== ClientApp.WEB) {
+        throw new ValidationException('Sign Up is available only on the website.', [], 'AUTH_APP_NOT_ALLOWED');
+    }
 };
 
 const MANAGE_CONSOLE_ROLES: readonly number[] = [MetaRole.SUPER_ADMIN];
@@ -109,15 +120,25 @@ export class AuthService implements IAuthService {
     }
 
     async signUp(body: SignUpBody): Promise<SignedInSession> {
-        if (sessionAppOrRefuse() !== ClientApp.WEB) {
-            throw new ValidationException('Sign Up is available only on the website.', [], 'AUTH_APP_NOT_ALLOWED');
-        }
+        refuseOutsideWebsite();
         const user = await this.usersService.signUp(body);
         markSignedIn(user.id);
         return this.db.transaction(async () => {
             const session = await this.issue(user, SIGN_UP_REMEMBERED);
             await this.auditService.record({ action: AuditAction.SIGNED_IN, details: { remember: SIGN_UP_REMEMBERED } });
             return session;
+        });
+    }
+
+    async signUpWith<T>(body: SignUpBody, alsoCreate: (user: AuthUserDto) => Promise<T>): Promise<SignedUpWith<T>> {
+        refuseOutsideWebsite();
+        return this.db.transaction(async () => {
+            const user = await this.usersService.signUp(body);
+            markSignedIn(user.id);
+            const created = await alsoCreate(toAuthUser(user));
+            const session = await this.issue(user, SIGN_UP_REMEMBERED);
+            await this.auditService.record({ action: AuditAction.SIGNED_IN, details: { remember: SIGN_UP_REMEMBERED } });
+            return { session, created };
         });
     }
 

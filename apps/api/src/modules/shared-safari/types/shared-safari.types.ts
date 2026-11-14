@@ -93,6 +93,15 @@ export const COVER_FOLDER = { PARENT: 'shared_safari', FEATURE: 'cover_image' } 
 
 export const INDIA_TIME_ZONE = 'Asia/Kolkata';
 
+export type PartnerIdentity = {
+    readonly id: number;
+    readonly userId: number;
+    readonly businessName: string;
+    readonly logoVersion: string | null;
+};
+
+export type PartnersByUser = ReadonlyMap<number, PartnerIdentity>;
+
 export interface CountRow extends RowDataPacket {
     total: number;
 }
@@ -175,6 +184,7 @@ export interface FlaggedRow extends RowDataPacket {
     sharedSafariCommentId: number | null;
     safariTitle: string;
     safariSlug: string;
+    userId: number;
     writerName: string;
     commentText: string;
     reasons: string | null;
@@ -186,6 +196,7 @@ export interface FlagRow extends RowDataPacket {
     id: number;
     reasonName: string;
     details: string;
+    userId: number;
     flaggerName: string;
     createdAt: Date;
 }

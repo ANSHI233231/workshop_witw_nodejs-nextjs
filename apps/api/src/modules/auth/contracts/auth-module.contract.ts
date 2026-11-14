@@ -12,3 +12,9 @@ export type AuthModuleDependencies = {
     readonly settings: AuthSettings;
     readonly appUrls: AppUrls;
 };
+
+export type AuthTestDataModuleDependencies = {
+    readonly db: Database;
+    readonly auditService: IAuditService;
+    readonly isProduction: boolean;
+};

@@ -75,6 +75,7 @@ export class NotificationService implements INotificationService, INotificationF
             ...row,
             title: fit(row.title, NOTIFICATION_LIMITS.TITLE_MAX) ?? '',
             excerpt: fit(row.excerpt, NOTIFICATION_LIMITS.EXCERPT_MAX),
+            actorName: fit(row.actorName ?? null, NOTIFICATION_LIMITS.TITLE_MAX),
         }));
         await inBatches(rows, (batch) => this.repository.insert(this.db, batch));
     }

@@ -4,7 +4,7 @@ import type { Database } from '../../../database/connection';
 import { AuditAction, type AuditActionCode, AuditEntity, type IAuditService } from '../../audit';
 import { type INotificationService, NotificationKind } from '../../notification';
 import type { IDiscussionService } from '../contracts/discussion-service.contract';
-import type { FlagReasonLookup } from '../contracts/shared-safari-module.contract';
+import type { FlagReasonLookup, PartnerLookup } from '../contracts/shared-safari-module.contract';
 import type { CommentInput, FlagInput } from '../dto/shared-safari.dto';
 import type { SharedSafariRepository } from '../repositories/shared-safari.repository';
 import {
@@ -36,6 +36,7 @@ export class DiscussionService implements IDiscussionService {
         private readonly auditService: IAuditService,
         private readonly notificationService: INotificationService,
         private readonly flagReasonService: FlagReasonLookup,
+        private readonly partnerService: PartnerLookup,
     ) {}
 
     async post(safariId: number, input: CommentInput, viewer: { readonly id: number }): Promise<{ id: number }> {
@@ -58,6 +59,7 @@ export class DiscussionService implements IDiscussionService {
                     input.text,
                 );
                 if (safari.userId !== viewer.id) {
+                    const writerPartner = await this.partnerService.partnerOf(viewer.id);
                     await this.notificationService.notify([
                         {
                             userId: safari.userId,
@@ -70,6 +72,7 @@ export class DiscussionService implements IDiscussionService {
                             title: safari.title,
                             excerpt: null,
                             actorId: viewer.id,
+                            actorName: writerPartner?.businessName ?? null,
                         },
                     ]);
                 }

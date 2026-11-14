@@ -7,3 +7,9 @@ export type NotificationModuleDependencies = {
     readonly auditService: IAuditService;
     readonly mailStatus: MailStatusCodes;
 };
+
+export type NotificationTestDataModuleDependencies = {
+    readonly db: Database;
+    readonly auditService: IAuditService;
+    readonly isProduction: boolean;
+};

@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { BreadcrumbChevronIcon } from '@/components/ui/icons';
 import { serverTranslator } from '@/lib/i18n/server-translator';
+import { parkFeatureImageUrl } from '@/services/park.service';
 import { PARK_REGION_LABEL, type ParkDetail } from '@/types/park.types';
 
 import { ParkDetailActions } from './park-detail-actions';
@@ -46,12 +47,22 @@ export async function ParkDetailView({ park }: { readonly park: ParkDetail }) {
                         <dd>{t(PARK_REGION_LABEL[park.region])}</dd>
                         <dt>{t('Slug')}</dt>
                         <dd>{park.slug}</dd>
-                        <dt>{t('Avg. price')}</dt>
-                        <dd>{price ? t('{range} per safari', { range: price }) : NO_VALUE}</dd>
+                        <dt>{t('Average safari price')}</dt>
+                        <dd>{price ? t('{range} per person', { range: price }) : NO_VALUE}</dd>
                         <dt>{t('Location')}</dt>
                         <dd>{parkLocation(park.latitude, park.longitude)}</dd>
                         <dt>{t('Feature image')}</dt>
-                        <dd>{park.featureImage ? park.featureImage : <Empty />}</dd>
+                        <dd>
+                            {park.featureImage ? (
+                                <img
+                                    className="pkf-thumb"
+                                    src={parkFeatureImageUrl(park.id, park.featureImage)}
+                                    alt={t('Feature image of {name}', { name: park.name })}
+                                />
+                            ) : (
+                                <Empty />
+                            )}
+                        </dd>
                         <dt>{t('Website')}</dt>
                         <dd>
                             {website ? (

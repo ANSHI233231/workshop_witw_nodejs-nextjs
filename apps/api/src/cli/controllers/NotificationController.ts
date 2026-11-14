@@ -5,19 +5,23 @@ import { createNotificationModule } from '../../modules/notification';
 import { createUsersModule } from '../../modules/users';
 import { ConsoleController } from '../lib/ConsoleController';
 
-const APPS: Readonly<Record<string, ClientAppCode>> = { manage: ClientApp.MANAGE, web: ClientApp.WEB };
+const APPS: Readonly<Record<string, ClientAppCode>> = {
+    manage: ClientApp.MANAGE,
+    web: ClientApp.WEB,
+    partner: ClientApp.PARTNER,
+};
 
 const DEFAULT_MESSAGE = 'Notifications are working.';
 
 export class NotificationController extends ConsoleController {
     /**
-     * Sends a test notification to one user in one app, e.g. "npm run cli notification/send-test 1 web confirm" (app: manage or web). Dry run unless "confirm" is given.
+     * Sends a test notification to one user in one app, e.g. "npm run cli notification/send-test 1 web confirm" (app: manage, web or partner). Dry run unless "confirm" is given.
      */
     public async actionSendTest(userId?: string, app?: string, confirm?: string): Promise<void> {
         const id = Number(userId);
         const clientApp = app ? APPS[app.toLowerCase()] : undefined;
         if (!Number.isInteger(id) || id <= 0 || clientApp === undefined) {
-            this.stderr('Give a user id and an app (manage or web), e.g. "npm run cli notification/send-test 1 web".\n');
+            this.stderr('Give a user id and an app (manage, web or partner), e.g. "npm run cli notification/send-test 1 web".\n');
             process.exitCode = 1;
             return;
         }

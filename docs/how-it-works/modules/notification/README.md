@@ -12,8 +12,10 @@
 | 102 Password changed | users: the password is changed, reset (forgot password) or set by an administrator | that user | the app it was changed in; set by an administrator → the portal |
 | 501 Background job failed | jobs: a run ends as Failed in the worker | every active Super Admin | the console |
 | 601 Test notification | the CLI `notification/send-test` | the user named | the app named |
+| 1301 Quote request received | quote-request: a user sends a quote request | the package's partner | the Partner portal (opens Quote Requests) |
+| 1302 Super Admin message on a quote request | quote-request: Console › Quote Requests › Send a notification | the package's partner | the Partner portal (opens Notifications; the message is the excerpt) |
 
-The local sample data (`seed/shared-safari`, [shared-safari › Sample data](../shared-safari/README.md#sample-data-local-development-only)) writes the prototype's four Shared Safari notifications straight as in-app rows with their own created and read times (`createNotificationSeedModule`, built only by the CLI, refused in production); nothing is delivered.
+The local sample data (`seed/shared-safari`, [shared-safari › Sample data](../shared-safari/README.md#sample-data-local-development-only)) writes the prototype's four Shared Safari notifications straight as in-app rows with their own created and read times (`createNotificationSeedModule`, built only by the CLI, refused in production); nothing is delivered. The Packages demo data (`packages-demo/add`, [quote-request › Demo data](../quote-request/README.md#demo-data-local-only)) writes the prototype's four partner notifications about quote requests the same way.
 
 Kinds are numbered by module in hundreds, like the audit actions. A new feature adds its kind to `NotificationKind`, a template row in its migration, the tab it belongs to (`KINDS_OF_TAB`, `KIND_TABS_OF_APP`), and its icon and link in each app (`KIND_STYLE`, the app's notification links).
 
@@ -25,13 +27,13 @@ Kinds are numbered by module in hundreds, like the audit actions. A new feature 
 ## Templates (`notification_template`)
 
 - One row per kind: `notification_kind` (unique), `client_app` (the app it shows in; empty when it shows in the app the action happened in), `code`, `name`, `title_template`, `sent_when`, `opens`, `status` (1 active, 2 inactive, 3 draft). Added by migrations; read-only on screen.
-- The feed returns each row's active `titleTemplate`, and the apps fill it: `{{actor}}` is the person who acted ("you" when it was the recipient, "the system" when nobody), `{{subject}}` the stored title, each in bold. A kind without an active template shows its stored title.
+- The feed returns each row's active `titleTemplate`, and the apps fill it: `{{actor}}` is the person who acted ("you" when it was the recipient, "the system" when nobody); `actorName` is the notification's stored `actor_name` when it has one (a partner's business name, kept as it was when sent), else the acting account's name, `{{subject}}` the stored title, each in bold. A kind without an active template shows its stored title.
 
 ## API (`/api/notification`)
 
 Feed routes are `signed-in` (one's own rows, in the request's app; `ownerType` + `ownerId` in the query, both or neither); the last three are Super Admin.
 
-1. `GET /?tab=&page=&limit=` → newest first, with `actorName` and `actorIsYou`; `tab`: `all`, `unread`, and the app's kind tabs: console `account` (101, 102) and `jobs` (501); portal `account`.
+1. `GET /?tab=&page=&limit=` → newest first, with `actorName` and `actorIsYou`; `tab`: `all`, `unread`, and the app's kind tabs: console `account` (101, 102) and `jobs` (501); portal `account`. Gallery sent for approval (1101) and package version sent for approval (1201), both to every Super Admin in the console with the partner's business name as the actor, have no kind tab yet: they show under `all` and `unread`. The Partner portal has no kind tabs: quote request received (1301, actor = the user, subject = the package) and the Super Admin's message on a quote request (1302, subject = the user's name, excerpt = the message, template "From the Super Admin about {{subject}}'s request:") show under `all` and `unread` ([quote-request](../quote-request/README.md)).
 2. `GET /counts` → `{ all, unread, …the app's kind tabs }`.
 3. `GET /unread-count` → `{ unread }` (the bell's count; its popover lists `GET /?tab=all&limit=5`).
 4. `PATCH /:id/read`, `PATCH /:id/unread` → 204; another person's row → 404 `NOTIFICATION_NOT_FOUND`.
@@ -40,13 +42,18 @@ Feed routes are `signed-in` (one's own rows, in the request's app; `ownerType` +
 7. `GET /delivery-log?search=&channel=&template=&status=&page=&limit=` → mails (`mail_log`) and in-app notifications in one list, newest first, paged in the database. Channel 1 email, 2 in-app; status 1 Delivered, 2 Failed, 3 Captured (mail), 4 Sent, 5 Read (in-app); `template` is the email or in-app template code.
 8. `GET /delivery-log/in-app/:id` → one in-app delivery: recipient, app, template, title template, sent, status, read time, title, excerpt, actor, what it opens.
 
-`markEntityRead(userId, entityType, entityId)` lets a feature mark a person's notifications about an item read when they open it. Read marks are the person's own state and are not audited; the writes that create notifications are audited by the feature that sends them. The test command records one audit row (601 sent, 602 failed).
+`markEntityRead(userId, entityType, entityId)` lets a feature mark a person's notifications about an item read when they open it. Read marks are the person's own state and are not audited; the writes that create notifications are audited by the feature that sends them. The test command records one audit row (601 sent, 602 failed); `test-data/remove-ct` removes `ct_` test notifications with one row (603 removed, 604 failed).
 
 ## The screens
 
 - **Bell and popover** (console and portal header): the unread count (refreshed every minute, on page change and when a page marks rows read), the latest five, "Mark all as read", "Show all notifications". A notification with a link (a failed job → Background Jobs › Logs, errors only) opens it; the rest open the Notifications page.
 - **Notifications page** (`/notifications` in both apps): tabs with counts, grouped Today / Yesterday / Earlier, mark one read or unread, mark all read, 50 per page.
 - **Notification Templates** and **Delivery Log** (console, System › Notification), with a detail dialog per row: a mail shows its rendered body in a sandboxed frame; an in-app row shows its bell preview.
+
+## Actor name and the Partner portal's feed
+
+- `notify()` takes an optional `actorName`, stored in `notification.actor_name` (up to 255): the name shown for the actor when it isn't the account's own name. The gallery and package modules pass the partner's **business name** for 1101 and 1201, so the console reads "Jungle Trails Safaris sent …" (the bell, the Notifications page and the Delivery Log detail). It is kept as at sending, like the title; rows without it show the account's name.
+- **Feed gates:** `createRouter({ …, feedGates })` takes, per client app, a check run before every feed call from that app (list, counts, unread count, mark read / unread, mark all read). `routes/index.ts` gives the Partner portal (client app 5) "is this user an **active partner**" (`partnerService.activePartnerOf`), so an Inactive partner, an applicant or anyone else calling the feed with the portal's header gets 403 `NOTIFICATION_FEED_CLOSED`. The website and the console have no gate.
 
 ## Where it lives
 

@@ -7,7 +7,7 @@ const readline = require('node:readline');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = __dirname;
-const APPS = ['api', 'manage', 'web'];
+const APPS = ['api', 'manage', 'web', 'partner'];
 const ENVIRONMENTS = ['development', 'staging', 'production'];
 const PROJECT_STEPS = 'init-project.js';
 const PROTOTYPE_TEMPLATE = 'git@github.com:aayush-cmd/starter_prototype.git';
@@ -18,11 +18,11 @@ const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SERVER_PORTS = {
-    staging: { web: 4100, manage: 4101, api: 4110, prefix: 'stag_', host: (domain) => `stag.${domain}`, manageHost: (domain) => `stag-manage.${domain}`, apiHost: (domain) => `stag-api.${domain}` },
-    production: { web: 4200, manage: 4201, api: 4210, prefix: '', host: (domain) => domain, manageHost: (domain) => `manage.${domain}`, apiHost: (domain) => `api.${domain}` },
+    staging: { web: 4100, manage: 4101, partner: 4102, api: 4110, prefix: 'stag_', host: (domain) => `stag.${domain}`, manageHost: (domain) => `stag-manage.${domain}`, partnerHost: (domain) => `stag-partner.${domain}`, apiHost: (domain) => `stag-api.${domain}` },
+    production: { web: 4200, manage: 4201, partner: 4202, api: 4210, prefix: '', host: (domain) => domain, manageHost: (domain) => `manage.${domain}`, partnerHost: (domain) => `partner.${domain}`, apiHost: (domain) => `api.${domain}` },
 };
 
-const LOCAL_PORTS = { web: 3040, manage: 3041, api: 8030 };
+const LOCAL_PORTS = { web: 3040, manage: 3041, partner: 3042, api: 8030 };
 
 const parseFlags = (argv) =>
     Object.fromEntries(
@@ -119,10 +119,16 @@ const urlsOf = (environment, domain) => {
             api: `http://localhost:${LOCAL_PORTS.api}/api`,
             web: `http://localhost:${LOCAL_PORTS.web}`,
             manage: `http://localhost:${LOCAL_PORTS.manage}`,
+            partner: `http://localhost:${LOCAL_PORTS.partner}`,
         };
     }
     const server = SERVER_PORTS[environment];
-    return { api: `https://${server.apiHost(domain)}/api`, web: `https://${server.host(domain)}`, manage: `https://${server.manageHost(domain)}` };
+    return {
+        api: `https://${server.apiHost(domain)}/api`,
+        web: `https://${server.host(domain)}`,
+        manage: `https://${server.manageHost(domain)}`,
+        partner: `https://${server.partnerHost(domain)}`,
+    };
 };
 
 const apiValues = (settings, keys) => {
@@ -136,9 +142,10 @@ const apiValues = (settings, keys) => {
         JWT_SECRET: keys.jwt,
         JWT_REFRESH_SECRET: keys.jwtRefresh,
         LOG_INGEST_KEY: keys.ingest,
-        CORS_ORIGIN: `${urls.manage},${urls.web}`,
+        CORS_ORIGIN: `${urls.manage},${urls.web},${urls.partner}`,
         APP_URL_MANAGE: urls.manage,
         APP_URL_WEB: urls.web,
+        APP_URL_PARTNER: urls.partner,
     };
     if (environment === 'development') return { ...common, NODE_ENV: 'development', PORT: String(LOCAL_PORTS.api) };
     const server = SERVER_PORTS[environment];
@@ -153,9 +160,14 @@ const apiValues = (settings, keys) => {
     };
 };
 
-const appValues = (settings, keys) => {
+const APP_LINKS = {
+    web: (urls) => ({ NEXT_PUBLIC_PARTNER_PORTAL_URL: urls.partner }),
+    partner: (urls) => ({ NEXT_PUBLIC_WEBSITE_URL: urls.web }),
+};
+
+const appValues = (app, settings, keys) => {
     const { environment, domain, urls } = settings;
-    const common = { NEXT_PUBLIC_API_URL: urls.api, LOG_INGEST_KEY: keys.ingest };
+    const common = { NEXT_PUBLIC_API_URL: urls.api, LOG_INGEST_KEY: keys.ingest, ...(APP_LINKS[app]?.(urls) ?? {}) };
     if (environment === 'development') return common;
     return {
         ...common,
@@ -180,7 +192,7 @@ const writeEnvFiles = (settings) => {
         const file = `apps/${app}/.env`;
         if (exists(file) && !force) continue;
         const example = read(`apps/${app}/.env.example`);
-        const values = app === 'api' ? apiValues(settings, keys) : appValues(settings, keys);
+        const values = app === 'api' ? apiValues(settings, keys) : appValues(app, settings, keys);
         planned(`write ${file}${app === 'api' ? ' (database, new JWT secrets, log key)' : ' (API address, log key)'}`);
         writeFile(file, setValues(example, values));
     }
@@ -541,12 +553,12 @@ const main = async () => {
 
     heading('Next');
     if (isLocal) {
-        say('  Run each app: npm run dev in apps/api, apps/manage and apps/web');
+        say('  Run each app: npm run dev in apps/api, apps/manage, apps/web and apps/partner');
         say('  (or pm2 start environments/ecosystem.local.config.js).');
-        say(`  Open ${settings.urls.web} (web) and ${settings.urls.manage} (console).`);
+        say(`  Open ${settings.urls.web} (web), ${settings.urls.manage} (console) and ${settings.urls.partner} (partner portal).`);
     } else {
         say(`  Build and start: docs/how-it-works/workflows/${environment === 'staging' ? 'staging' : 'production'}-deployment.md`);
-        say(`  Addresses: ${settings.urls.web}, ${settings.urls.manage}, ${settings.urls.api}`);
+        say(`  Addresses: ${settings.urls.web}, ${settings.urls.manage}, ${settings.urls.partner}, ${settings.urls.api}`);
     }
     if (dryRun) say('\nDry run: nothing was written. Run again without --dry-run to apply.');
 };

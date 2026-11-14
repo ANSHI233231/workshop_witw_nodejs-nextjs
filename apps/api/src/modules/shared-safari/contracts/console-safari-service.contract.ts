@@ -4,8 +4,8 @@ import type {
     ConsoleSafariDetailDto,
     ConsoleSafariDto,
     CoverImage,
-    FlagDto,
     FlaggedCommentDto,
+    FlagsOfCommentDto,
     Paged,
 } from '../dto/shared-safari.dto';
 
@@ -20,5 +20,5 @@ export interface IConsoleSafariService {
     removeComment(commentId: number, actorId: number): Promise<void>;
     ignoreFlags(commentId: number, actorId: number): Promise<void>;
     flagged(search: string | undefined, page: number, limit: number): Promise<Paged<FlaggedCommentDto>>;
-    flagsOf(commentId: number): Promise<{ comment: { id: number; text: string; writer: string }; flags: FlagDto[] }>;
+    flagsOf(commentId: number): Promise<FlagsOfCommentDto>;
 }

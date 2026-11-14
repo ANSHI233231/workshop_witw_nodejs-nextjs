@@ -1,19 +1,27 @@
-import type { NotificationModuleDependencies } from './contracts/notification-module.contract';
+import type {
+    NotificationModuleDependencies,
+    NotificationTestDataModuleDependencies,
+} from './contracts/notification-module.contract';
 import type { NotificationSeedModuleDependencies } from './contracts/notification-seed-module.contract';
 import type { INotificationSeedService } from './contracts/notification-seed-service.contract';
 import type { INotificationService } from './contracts/notification-service.contract';
+import type { INotificationTestDataService } from './contracts/notification-test-data-service.contract';
 import { DeliveryController } from './controllers/delivery.controller';
 import { NotificationController } from './controllers/notification.controller';
 import { DeliveryRepository } from './repositories/delivery.repository';
 import { NotificationSeedRepository } from './repositories/notification-seed.repository';
 import { NotificationTemplateRepository } from './repositories/notification-template.repository';
+import { NotificationTestDataRepository } from './repositories/notification-test-data.repository';
 import { NotificationRepository } from './repositories/notification.repository';
 import { createNotificationRouter, type NotificationAccess } from './routes/notification.routes';
 import { DeliveryService } from './services/delivery.service';
+import { GatedNotificationFeed } from './services/gated-notification-feed';
 import { NotificationSeedService } from './services/notification-seed.service';
+import { NotificationTestDataService } from './services/notification-test-data.service';
 import { NotificationService } from './services/notification.service';
 
 export type { NotificationModuleDependencies } from './contracts/notification-module.contract';
+export type { NotificationFeedGate, NotificationFeedGates } from './contracts/notification-feed-gate.contract';
 export type { INotificationService, TestNotification } from './contracts/notification-service.contract';
 export type { NewNotification } from './dto/notification.dto';
 export type { MailStatusCodes } from './types/delivery.types';
@@ -21,6 +29,19 @@ export { NotificationKind, type NotificationKindCode } from './types/notificatio
 
 export type { INotificationSeedService } from './contracts/notification-seed-service.contract';
 export type { NotificationSeedRemoval, SeedNotification } from './dto/notification-seed.dto';
+
+export type { INotificationTestDataService } from './contracts/notification-test-data-service.contract';
+export type { NotificationEntityRefs, NotificationTestData, NotificationTestDataScope } from './dto/notification-test-data.dto';
+
+export const createNotificationTestDataModule = (dependencies: NotificationTestDataModuleDependencies) => {
+    const notificationTestDataService: INotificationTestDataService = new NotificationTestDataService(
+        dependencies.db,
+        new NotificationTestDataRepository(),
+        dependencies.auditService,
+        dependencies.isProduction,
+    );
+    return { notificationTestDataService };
+};
 
 export const createNotificationSeedModule = (dependencies: NotificationSeedModuleDependencies) => {
     const notificationSeedService: INotificationSeedService = new NotificationSeedService(
@@ -40,13 +61,17 @@ export const createNotificationModule = (dependencies: NotificationModuleDepende
         dependencies.auditService,
     );
     const notificationService: INotificationService = service;
-    const controller = new NotificationController(service);
     const delivery = new DeliveryController(
         new DeliveryService(dependencies.db, new DeliveryRepository(dependencies.mailStatus), templateRepository),
     );
 
     return {
         notificationService,
-        createRouter: (access: NotificationAccess) => createNotificationRouter(controller, delivery, access),
+        createRouter: (access: NotificationAccess) =>
+            createNotificationRouter(
+                new NotificationController(new GatedNotificationFeed(service, access.feedGates ?? {})),
+                delivery,
+                access,
+            ),
     };
 };

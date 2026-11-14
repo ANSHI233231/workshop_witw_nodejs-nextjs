@@ -1,10 +1,11 @@
 import { type PaginationQuery, toOffset } from '../../../core/validation';
 import type { DbExecutor, RowDataPacket } from '../../../database/connection';
 import type { IParkRepository } from '../contracts/park-repository.contract';
-import type { ParkFilters, ParkInput, ParkUpdate } from '../dto/park.dto';
+import type { ParkFilters, ParkInput, ParkUpdate, WebsiteParkQuery } from '../dto/park.dto';
 import { MasterParkSQL } from '../sql/master-park.sql';
 import {
     type CountRow,
+    type FeatureImageRow,
     type ParkDetailRow,
     type ParkOptionRow,
     type ParkRow,
@@ -13,6 +14,8 @@ import {
     type ParkStatusCode,
     type UpcomingSafariRow,
     UpcomingSafariStatus,
+    type WebsiteParkPageRow,
+    type WebsiteParkRow,
 } from '../types/park.types';
 
 const likeAnywhere = (text: string): string => `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
@@ -27,6 +30,17 @@ const filterValues = (filters: ParkFilters): unknown[] => [
     ...(filters.search !== undefined ? [likeAnywhere(filters.search)] : []),
     ...(filters.region !== undefined ? [filters.region] : []),
     ...(filters.status !== undefined ? [filters.status] : []),
+];
+
+const websiteShapeOf = (query: WebsiteParkQuery) => ({
+    search: query.search !== undefined,
+    region: query.region !== undefined,
+});
+
+const websiteValues = (query: WebsiteParkQuery): unknown[] => [
+    ParkStatus.ACTIVE,
+    ...(query.search !== undefined ? [likeAnywhere(query.search)] : []),
+    ...(query.region !== undefined ? [query.region] : []),
 ];
 
 const upcomingValues = (today: string): unknown[] => [
@@ -79,8 +93,9 @@ export class ParkRepository implements IParkRepository {
             input.name,
             slug,
             input.region,
-            input.avgSafariPriceMin,
-            input.avgSafariPriceMax,
+            input.shortDescription,
+            input.latitude,
+            input.longitude,
             ParkStatus.ACTIVE,
             actorId,
             actorId,
@@ -92,8 +107,9 @@ export class ParkRepository implements IParkRepository {
         await db.execute(MasterParkSQL.update, [
             input.name,
             input.region,
-            input.avgSafariPriceMin,
-            input.avgSafariPriceMax,
+            input.shortDescription,
+            input.latitude,
+            input.longitude,
             input.status,
             actorId,
             id,
@@ -102,5 +118,34 @@ export class ParkRepository implements IParkRepository {
 
     async updateStatus(db: DbExecutor, id: number, status: ParkStatusCode, actorId: number): Promise<void> {
         await db.execute(MasterParkSQL.updateStatus, [status, actorId, id]);
+    }
+
+    async updateFeatureImage(db: DbExecutor, id: number, fileName: string, actorId: number): Promise<void> {
+        await db.execute(MasterParkSQL.updateFeatureImage, [fileName, actorId, id]);
+    }
+
+    async featureImageById(db: DbExecutor, id: number): Promise<FeatureImageRow | undefined> {
+        return (await db.query<FeatureImageRow>(MasterParkSQL.featureImageById, [id]))[0];
+    }
+
+    async featureImageOfActive(db: DbExecutor, slug: string): Promise<FeatureImageRow | undefined> {
+        return (await db.query<FeatureImageRow>(MasterParkSQL.featureImageBySlug, [slug, ParkStatus.ACTIVE]))[0];
+    }
+
+    async websiteList(db: DbExecutor, query: WebsiteParkQuery, limit: number): Promise<WebsiteParkRow[]> {
+        return db.query<WebsiteParkRow>(MasterParkSQL.websiteList(websiteShapeOf(query), query.sort), [
+            ...websiteValues(query),
+            limit,
+            toOffset({ page: query.page, limit }),
+        ]);
+    }
+
+    async websiteCount(db: DbExecutor, query: WebsiteParkQuery): Promise<number> {
+        const rows = await db.query<CountRow>(MasterParkSQL.websiteCount(websiteShapeOf(query)), websiteValues(query));
+        return Number(rows[0]?.total ?? 0);
+    }
+
+    async websitePage(db: DbExecutor, slug: string): Promise<WebsiteParkPageRow | undefined> {
+        return (await db.query<WebsiteParkPageRow>(MasterParkSQL.websitePage, [slug, ParkStatus.ACTIVE]))[0];
     }
 }

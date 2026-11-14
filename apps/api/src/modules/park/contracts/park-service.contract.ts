@@ -2,6 +2,7 @@ import type { PaginationQuery } from '../../../core/validation';
 import type {
     ParkDetailDto,
     ParkDto,
+    ParkFeatureImage,
     ParkFilters,
     ParkInput,
     ParkOptionDto,
@@ -19,4 +20,6 @@ export interface IParkService {
     create(input: ParkInput, actorId: number): Promise<ParkDto>;
     update(id: number, input: ParkUpdate, actorId: number): Promise<ParkDto>;
     setStatus(id: number, status: ParkStatusCode, actorId: number): Promise<ParkDto>;
+    setFeatureImage(id: number, content: Buffer, actorId: number): Promise<ParkDto>;
+    featureImage(id: number): Promise<ParkFeatureImage>;
 }

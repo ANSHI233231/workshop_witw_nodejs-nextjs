@@ -12,6 +12,7 @@ import { ApiError } from '@/services/api-error';
 import { getSafari, joinSafari, leaveSafari } from '@/services/shared-safari.service';
 import { SafariStatus, type SafariCard as SafariCardValue } from '@/types/shared-safari.types';
 
+import { PersonAvatar } from './person-avatar';
 import { coverSource } from './safari-cover';
 import { MapPinIcon } from './safari-icons';
 
@@ -44,6 +45,7 @@ export function SafariCard({
     const full = card.status === SafariStatus.SEAT_FULL;
     const button = buttonOf(card);
     const path = safariPath(card.slug);
+    const showButton = !card.viewer.isPartner || card.viewer.isHost || card.viewer.joined;
     const more = card.joinedCount - card.faces.length;
 
     const refresh = async () => {
@@ -110,7 +112,7 @@ export function SafariCard({
                     </Link>
                 </h3>
                 <div className="wb-host">
-                    <span className="avatar">{card.host.initials}</span>
+                    <PersonAvatar person={card.host} />
                     <div>
                         <div className="wb-by">
                             <b>{card.host.name}</b> {t('has shared a safari')}
@@ -126,23 +128,23 @@ export function SafariCard({
                         {card.faces.length > 0 && (
                             <span className="wb-stack">
                                 {card.faces.map((face) => (
-                                    <span key={face.id} className="avatar" title={face.name}>
-                                        {face.initials}
-                                    </span>
+                                    <PersonAvatar key={face.id} person={face} title={face.name} />
                                 ))}
                                 {more > 0 && <span className="avatar wb-more">+{more}</span>}
                             </span>
                         )}
                         <span className="ss-cap">{t('{n} joined', { n: card.joinedCount })}</span>
                     </div>
-                    <button
-                        type="button"
-                        className={cn('btn', button.className, 'wb-join')}
-                        onClick={(event) => void act(event)}
-                        disabled={busy}
-                    >
-                        {t(button.label)}
-                    </button>
+                    {showButton && (
+                        <button
+                            type="button"
+                            className={cn('btn', button.className, 'wb-join')}
+                            onClick={(event) => void act(event)}
+                            disabled={busy}
+                        >
+                            {t(button.label)}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

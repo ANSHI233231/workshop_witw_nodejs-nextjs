@@ -5,6 +5,7 @@ import { SignedUpWelcome } from '@/components/sign-in/signed-up-welcome';
 import { SiteBanner } from '@/components/website/witw-site-frame';
 import { consoleSession } from '@/lib/console-session';
 import { serverTranslator } from '@/lib/i18n/server-translator';
+import { currentSitePartner } from '@/lib/site-partner';
 
 export const generateMetadata = async (): Promise<Metadata> => ({
     title: (await serverTranslator()).t('Shared Safaris'),
@@ -13,6 +14,7 @@ export const generateMetadata = async (): Promise<Metadata> => ({
 export default async function SharedSafarisPage() {
     const { t } = await serverTranslator();
     const session = await consoleSession();
+    const partner = await currentSitePartner();
     return (
         <>
             <SiteBanner
@@ -20,7 +22,7 @@ export default async function SharedSafarisPage() {
                 text={t('Plan a safari, share your seats, find people to go with.')}
             />
             <div className="page">
-                <SafariList signedIn={session !== null} />
+                <SafariList signedIn={session !== null} isPartner={partner !== null} />
             </div>
             <SignedUpWelcome />
         </>

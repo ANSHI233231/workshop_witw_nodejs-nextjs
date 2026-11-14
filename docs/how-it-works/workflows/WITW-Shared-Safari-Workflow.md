@@ -137,9 +137,9 @@ flowchart TD
 |---|---|---|---|---|---|
 | Browse, filter, view, read discussion, see Interested | ✓ | ✓ | ✓ | ✓ | |
 | Sign up / log in | ✓ | | | | |
-| Organise a safari | | ✓ | | | |
+| Organise a safari | | ✓ (not a partner) | | | |
 | Edit, change status, delete | | | ✓ | | |
-| Join / leave | | ✓ | ✗ | ✓ | |
+| Join / leave | | ✓ (not a partner, to join; leaving is always possible) | ✗ | ✓ | |
 | Comment and reply | | | ✓ | ✓ (joined now, or joined before and left) | |
 | Flag a comment | | ✓ (not their own) | ✓ | ✓ | |
 | Delete with reason, make active, pin | | | | | ✓ |
@@ -147,6 +147,7 @@ flowchart TD
 | Parks, Flag Reasons (add, edit, status) | | | | | ✓ |
 
 - **Host** is not a role given to anyone: a user is the host of the safaris they organised.
+- **Partners** (Packages workflow §2.5; Active or Inactive): can't organise or join a new shared safari, and the **Organize a Shared Safari** and **Join Safari** buttons aren't shown to them. Safaris they hosted or joined before stay as they are, and they can still comment on them. They show as their **business name and logo** (a standard placeholder with no logo) on the website, as host, in the Interested list and in every comment and reply, and in the console as the account name with the business, e.g. "Name (Business)". The comment is still the person's own.
 - The **Admin** is the console's Super Admin, working in the console only.
 
 ## 2. Accounts
@@ -174,8 +175,11 @@ Parks are **master data**. The 55 Walk Into The Wild parks arrive with the featu
 | Name | Bandhavgarh Tiger Reserve | Required, unique |
 | Slug | `bandhavgarh-tiger-reserve` | Made from the name when added; set once |
 | Region | Central India | Required: North, Central, West, East, South, North East India |
-| Average safari price, min – max | ₹3,500 – ₹4,500 | Per safari, whole rupees **up to ₹10,00,000** (the same limit as a safari's price per person); both or neither; max not less than min |
-| Short description, feature image, latitude / longitude, website | — | From the starting data; shown on the park detail |
+| Average safari price, lowest – highest | ₹3,500 – ₹4,500 per person | **Calculated, never entered** (decided 2026-11-14): the lowest and highest price per person of the park's packages shown on the website, as in the Packages workflow §10. "Price not set" with none |
+| Description | — | Optional, up to 1,000 characters |
+| Location | — | Latitude (−90 to 90) and longitude (−180 to 180), both or neither; used for the park page's map |
+| Feature image | — | JPG, JPEG or PNG, up to 250 KB |
+| Website | — | From the starting data only; shown on the park detail |
 | Status | Active | Only **active** parks are offered in the Organise form |
 
 ### 3.2 Console › Parks
@@ -185,18 +189,18 @@ Parks are **master data**. The 55 Walk Into The Wild parks arrive with the featu
 | Columns | S.No · Park · Region · Avg. safari price · Upcoming safaris (Active and Seat full safaris starting today or later) · Status · Actions |
 | Filters | Park name search · Region · Status (All / Active / Inactive) · **Clear filters** (shown when a filter is set) |
 | Actions (icons) | **Edit** (pencil) · **Make active / Make inactive** (switch icon) |
-| Add Park | Button at the top. Form: Park name, Region, Min. and Max. safari price. A new park is Active |
+| Add Park | Button at the top. Form: Park name, Region, Description, Location (latitude / longitude) and Feature image; there are no price fields, because the average price is calculated. A new park is Active |
 | Edit Park | Same form plus a **Status switch** (Active / Inactive), shown only when editing |
 | Park detail | All fields, upcoming shared safaris, **Edit** and **Make active / inactive** buttons |
 
 - **Inactive park:** hidden from the Organise form and the website's Safari Park filter. Safaris already planned there are not affected. When the host **edits** such a safari, the park field still shows its current park, but they must **pick an active park again** before the safari saves.
 - **Added park:** appears at once in the Organise form and the Safari Park filter.
-- **Errors:** "Enter the park name." · "A park with this name already exists." · "Select a region." · "Max. price must be at least the min. price." · "Enter both prices, or leave both empty." · "Enter whole rupees, up to ₹10,00,000."
+- **Errors:** "Enter the park name." · "A park with this name already exists." · "Select a region." · "Use up to 1,000 characters." · "Enter a latitude from -90 to 90." · "Enter a longitude from -180 to 180." · "Enter both latitude and longitude, or leave both empty." · "Use a JPG, JPEG or PNG image." · "Use an image up to 250 KB."
 - **Paging:** 20 per page, with alternate row colours.
 
 ## 4. Organising a safari
 
-Website › Shared Safaris › **+ Organize a Shared Safari** (signed in only). A 3-step dialog, which opens as a bottom sheet on mobile. **Edit** uses the same steps, titled "Edit your safari".
+Website › Shared Safaris › **+ Organize a Shared Safari** (signed in only, and not a partner: partners can't organise a new safari). A 3-step dialog, which opens as a bottom sheet on mobile. **Edit** uses the same steps, titled "Edit your safari".
 
 | Step | Field | Required | Rules |
 |---|---|---|---|
@@ -281,13 +285,13 @@ The page has the banner "Join or Organize a Shared Safari" and the line "There a
 | Section | Content |
 |---|---|
 | Banner | "Shared Safari" |
-| Top | Picture · title · dates · park · "Organized by {host}" · status badge (non-active only) |
+| Top | Picture · title · dates · park · "Organized by {host}" (a partner host shows as their business name and logo) · status badge (non-active only) |
 | Details | Trip Duration (N Nights, N Days) · Available Seats (share / total) · Safaris · Stay Category · Theme · Cost |
 | Share row | "Share this safari with your friends:" with Facebook, X, Instagram, WhatsApp, LinkedIn, Telegram and copy-link icons (display only) |
 | Buttons | Guest / not joined: **Join Safari** (hidden when Seat full) · Joined: "You've joined this safari." + **Leave Safari** · Host: **Update Safari** + **Change Status** |
 | Safari Plan | Phone numbers and emails are hidden as `••••` for everyone; the host sees them in Edit |
 | Discussion (N) | Comments and replies (§8) |
-| **Interested – N** | Initials circles of members joined now (up to 8, then "+N"). Hover shows the name; the circles don't click |
+| **Interested – N** | Initials circles of members joined now (up to 8, then "+N"). Hover shows the name (a partner shows as their business name and logo); the circles don't click |
 
 - **Interested popup:** clicking the green **Interested** header opens a popup titled "INTERESTED (N)". It has a table (S.No · Name · Joined On) and the footer "Showing 1 - N of N interested users".
 - **Who is shown:** the card, the Interested box and the popup show only the **current members** (joined now). Someone who left is not shown; if they join again they are shown again, and **Joined On** is their **last** join time.
@@ -298,6 +302,7 @@ The page has the banner "Join or Organize a Shared Safari" and the line "There a
 | Rule | Message |
 |---|---|
 | Signed in | Guest → Login |
+| Not a partner | A partner (Active or Inactive) can't join a new safari; the button isn't shown |
 | Not the host | "You can't join your own safari." |
 | Active, started or not (Seat full: no new joins) | "This safari is not open to join." |
 | Already joined | The button says **Leave Safari** |
@@ -308,7 +313,7 @@ The page has the banner "Join or Organize a Shared Safari" and the line "There a
 
 ## 8. Discussion, replies and flags
 
-- **Who comments:** the host, members who are joined now, and members who joined before and left, while the safari is Active or Seat full, whether it has started or not.
+- **Who comments:** the host, members who are joined now, and members who joined before and left, while the safari is Active or Seat full, whether it has started or not. A partner who hosted or joined a safari before becoming a partner can still comment on it; the comment and its replies show the partner's **business name and logo**.
   - Signed-in users who have never joined see "Join this safari to comment."
   - Guests see "Sign in and join this safari to comment."
 - **No masking in comments (for now):** comments and replies are shown as written; phone numbers and emails in them are **not** hidden. Only the Safari Plan is masked (§6.2).
@@ -359,7 +364,7 @@ The console has the WITW header (dark green, WITW logo). The sidebar group **Sha
 | Element | Detail |
 |---|---|
 | Order | Pinned first, then newest |
-| Columns | S.No · Title · Park · Host · Dates · Seats · Joined / left (each count opens its list) · Status · Actions |
+| Columns | S.No · Title · Park · Host (a partner's account name with the business) · Dates · Seats · Joined / left (each count opens its list) · Status · Actions |
 | Filters | Title or park search · Status (**All** by default · Active · Inactive · Seat full · Deleted by admin · Deleted by host) · Host |
 | Actions | **View** · **Pin** icon: filled green = pinned, outline = not pinned; click to toggle. Deleting a safari does **not** unpin it |
 | Paging | 20 per page |
@@ -489,5 +494,6 @@ Each screen has a desktop (1366 px) and a mobile (390 px) board. On mobile, dial
 | 59 | Guests and the Interested popup | Guests see it, with the Joined On dates. |
 | 60 | Safari photos | Hosts upload their own; the app adds no sample photos. |
 | 61 | Re-theming | First step: when the prototype is updated, re-theme the apps (existing screens too) to its design system before building new screens, and follow it whenever it changes. |
-| 62 | A park's average safari price | Up to ₹10,00,000, the same limit as a safari's price per person ("Enter whole rupees, up to ₹10,00,000."). |
+| 62 | A park's average safari price | **Decided 2026-11-14:** no longer entered (this replaces the earlier rule of an entered min and max up to ₹10,00,000). It is calculated from the park's packages shown on the website: the lowest – highest price per person, as in the Packages workflow §10. The park form has description, location (latitude / longitude) and feature image instead. |
 | 63 | Minimum price per person | ₹0 is allowed (whole rupees from ₹0 up to ₹10,00,000). |
+| 64 | A partner and shared safaris | **Decided 2026-11-14** (Packages workflow §2.5): a partner (Active or Inactive) can't organise or join a new shared safari. Safaris they hosted or joined before stay as they are, and they can still comment on them. They show as their **business name and logo**: on the website as host, in the Interested list and in every comment and reply; in the console as the account name with the business. |

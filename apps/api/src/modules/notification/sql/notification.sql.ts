@@ -19,7 +19,7 @@ export const NotificationSQL = {
     list: (shape: NotificationListShape) => `
         SELECT n.id, n.notification_kind AS notificationKind, n.entity_type AS entityType, n.entity_id AS entityId,
                n.title, n.excerpt, n.read_at AS readAt, n.created_at AS createdAt, n.created_by AS actorId,
-               u.name AS actorName
+               COALESCE(n.actor_name, u.name) AS actorName
         FROM notification n
         LEFT JOIN user u ON u.id = n.created_by
         ${listWhere(shape)}
@@ -45,8 +45,8 @@ export const NotificationSQL = {
     insert: (rowCount: number) => `
         INSERT INTO notification
             (user_id, notification_kind, entity_type, entity_id, client_app, owner_type, owner_id, title, excerpt,
-             status, created_by, updated_by)
-        VALUES ${valueGroups(rowCount, 12)}`,
+             actor_name, status, created_by, updated_by)
+        VALUES ${valueGroups(rowCount, 13)}`,
 
     markRead: `
         UPDATE notification

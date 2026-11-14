@@ -26,31 +26,31 @@ const EMAIL_INVALID = 'Enter a valid email address.';
 const MOBILE_INVALID = 'Enter a 10-digit mobile number.';
 const PASSWORD_SHORT = `Use at least ${PASSWORD_LIMITS.MIN} characters.`;
 
-export const signUpSchema = z.object({
-    body: z
-        .object({
-            name: z
-                .string({ required_error: FULL_NAME_MISSING, invalid_type_error: FULL_NAME_MISSING })
-                .trim()
-                .min(SIGN_UP_LIMITS.NAME_MIN, FULL_NAME_MISSING)
-                .max(SIGN_UP_LIMITS.NAME_MAX, `Name can be at most ${SIGN_UP_LIMITS.NAME_MAX} characters.`),
-            email: z
-                .string({ required_error: EMAIL_INVALID, invalid_type_error: EMAIL_INVALID })
-                .trim()
-                .toLowerCase()
-                .max(SIGN_UP_LIMITS.EMAIL, EMAIL_INVALID)
-                .email(EMAIL_INVALID),
-            mobile: z
-                .string({ required_error: MOBILE_INVALID, invalid_type_error: MOBILE_INVALID })
-                .trim()
-                .regex(INDIAN_MOBILE_PATTERN, MOBILE_INVALID),
-            password: z
-                .string({ required_error: PASSWORD_SHORT, invalid_type_error: PASSWORD_SHORT })
-                .min(PASSWORD_LIMITS.MIN, PASSWORD_SHORT)
-                .max(PASSWORD_LIMITS.MAX, `Password can be at most ${PASSWORD_LIMITS.MAX} characters.`),
-        })
-        .strict(),
-});
+export const signUpAccountSchema = z
+    .object({
+        name: z
+            .string({ required_error: FULL_NAME_MISSING, invalid_type_error: FULL_NAME_MISSING })
+            .trim()
+            .min(SIGN_UP_LIMITS.NAME_MIN, FULL_NAME_MISSING)
+            .max(SIGN_UP_LIMITS.NAME_MAX, `Name can be at most ${SIGN_UP_LIMITS.NAME_MAX} characters.`),
+        email: z
+            .string({ required_error: EMAIL_INVALID, invalid_type_error: EMAIL_INVALID })
+            .trim()
+            .toLowerCase()
+            .max(SIGN_UP_LIMITS.EMAIL, EMAIL_INVALID)
+            .email(EMAIL_INVALID),
+        mobile: z
+            .string({ required_error: MOBILE_INVALID, invalid_type_error: MOBILE_INVALID })
+            .trim()
+            .regex(INDIAN_MOBILE_PATTERN, MOBILE_INVALID),
+        password: z
+            .string({ required_error: PASSWORD_SHORT, invalid_type_error: PASSWORD_SHORT })
+            .min(PASSWORD_LIMITS.MIN, PASSWORD_SHORT)
+            .max(PASSWORD_LIMITS.MAX, `Password can be at most ${PASSWORD_LIMITS.MAX} characters.`),
+    })
+    .strict();
+
+export const signUpSchema = z.object({ body: signUpAccountSchema });
 
 export type SignUpBody = z.infer<typeof signUpSchema>['body'];
 

@@ -69,6 +69,7 @@ export class NotificationRepository implements INotificationRepository {
                 row.ownerId,
                 row.title,
                 row.excerpt,
+                row.actorName ?? null,
                 ACTIVE,
                 row.actorId,
                 row.actorId,

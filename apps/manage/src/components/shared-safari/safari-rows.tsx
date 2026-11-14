@@ -9,7 +9,7 @@ import { Toast } from '@/components/ui/toast';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSafariActions } from '@/hooks/shared-safari/use-safari-actions';
 import { formatCount } from '@/lib/format';
-import type { ConsoleSafari } from '@/types/shared-safari.types';
+import { type ConsoleSafari, personLabel } from '@/types/shared-safari.types';
 
 import { type MemberListKind, MembersDialog } from './members-dialog';
 import { consoleDates, seatsShort, statusBadge } from './shared-safari-format';
@@ -137,7 +137,7 @@ export function SafariRows({
                                         <Link href={sharedSafariPath(safari.id)}>{safari.title}</Link>
                                     </td>
                                     <td>{safari.park.name}</td>
-                                    <td>{safari.host.name}</td>
+                                    <td>{personLabel(safari.host)}</td>
                                     <td>{consoleDates(safari.startDate, safari.endDate)}</td>
                                     <td className="col-center">{seatsShort(safari)}</td>
                                     <td className="col-center">
@@ -189,7 +189,7 @@ export function SafariRows({
                                 />
                             </div>
                             <span className="ss-cap">
-                                {safari.park.name} · {safari.host.name}
+                                {safari.park.name} · {personLabel(safari.host)}
                             </span>
                             <span className="ss-cap">
                                 {consoleDates(safari.startDate, safari.endDate)} · {t('Seats')} {seatsShort(safari)}

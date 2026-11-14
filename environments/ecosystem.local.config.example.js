@@ -14,5 +14,6 @@ module.exports = {
         devApp('api.workshop-witw', 'api', 8030),
         devApp('web.workshop-witw', 'web', 3040),
         devApp('manage.workshop-witw', 'manage', 3041),
+        devApp('partner.workshop-witw', 'partner', 3042),
     ],
 };

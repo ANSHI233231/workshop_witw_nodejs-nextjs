@@ -1,4 +1,4 @@
-export const AppLogSource = { API: 1, MANAGE: 2, WEB: 3 } as const;
+export const AppLogSource = { API: 1, MANAGE: 2, WEB: 3, PARTNER: 4 } as const;
 
 export type AppLogSourceCode = (typeof AppLogSource)[keyof typeof AppLogSource];
 

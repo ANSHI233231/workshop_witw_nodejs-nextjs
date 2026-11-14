@@ -1,5 +1,6 @@
 import type { Express } from 'express';
 
+import { ClientApp } from '../core/context';
 import { mountApi, type RouteEntry } from '../core/http';
 import { logger } from '../core/logger';
 import type { Database } from '../database/connection';
@@ -9,12 +10,16 @@ import type { IFileStorage } from '../infrastructure/storage';
 import { createAuditModule } from '../modules/audit';
 import { type AppUrls, type AuthSettings, createAuthModule } from '../modules/auth';
 import { createFlagReasonModule } from '../modules/flag-reason';
+import { createGalleryModule } from '../modules/gallery';
 import { createHealthModule } from '../modules/health';
 import { createJobsModule } from '../modules/jobs';
 import { createLanguageModule } from '../modules/language';
 import { createMailModule, MailLogStatus } from '../modules/mail';
 import { createNotificationModule } from '../modules/notification';
+import { createPackageModule } from '../modules/package';
 import { createParkModule } from '../modules/park';
+import { createPartnerModule } from '../modules/partner';
+import { createQuoteRequestModule } from '../modules/quote-request';
 import { createSharedSafariModule } from '../modules/shared-safari';
 import { createSystemLogModule } from '../modules/system-log';
 import { createUsersModule, MetaRole } from '../modules/users';
@@ -83,7 +88,21 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
     });
 
     const flagReason = createFlagReasonModule({ db: dependencies.db, auditService: audit.auditService });
-    const park = createParkModule({ db: dependencies.db, auditService: audit.auditService });
+    const park = createParkModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        fileStorage: dependencies.fileStorage,
+    });
+    const partner = createPartnerModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        usersService: users.usersService,
+        parkService: park.parkService,
+        fileStorage: dependencies.fileStorage,
+        accountSignUp: auth.authService,
+        sessionCookies: auth.sessionCookies,
+    });
+
     const sharedSafari = createSharedSafariModule({
         db: dependencies.db,
         auditService: audit.auditService,
@@ -91,6 +110,36 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
         fileStorage: dependencies.fileStorage,
         parkService: park.parkService,
         flagReasonService: flagReason.flagReasonService,
+        partnerService: partner.partnerService,
+    });
+
+    const gallery = createGalleryModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        partnerService: partner.partnerService,
+        usersService: users.usersService,
+        notificationService: notification.notificationService,
+        fileStorage: dependencies.fileStorage,
+    });
+
+    const packages = createPackageModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        partnerService: partner.partnerService,
+        galleryService: gallery.galleryService,
+        usersService: users.usersService,
+        notificationService: notification.notificationService,
+        fileStorage: dependencies.fileStorage,
+    });
+    park.connectPriceSource(packages.packageService);
+
+    const quoteRequest = createQuoteRequestModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        packageService: packages.packageService,
+        partnerService: partner.partnerService,
+        usersService: users.usersService,
+        notificationService: notification.notificationService,
     });
 
     const superAdmin = auth.access.roles([MetaRole.SUPER_ADMIN]);
@@ -116,9 +165,23 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
         ...mountApi(
             app,
             `${API_PREFIX}/notification`,
-            notification.createRouter({ signedIn: auth.access.signedIn, superAdmin }),
+            notification.createRouter({
+                signedIn: auth.access.signedIn,
+                superAdmin,
+                feedGates: {
+                    [ClientApp.PARTNER]: async (userId) => (await partner.partnerService.activePartnerOf(userId)) !== null,
+                },
+            }),
         ),
         ...mountApi(app, `${API_PREFIX}/park`, park.createRouter(superAdmin)),
+        ...mountApi(app, `${API_PREFIX}/partner`, partner.createRouter({ signedIn: auth.access.signedIn, superAdmin })),
+        ...mountApi(app, `${API_PREFIX}/gallery`, gallery.createRouter({ signedIn: auth.access.signedIn, superAdmin })),
+        ...mountApi(app, `${API_PREFIX}/package`, packages.createRouter({ signedIn: auth.access.signedIn, superAdmin })),
+        ...mountApi(
+            app,
+            `${API_PREFIX}/quote-request`,
+            quoteRequest.createRouter({ signedIn: auth.access.signedIn, superAdmin }),
+        ),
         ...mountApi(
             app,
             `${API_PREFIX}/shared-safari`,

@@ -15,6 +15,7 @@ import {
     SafariStatus,
 } from '@/types/shared-safari.types';
 
+import { PersonAvatar } from './person-avatar';
 import { CloseIcon, FlagIcon, TrashIcon } from './safari-icons';
 
 const log = logger.category('shared-safari');
@@ -87,7 +88,7 @@ export function InterestedDialog({ members, onClose }: { readonly members: reado
                                 <td className="col-sno">{index + 1}</td>
                                 <td>
                                     <span className="ss3-who-name">
-                                        <span className="avatar ss-av">{member.initials}</span>
+                                        <PersonAvatar person={member} className="ss-av" />
                                         {member.name}
                                     </span>
                                 </td>

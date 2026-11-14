@@ -44,6 +44,10 @@ export class LocalDiskFileStorage implements IFileStorage {
         }
     }
 
+    async removeFolder(path: string): Promise<void> {
+        await rm(this.locate(path), { recursive: true, force: true });
+    }
+
     private locate(path: string): string {
         if (path.length === 0 || isAbsolute(path) || path.includes('\\') || path.includes('\0')) {
             throw new InvalidStoragePathError(path);
