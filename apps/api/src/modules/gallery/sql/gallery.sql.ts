@@ -191,11 +191,6 @@ export const GallerySQL = {
         ${FROM_GALLERY}
         WHERE gallery.partner_id IN (${placeholders(count)})`,
 
-    photoFilesOfGalleries: (count: number) => `
-        SELECT DISTINCT gallery_id, file_name
-        FROM gallery_photo
-        WHERE gallery_id IN (${placeholders(count)})`,
-
     deletePhotosOfGalleries: (count: number) => `
         DELETE FROM gallery_photo
         WHERE gallery_id IN (${placeholders(count)})`,

@@ -64,13 +64,15 @@ export class UsersDemoService implements IUsersDemoService {
         }
     }
 
-    async removeAccounts(emails: readonly string[]): Promise<number> {
+    async removeAccounts(emails: readonly string[], superAdminEmails: readonly string[] = []): Promise<number> {
         this.refuseInProduction();
         const event = { action: AuditAction.USER_DEMO_REMOVED, entityType: AuditEntity.USER, details: { emails } } as const;
         try {
             return await this.db.transaction(async () => {
                 const found = await this.demoRepository.findByEmails(this.db, emails);
-                const admins = found.filter((row) => Number(row.super_admin_roles) > 0);
+                const admins = found.filter(
+                    (row) => Number(row.super_admin_roles) > 0 && !superAdminEmails.some((email) => sameEmail(email, row.email)),
+                );
                 if (admins.length > 0) {
                     throw new ConflictException(
                         `These accounts have the Super Admin role and are not demo accounts: ${admins.map((row) => row.email).join(', ')}.`,

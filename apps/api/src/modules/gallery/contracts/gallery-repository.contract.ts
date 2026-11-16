@@ -8,7 +8,6 @@ import type {
     GalleryPhotoSetCode,
     GalleryRow,
     GalleryTabKey,
-    PhotoFileRow,
 } from '../types/gallery.types';
 
 export type ConsoleListScope = {
@@ -62,6 +61,5 @@ export interface IGalleryRepository {
     nextSortOrder(db: DbExecutor, galleryId: number): Promise<number>;
     hasDraftThumbnail(db: DbExecutor, galleryId: number): Promise<boolean>;
     galleriesOfPartners(db: DbExecutor, partnerIds: readonly number[]): Promise<GalleryRow[]>;
-    photoFilesOf(db: DbExecutor, galleryIds: readonly number[]): Promise<PhotoFileRow[]>;
     deleteGalleries(db: DbExecutor, galleryIds: readonly number[]): Promise<number>;
 }

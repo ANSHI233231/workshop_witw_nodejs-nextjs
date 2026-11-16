@@ -140,7 +140,6 @@ export function BusinessFields({
             <LogoPicker
                 choice={logo}
                 currentUrl={currentLogoUrl}
-                businessName={values.businessName.trim()}
                 error={errors.logo}
                 inputId={`${idPrefix}-logo`}
                 onChange={onLogoChange}

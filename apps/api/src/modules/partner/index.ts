@@ -77,9 +77,11 @@ export const createPartnerTestDataModule = (dependencies: PartnerTestDataModuleD
 };
 
 export const createPartnerDemoModule = (dependencies: PartnerDemoModuleDependencies) => {
+    const repository = new PartnerRepository();
     const partnerDemoService: IPartnerDemoService = new PartnerDemoService(
         dependencies.db,
-        new PartnerRepository(),
+        repository,
+        new PartnerRecords(dependencies.db, repository, dependencies.parkService, dependencies.auditService, dependencies.fileStorage),
         dependencies.usersService,
         dependencies.usersDemoService,
         dependencies.parkService,

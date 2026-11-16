@@ -5,7 +5,7 @@ import { AuditAction, AuditEntity, type IAuditService } from '../../audit';
 import type { DemoPackage, DemoPackageGallery, DemoPackageOutcome, DemoPackageVersion } from '../dto/package-demo.dto';
 import type { DeleteReasonRepository } from '../repositories/delete-reason.repository';
 import type { NewPhoto, PackageRepository } from '../repositories/package.repository';
-import { Meal, PackageVersionStatus } from '../types/package.types';
+import { Meal, PACKAGE_FOLDER, PackageVersionStatus } from '../types/package.types';
 import { filePath } from './package-records';
 
 type PendingFile = { readonly path: string; readonly picture: string };
@@ -78,12 +78,17 @@ export class PackageDemoService {
         const rows = await this.repository.demoPackagesOf(this.db, partnerIds);
         if (!write || rows.length === 0) return rows.length;
         const ids = rows.map((row) => row.id);
+        const folders = ids.map((id) => `${PACKAGE_FOLDER}/${id}`);
         const event = { action: AuditAction.PACKAGE_DEMO_REMOVED, entityType: AuditEntity.PACKAGE } as const;
         try {
             await this.db.transaction(async () => {
                 await this.repository.deleteDemoPackages(this.db, ids);
-                await this.auditService.record({ ...event, details: { removed: rows.map((row) => ({ id: row.id, slug: row.slug })) } });
+                await this.auditService.record({
+                    ...event,
+                    details: { removed: rows.map((row) => ({ id: row.id, slug: row.slug })), folders },
+                });
             });
+            for (const folder of folders) await this.fileStorage.removeFolder(folder);
             return rows.length;
         } catch (error) {
             await this.auditService.recordFailure({ ...event, action: AuditAction.PACKAGE_DEMO_REMOVE_FAILED }, error);

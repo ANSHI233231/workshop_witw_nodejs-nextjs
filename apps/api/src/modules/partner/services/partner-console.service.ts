@@ -168,10 +168,12 @@ export class PartnerConsoleService implements IPartnerConsoleService {
     }
 
     private async changeLogo(row: PartnerRow, logo: string | null, actorId: number): Promise<PartnerDto> {
-        return this.records.audited(LOGO_ACTIONS, row.id, { logo }, async () => {
+        const result = await this.records.audited(LOGO_ACTIONS, row.id, { logo }, async () => {
             await this.repository.updateLogo(this.db, row.id, logo, actorId);
             return { result: await this.records.byId(row.id), id: row.id, changes: { logo: { from: row.logo, to: logo } } };
         });
+        await this.records.discardReplacedLogo(row, logo);
+        return result;
     }
 
     private async page(scope: PartnerListScope, pagination: PaginationQuery): Promise<PartnerPage> {

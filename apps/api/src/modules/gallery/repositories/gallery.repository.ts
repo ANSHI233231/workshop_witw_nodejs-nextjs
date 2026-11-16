@@ -23,7 +23,6 @@ import {
     type GalleryTabCountRow,
     type GalleryTabKey,
     IN_USE_STATUSES,
-    type PhotoFileRow,
 } from '../types/gallery.types';
 
 const ACTIVE = GalleryPhotoStatus.ACTIVE;
@@ -327,11 +326,6 @@ export class GalleryRepository implements IGalleryRepository {
     async galleriesOfPartners(db: DbExecutor, partnerIds: readonly number[]): Promise<GalleryRow[]> {
         if (partnerIds.length === 0) return [];
         return db.query<GalleryRow>(GallerySQL.galleriesOfPartners(partnerIds.length), [...partnerIds]);
-    }
-
-    async photoFilesOf(db: DbExecutor, galleryIds: readonly number[]): Promise<PhotoFileRow[]> {
-        if (galleryIds.length === 0) return [];
-        return db.query<PhotoFileRow>(GallerySQL.photoFilesOfGalleries(galleryIds.length), [...galleryIds]);
     }
 
     async deleteGalleries(db: DbExecutor, galleryIds: readonly number[]): Promise<number> {

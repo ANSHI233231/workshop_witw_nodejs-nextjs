@@ -13,6 +13,66 @@
     {
       "source": "../../how-it-works/workflows/production-deployment.md",
       "output": "../../how-it-works/workflows/documents/production-deployment.docx"
+    },
+    {
+      "source": "../../testing/users-and-auth.md",
+      "output": "../../testing/documents/users-and-auth.docx"
+    },
+    {
+      "source": "../../testing/shared-safari.md",
+      "output": "../../testing/documents/shared-safari.docx"
+    },
+    {
+      "source": "../../testing/parks.md",
+      "output": "../../testing/documents/parks.docx"
+    },
+    {
+      "source": "../../testing/flag-reasons.md",
+      "output": "../../testing/documents/flag-reasons.docx"
+    },
+    {
+      "source": "../../testing/partner.md",
+      "output": "../../testing/documents/partner.docx"
+    },
+    {
+      "source": "../../testing/partner-portal.md",
+      "output": "../../testing/documents/partner-portal.docx"
+    },
+    {
+      "source": "../../testing/galleries.md",
+      "output": "../../testing/documents/galleries.docx"
+    },
+    {
+      "source": "../../testing/packages.md",
+      "output": "../../testing/documents/packages.docx"
+    },
+    {
+      "source": "../../testing/quote-requests.md",
+      "output": "../../testing/documents/quote-requests.docx"
+    },
+    {
+      "source": "../../testing/notifications.md",
+      "output": "../../testing/documents/notifications.docx"
+    },
+    {
+      "source": "../../testing/console-platform.md",
+      "output": "../../testing/documents/console-platform.docx"
+    },
+    {
+      "source": "../../testing/theme-frames-responsive.md",
+      "output": "../../testing/documents/theme-frames-responsive.docx"
+    },
+    {
+      "source": "../../testing/repo-tooling.md",
+      "output": "../../testing/documents/repo-tooling.docx"
+    },
+    {
+      "source": "../../testing/end-to-end.md",
+      "output": "../../testing/documents/end-to-end.docx"
+    },
+    {
+      "source": "../../testing/README.md",
+      "output": "../../testing/documents/test-documents-index.docx"
     }
   ]
 }

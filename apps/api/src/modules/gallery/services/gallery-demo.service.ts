@@ -7,7 +7,7 @@ import { AuditAction, AuditEntity, type IAuditService } from '../../audit';
 import type { IGalleryDemoService } from '../contracts/gallery-demo-service.contract';
 import type { IGalleryRepository, NewPhotoRow } from '../contracts/gallery-repository.contract';
 import type { DemoGallery, DemoGalleryOutcome, DemoGalleryPhoto, DemoGalleryRef } from '../dto/gallery-demo.dto';
-import { GalleryPhotoSet } from '../types/gallery.types';
+import { GALLERY_FOLDER, GalleryPhotoSet } from '../types/gallery.types';
 import { photoPath } from './gallery-records';
 
 const RANDOM_BYTES = 8;
@@ -77,7 +77,6 @@ export class GalleryDemoService implements IGalleryDemoService {
         const rows = await this.repository.galleriesOfPartners(this.db, partnerIds);
         if (!write || rows.length === 0) return rows.length;
         const galleryIds = rows.map((row) => row.id);
-        const files = await this.repository.photoFilesOf(this.db, galleryIds);
         const event = { action: AuditAction.GALLERY_DEMO_REMOVED, entityType: AuditEntity.GALLERY } as const;
         try {
             const removed = await this.db.transaction(async () => {
@@ -88,9 +87,7 @@ export class GalleryDemoService implements IGalleryDemoService {
                 });
                 return count;
             });
-            await Promise.all(
-                files.map((file) => this.fileStorage.remove(photoPath(file.gallery_id, file.file_name)).catch(() => undefined)),
-            );
+            for (const id of galleryIds) await this.fileStorage.removeFolder(`${GALLERY_FOLDER}/${id}`);
             return removed;
         } catch (error) {
             await this.auditService.recordFailure({ ...event, action: AuditAction.GALLERY_DEMO_REMOVE_FAILED }, error);

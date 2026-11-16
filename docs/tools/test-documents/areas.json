@@ -1,0 +1,125 @@
+{
+  "areas": [
+    {
+      "title": "Users and Auth",
+      "slug": "users-and-auth",
+      "ids": ["AUTH", "ACCESS", "LOCAL-01..05", "LOCAL-07..08", "LOCAL-12", "START-03", "START-06", "START-12", "PTR-07"],
+      "refs": [
+        { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§2" },
+        { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§2.2, §3" },
+        { "doc": "docs/how-it-works/workflows/technical-document.md", "sections": "§4" }
+      ],
+      "howItWorks": ["docs/how-it-works/modules/auth/README.md", "docs/how-it-works/modules/users/README.md", "docs/how-it-works/platform/route-access.md", "docs/how-it-works/platform/partner-portal.md"]
+    },
+    {
+      "title": "Shared Safari",
+      "slug": "shared-safari",
+      "ids": ["SS", "SEED", "PKSS-02"],
+      "refs": [
+        { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§4 to §10, §11.1 to §11.3, §13" },
+        { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§2.5" }
+      ],
+      "howItWorks": ["docs/how-it-works/modules/shared-safari/README.md"]
+    },
+    {
+      "title": "Parks",
+      "slug": "parks",
+      "ids": ["PARK"],
+      "refs": [
+        { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§3, §11.5" },
+        { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§10" }
+      ],
+      "howItWorks": ["docs/how-it-works/modules/park/README.md"]
+    },
+    {
+      "title": "Flag Reasons",
+      "slug": "flag-reasons",
+      "ids": ["FR"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§8, §11.4" }],
+      "howItWorks": ["docs/how-it-works/modules/flag-reason/README.md"]
+    },
+    {
+      "title": "Partner",
+      "slug": "partner",
+      "ids": ["PTR-01..05", "PTR-08..10", "LOGO", "LOCAL-11", "PKSS-01"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§1, §2.1 to §2.5, §12.1, §12.2" }],
+      "howItWorks": ["docs/how-it-works/modules/partner/README.md"]
+    },
+    {
+      "title": "Partner portal",
+      "slug": "partner-portal",
+      "ids": ["PTR-06", "PTR-11", "PTR-12", "LOCAL-06", "PORTAL"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§2.4, §3" }],
+      "howItWorks": ["docs/how-it-works/platform/partner-portal.md"]
+    },
+    {
+      "title": "Galleries",
+      "slug": "galleries",
+      "ids": ["GAL"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§7, §7.1, §7.2, §12.6, §12.7" }],
+      "howItWorks": ["docs/how-it-works/modules/gallery/README.md"]
+    },
+    {
+      "title": "Packages",
+      "slug": "packages",
+      "ids": ["PKG", "LOCAL-09"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§4, §5, §6.1, §6.2, §8.1, §8.2, §12.3 to §12.5, §13" }],
+      "howItWorks": ["docs/how-it-works/modules/package/README.md"]
+    },
+    {
+      "title": "Quote requests",
+      "slug": "quote-requests",
+      "ids": ["QR", "LOCAL-10"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§9.1 to §9.3, §11, §12.8" }],
+      "howItWorks": ["docs/how-it-works/modules/quote-request/README.md"]
+    },
+    {
+      "title": "Notifications",
+      "slug": "notifications",
+      "ids": ["NOTIF"],
+      "refs": [
+        { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§10" },
+        { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§11" }
+      ],
+      "howItWorks": ["docs/how-it-works/modules/notification/README.md"]
+    },
+    {
+      "title": "Console platform",
+      "slug": "console-platform",
+      "ids": ["START", "SYNC", "RESP"],
+      "refs": [{ "doc": "docs/how-it-works/workflows/technical-document.md", "sections": "starter modules" }],
+      "howItWorks": [
+        "docs/how-it-works/platform/manage-console.md",
+        "docs/how-it-works/modules/audit/README.md",
+        "docs/how-it-works/modules/system-log/README.md",
+        "docs/how-it-works/modules/jobs/README.md",
+        "docs/how-it-works/modules/language/README.md",
+        "docs/how-it-works/modules/mail/README.md"
+      ]
+    },
+    {
+      "title": "Theme, frames and responsive",
+      "slug": "theme-frames-responsive",
+      "ids": ["THEME", "FRAME", "PKSS-03"],
+      "refs": [{ "doc": "docs/PROTOTYPE-SYNC.md", "sections": "frames and theme rows" }],
+      "howItWorks": ["docs/how-it-works/platform/frontend-apps.md", "docs/how-it-works/platform/manage-console.md"]
+    },
+    {
+      "title": "Repo tooling",
+      "slug": "repo-tooling",
+      "ids": ["PROTO", "BTEST"],
+      "refs": [{ "doc": "docs/how-it-works/platform/prototype.md", "sections": "whole file" }],
+      "howItWorks": ["docs/how-it-works/platform/prototype.md", "docs/how-it-works/platform/browser-testing.md"]
+    },
+    {
+      "title": "End-to-end",
+      "slug": "end-to-end",
+      "ids": ["E2E"],
+      "refs": [
+        { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§1 to §13" },
+        { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§1 to §13" }
+      ],
+      "howItWorks": ["docs/how-it-works/README.md"]
+    }
+  ]
+}

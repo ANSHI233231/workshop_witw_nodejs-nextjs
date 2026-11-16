@@ -1,6 +1,6 @@
 # Docs generator (Markdown → Word)
 
-Turns the repo's Markdown documents into Word (`.docx`) files that look the same and are byte-identical every time, whoever runs it and on whatever machine. Its documents are the workflows in [docs/how-it-works/workflows/](../../how-it-works/workflows/README.md): the `.md` there is the source, and the `.docx` goes into its `documents/` folder.
+Turns the repo's Markdown documents into Word (`.docx`) files that look the same and are byte-identical every time, whoever runs it and on whatever machine. Its documents are the workflows in [docs/how-it-works/workflows/](../../how-it-works/workflows/README.md) (the `.md` there is the source, and the `.docx` goes into its `documents/` folder) and the generated test documents in [docs/testing/](../../testing/README.md) (written by [test-documents](../test-documents/README.md) from the planning files; the `.docx` goes into `docs/testing/documents/`). Run `node docs/tools/test-documents/generate.js` before `npm run build` when a planning file's test results changed.
 
 **The Markdown is the source of truth.** Never edit a generated `.docx` by hand: the next build overwrites it.
 
@@ -37,6 +37,8 @@ Listed in [docs.config.json](docs.config.json); paths are relative to this folde
 | `docs/how-it-works/workflows/technical-document.md` | `docs/how-it-works/workflows/documents/technical-document.docx` |
 | `docs/how-it-works/workflows/production-deployment.md` | `docs/how-it-works/workflows/documents/production-deployment.docx` |
 | `docs/how-it-works/workflows/staging-deployment.md` | `docs/how-it-works/workflows/documents/staging-deployment.docx` |
+| `docs/testing/<area>.md` (14 areas, generated) | `docs/testing/documents/<area>.docx` |
+| `docs/testing/README.md` (the index, generated) | `docs/testing/documents/test-documents-index.docx` |
 
 To add a document, add a `{ "source", "output" }` entry, then run `npm run build`.
 

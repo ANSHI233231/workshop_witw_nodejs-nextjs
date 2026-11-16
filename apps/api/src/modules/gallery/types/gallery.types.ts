@@ -77,11 +77,6 @@ export interface GalleryTabCountRow extends RowDataPacket {
     waiting: number | string | null;
 }
 
-export interface PhotoFileRow extends RowDataPacket {
-    gallery_id: number;
-    file_name: string;
-}
-
 export interface CountRow extends RowDataPacket {
     total: number;
 }

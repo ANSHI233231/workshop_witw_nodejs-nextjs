@@ -1,4 +1,4 @@
-import { ForbiddenException } from '../../../core/exceptions';
+import { ForbiddenException, NotFoundException } from '../../../core/exceptions';
 import type { Database } from '../../../database/connection';
 import type { IFileStorage } from '../../../infrastructure/storage';
 import { AuditAction, AuditEntity, type IAuditService } from '../../audit';
@@ -7,8 +7,8 @@ import { type IUsersDemoService, type IUsersService, MetaRole } from '../../user
 import type { IPartnerDemoService } from '../contracts/partner-demo-service.contract';
 import type { IPartnerRepository } from '../contracts/partner-repository.contract';
 import type { DemoPartner, DemoPartnerOutcome, DemoPartnerState } from '../dto/partner-demo.dto';
-import { PARTNER_STATUSES, PartnerStatus } from '../types/partner.types';
-import { logoPath } from './partner-records';
+import { LOGO_FOLDER, PARTNER_STATUSES, PartnerStatus } from '../types/partner.types';
+import type { PartnerRecords } from './partner-records';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -20,12 +20,12 @@ const daysAgo = (days: number): Date => {
 
 const sameEmail = (a: string | null, b: string): boolean => a !== null && a.toLowerCase() === b.toLowerCase();
 
-type Logo = { readonly id: number; readonly logo: string };
 
 export class PartnerDemoService implements IPartnerDemoService {
     constructor(
         private readonly db: Database,
         private readonly repository: IPartnerRepository,
+        private readonly records: PartnerRecords,
         private readonly usersService: IUsersService,
         private readonly usersDemoService: IUsersDemoService,
         private readonly parkService: IParkService,
@@ -86,6 +86,24 @@ export class PartnerDemoService implements IPartnerDemoService {
         }
     }
 
+    async setLogo(partnerId: number, content: Buffer): Promise<boolean> {
+        this.refuseInProduction();
+        const row = await this.repository.findById(this.db, partnerId);
+        if (!row) throw new NotFoundException('This partner was not found.', 'PARTNER_NOT_FOUND');
+        if (row.logo) return false;
+        const fileName = await this.records.storeLogo(partnerId, content);
+        const actions = { done: AuditAction.PARTNER_LOGO_CHANGED, failed: AuditAction.PARTNER_LOGO_CHANGE_FAILED };
+        try {
+            return await this.records.audited(actions, partnerId, { logo: fileName, demo: true }, async () => {
+                await this.repository.updateLogo(this.db, partnerId, fileName, row.user_id);
+                return { result: true, id: partnerId, changes: { logo: { from: null, to: fileName } } };
+            });
+        } catch (error) {
+            await this.records.discardLogo(partnerId, fileName);
+            throw error;
+        }
+    }
+
     async remove(emails: readonly string[], write: boolean): Promise<{ partners: number; accounts: number }> {
         this.refuseInProduction();
         const accounts = await this.usersDemoService.findAccounts(emails);
@@ -95,7 +113,6 @@ export class PartnerDemoService implements IPartnerDemoService {
         );
         if (!write) return { partners: rows.length, accounts: accounts.length };
         const event = { action: AuditAction.PARTNER_DEMO_REMOVED, entityType: AuditEntity.PARTNER } as const;
-        const logos: Logo[] = rows.flatMap((row) => (row.logo ? [{ id: row.id, logo: row.logo }] : []));
         try {
             const partners = await this.db.transaction(async () => {
                 const removed = await this.repository.deletePartners(
@@ -111,7 +128,7 @@ export class PartnerDemoService implements IPartnerDemoService {
                 return removed;
             });
             const removedAccounts = await this.usersDemoService.removeAccounts(emails);
-            await Promise.all(logos.map((logo) => this.fileStorage.remove(logoPath(logo.id, logo.logo)).catch(() => undefined)));
+            for (const row of rows) await this.fileStorage.removeFolder(`${LOGO_FOLDER.PARENT}/${row.id}`);
             return { partners, accounts: removedAccounts };
         } catch (error) {
             await this.auditService.recordFailure({ ...event, action: AuditAction.PARTNER_DEMO_REMOVE_FAILED }, error);

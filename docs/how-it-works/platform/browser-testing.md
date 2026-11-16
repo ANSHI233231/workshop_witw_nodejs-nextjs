@@ -39,9 +39,22 @@ In §5 of the planning file, one line per case, newest last; a re-run adds a lin
 
 The method in brackets is `browser`, `API`, `CLI` or `DB`. What was seen is written in a few words, so the line is proof, not only a word.
 
+## Test documents
+
+The planning files stay the only place a test case and its result are written. A test document per area (Users and Auth, Shared Safari, Packages and so on; 14 in all) is **generated** from them as a read-only report in [docs/testing/](../../testing/README.md), as `.md` and as `.docx`. Never edit one by hand: the next run overwrites it.
+
+```bash
+node docs/tools/test-documents/generate.js           # rewrites docs/testing/*.md from every planning file
+node docs/tools/test-documents/generate.js --check   # exit 1, listing the files, when one is out of date; writes nothing
+cd docs/tools/docx-generator && npm run build        # then the .docx copies
+```
+
+Run them after the §5 lines change, then `npm run check` in `docs/tools/docx-generator`, and commit the planning file, the `.md` and the `.docx` together. Which area a case belongs to is in `docs/tools/test-documents/areas.json`; the script fails when a case ID is in no area or in two. A case's result is its result line with the latest date (on the same date a PASS, FAIL or BLOCKED line wins over a NOT RUN line). See the [tool's README](../../tools/test-documents/README.md).
+
 ## Where it lives
 
 - **Test cases and results:** each feature's planning file, §3 and §5 ([template](../../planning/TEMPLATE.md))
+- **Test documents (generated, read-only):** [docs/testing/](../../testing/README.md)
 - **Rule:** `AGENTS.md`, Sync discipline
 
 ## History

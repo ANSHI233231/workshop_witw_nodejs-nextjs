@@ -6,7 +6,10 @@ docs/
 │                   roles, and how we do things. The source of truth after the code
 ├── planning/       features/: one dated planning file per feature: how it was decided and built
 │                   (requirement, plan, test cases, decisions, log)
-├── tools/          docx-generator/: builds the Word (.docx) copies of the workflow documents, reproducibly
+├── testing/        Test documents, one per area (.md, and .docx in documents/): GENERATED from the planning
+│                   files' test cases and results, never edited by hand; see testing/README.md
+├── tools/          docx-generator/: builds the Word (.docx) copies of the workflow and test documents,
+│                   reproducibly; test-documents/: generates the test documents from the planning files
 └── prototype/      Git submodule (set up by init.js; starts as a copy of the starter prototype): the design
                     prototype and design system. Only the parts declared ready are built from
 ```

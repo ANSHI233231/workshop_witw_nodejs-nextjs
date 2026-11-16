@@ -1,13 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-
 import { config } from '../../../config';
 import { createFileStorage } from '../../../infrastructure/storage';
 import { createAuditModule } from '../../../modules/audit';
-import { createGalleryDemoModule, type DemoGallery } from '../../../modules/gallery';
+import { createGalleryDemoModule } from '../../../modules/gallery';
 import { MailLogStatus } from '../../../modules/mail';
 import { createNotificationModule, createNotificationSeedModule } from '../../../modules/notification';
-import { createPackageDemoModule, type DemoPackage, type DemoPackageGallery } from '../../../modules/package';
+import { createPackageDemoModule, type DemoPackage } from '../../../modules/package';
 import { createParkModule } from '../../../modules/park';
 import { createPartnerDemoModule, type DemoPartnerState } from '../../../modules/partner';
 import { createQuoteRequestDemoModule, type DemoPartnerNote, type DemoQuoteRequest } from '../../../modules/quote-request';
@@ -15,32 +12,19 @@ import { createUsersDemoModule, createUsersModule, MetaRole } from '../../../mod
 import { ConsoleController } from '../../lib/ConsoleController';
 
 import {
-    DEMO_EMAILS,
-    DEMO_GALLERIES,
-    DEMO_GALLERY_PICTURES,
-    DEMO_PARTNERS,
-    type DemoGalleryPlan,
-} from './packages-demo.data';
-import { DEMO_PACKAGES, type DemoPackagePlan, type DemoVersionPlan } from './packages-demo.packages';
+    galleryLookup,
+    type PackageLookups,
+    packageOf,
+    type PlannedGalleries,
+    plannedGalleries,
+    readPictures,
+    requiredIst,
+} from './packages-demo.build';
+import { DEMO_EMAILS, DEMO_GALLERIES, DEMO_GALLERY_PICTURES, DEMO_PARTNERS } from './packages-demo.data';
+import { DEMO_PACKAGES } from './packages-demo.packages';
 import { DEMO_QUOTE_NOTES, DEMO_QUOTES } from './packages-demo.quotes';
 
 const CONFIRM = 'confirm';
-
-const PICTURES_FOLDER = path.resolve(__dirname, '../../../../seed/packages-demo/gallery');
-
-const IST_OFFSET = '+05:30';
-
-const istDate = (value: string | null): Date | null => (value === null ? null : new Date(`${value}:00${IST_OFFSET}`));
-
-type PlannedGalleries = { readonly galleries: DemoGallery[]; readonly skipped: string[] };
-
-type Lookups = {
-    readonly states: readonly DemoPartnerState[];
-    readonly parkIdOf: ReadonlyMap<string, number>;
-    readonly galleryOf: (partnerId: number, title: string | null) => DemoPackageGallery | null;
-};
-
-const requiredIst = (value: string): Date => istDate(value) ?? new Date();
 
 export class PackagesDemoController extends ConsoleController {
     /**
@@ -119,8 +103,7 @@ export class PackagesDemoController extends ConsoleController {
     private async addGalleries(states: readonly DemoPartnerState[]): Promise<number> {
         const { galleryDemoService, usersService } = this.demoModules();
         const planned = await this.plannedGalleries(states);
-        const pictures = new Map<string, Buffer>();
-        for (const picture of DEMO_GALLERY_PICTURES) pictures.set(picture, await readFile(path.join(PICTURES_FOLDER, picture)));
+        const pictures = await readPictures(DEMO_GALLERY_PICTURES);
         const adminId = (await usersService.activeUserIdsWithRole(MetaRole.SUPER_ADMIN))[0] ?? null;
         const outcomes = await galleryDemoService.add(planned.galleries, pictures, adminId);
         for (const outcome of outcomes) {
@@ -139,24 +122,18 @@ export class PackagesDemoController extends ConsoleController {
         }
         const partnerIds = states.flatMap((state) => (state.partnerId === null ? [] : [state.partnerId]));
         const refs = await galleryDemoService.galleryIdsOf(partnerIds);
-        const lookups: Lookups = {
+        const lookups: PackageLookups = {
             states,
             parkIdOf: new Map((await parkService.listActive()).map((park) => [park.name, park.id])),
-            galleryOf: (partnerId, title) => {
-                const ref = refs.find((candidate) => candidate.partnerId === partnerId && candidate.title === title);
-                const plan = DEMO_GALLERIES.find((candidate) => candidate.title === title);
-                if (!ref || !plan) return null;
-                return { galleryId: ref.galleryId, title: ref.title, photos: plan.approvedPhotos ?? [] };
-            },
+            galleryOf: galleryLookup(refs, DEMO_GALLERIES),
         };
         const packages: DemoPackage[] = [];
         for (const plan of DEMO_PACKAGES) {
-            const demo = this.packageOf(plan, lookups);
+            const demo = packageOf(plan, lookups);
             if (demo) packages.push(demo);
             else this.stdout(`  package ${plan.slug}: skipped (partner or park not found)\n`);
         }
-        const pictures = new Map<string, Buffer>();
-        for (const picture of new Set(DEMO_GALLERY_PICTURES)) pictures.set(picture, await readFile(path.join(PICTURES_FOLDER, picture)));
+        const pictures = await readPictures(DEMO_GALLERY_PICTURES);
         const outcomes = await packageDemoService.add(packages, pictures, adminId);
         for (const outcome of outcomes) {
             this.stdout(`  package ${outcome.packageId} ${outcome.slug}: ${outcome.created ? 'created' : 'kept'}\n`);
@@ -193,73 +170,9 @@ export class PackagesDemoController extends ConsoleController {
         return result.quotes.filter((outcome) => outcome.created).length;
     }
 
-    private packageOf(plan: DemoPackagePlan, lookups: Lookups): DemoPackage | null {
-        const owner = lookups.states.find((state) => state.email === plan.ownerEmail);
-        if (!owner || owner.partnerId === null || owner.userId === null) return null;
-        const partnerId = owner.partnerId;
-        const versions = plan.versions.map((version) => this.versionOf(version, partnerId, lookups));
-        if (versions.some((version) => version === null)) return null;
-        return {
-            partnerId,
-            userId: owner.userId,
-            slug: plan.slug,
-            websiteStatus: plan.websiteStatus,
-            isPopular: plan.isPopular,
-            isBestDeal: plan.isBestDeal,
-            deleteReasonName: plan.deleteReasonName,
-            deleteDetails: plan.deleteDetails,
-            deletedAt: istDate(plan.deletedAtIst),
-            versions: versions.flatMap((version) => (version === null ? [] : [version])),
-        };
-    }
-
-    private versionOf(plan: DemoVersionPlan, partnerId: number, lookups: Lookups): DemoPackage['versions'][number] | null {
-        const masterParkIds = plan.parkNames.map((name) => lookups.parkIdOf.get(name));
-        if (masterParkIds.some((id) => id === undefined)) return null;
-        const { parkNames: _parkNames, galleryTitle, createdAtIst, sentAtIst, decidedAtIst, days, ...rest } = plan;
-        return {
-            ...rest,
-            masterParkIds: masterParkIds.flatMap((id) => (id === undefined ? [] : [id])),
-            gallery: lookups.galleryOf(partnerId, galleryTitle),
-            createdAt: requiredIst(createdAtIst),
-            sentAt: istDate(sentAtIst),
-            decidedAt: istDate(decidedAtIst),
-            days: days.map(({ galleryTitle: dayGallery, ...day }) => ({ ...day, gallery: lookups.galleryOf(partnerId, dayGallery) })),
-        };
-    }
-
     private async plannedGalleries(states: readonly DemoPartnerState[]): Promise<PlannedGalleries> {
         const parkIdOf = new Map((await this.demoModules().parkService.listActive()).map((park) => [park.name, park.id]));
-        const galleries: DemoGallery[] = [];
-        const skipped: string[] = [];
-        for (const plan of DEMO_GALLERIES) {
-            const gallery = this.galleryOf(plan, states, parkIdOf);
-            if (gallery) galleries.push(gallery);
-            else skipped.push(plan.title);
-        }
-        return { galleries, skipped };
-    }
-
-    private galleryOf(
-        plan: DemoGalleryPlan,
-        states: readonly DemoPartnerState[],
-        parkIdOf: ReadonlyMap<string, number>,
-    ): DemoGallery | null {
-        const owner = states.find((state) => state.email === plan.ownerEmail);
-        const masterParkId = parkIdOf.get(plan.parkName);
-        if (!owner || owner.partnerId === null || owner.userId === null || masterParkId === undefined) return null;
-        return {
-            partnerId: owner.partnerId,
-            userId: owner.userId,
-            title: plan.title,
-            masterParkId,
-            status: plan.status,
-            approvedPhotos: plan.approvedPhotos,
-            draftPhotos: plan.draftPhotos,
-            rejectReason: plan.rejectReason,
-            sentAt: istDate(plan.sentAtIst),
-            decidedAt: istDate(plan.decidedAtIst),
-        };
+        return plannedGalleries(DEMO_GALLERIES, states, parkIdOf);
     }
 
     private refusedInProduction(): boolean {

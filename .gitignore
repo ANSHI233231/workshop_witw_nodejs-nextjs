@@ -65,3 +65,6 @@ yarn-error.log*
 
 # Local screenshots of the prototype vs the app (kept on the developer machine, never committed)
 /docs/screenshots/
+
+# Local working files of test runs: results, Playwright scripts, screenshots (never committed)
+/.work/

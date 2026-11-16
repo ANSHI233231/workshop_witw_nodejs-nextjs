@@ -41,6 +41,28 @@ Opening the apps through local hostnames (e.g. `manage.<project>.local`, `api.<p
 - each app's `NEXT_PUBLIC_API_URL` points at the API's hostname, and `DEV_ALLOWED_ORIGINS` lists the app's own hostname;
 - once an app's API URL uses a hostname, open the app by its hostname too: by its raw port every API call is cross-origin and fails.
 
+## Local test accounts
+
+Accounts to sign in with on a local database, all with one password that you choose and give only on the command line (it is never written in code, docs or git):
+
+```bash
+cd apps/api
+npm run cli local-accounts/add <password>          # dry run: lists what it would create
+npm run cli local-accounts/add <password> confirm   # creates them
+npm run cli local-accounts/remove confirm           # removes them and only their rows
+```
+
+| Account | Email | What it is | Signs in to |
+|---|---|---|---|
+| Super Admin | `anshika@example.in` | Super Admin role | Console |
+| Partner | `partner@example.in` | Active partner "Tiger Song Safaris": logo, Kanha, Bandhavgarh and Tadoba-Andhari, one approved gallery, two live packages | Partner portal and website |
+| User | `user@example.in` | website user with one quote request to the partner's Kanha Escape | Website |
+
+- Safe to run again: whatever is there is kept (its password too), nothing is duplicated. Refused in production. The data is in `apps/api/src/cli/controllers/local-accounts/`, the logo in `apps/api/seed/local-accounts/`.
+- `remove` takes only these three accounts, their partner, logo, gallery, packages and quote requests. The Shared Safari sample users (`@example.test`), the Packages demo (`@packages-demo.test`) and every other account are never touched. Their storage folders (`storage/partner/<id>/`, `storage/gallery/<id>/`, `storage/package/<id>/`) go with them.
+- A guest has no account: browse `/packages` and `/parks` signed out.
+- Sign-in failing with "The mobile number, email, username or password is not correct." (`INVALID_CREDENTIALS`, audit action 202) means the password is wrong for that account, not a cookie or CORS problem.
+
 ## Rules
 
 - **A `.env` change needs a restart** of that process; a `NEXT_PUBLIC_*` change needs a rebuild for production builds.
@@ -50,4 +72,4 @@ Opening the apps through local hostnames (e.g. `manage.<project>.local`, `api.<p
 
 ## History
 
-- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md)
+- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-16-local-accounts-and-logo-field](../../planning/features/2026-11-16-local-accounts-and-logo-field.md)

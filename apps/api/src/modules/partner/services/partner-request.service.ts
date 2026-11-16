@@ -132,11 +132,13 @@ export class PartnerRequestService implements IPartnerRequestService {
 
     private async changeLogo(row: PartnerRow, logo: string | null, userId: number): Promise<MyPartnerRequestDto> {
         const actions = { done: AuditAction.PARTNER_LOGO_CHANGED, failed: AuditAction.PARTNER_LOGO_CHANGE_FAILED };
-        return this.records.audited(actions, row.id, { logo }, async () => {
+        const result = await this.records.audited(actions, row.id, { logo }, async () => {
             await this.editableRequest(userId);
             await this.repository.updateLogo(this.db, row.id, logo, userId);
             return { result: await this.current(userId), id: row.id, changes: { logo: { from: row.logo, to: logo } } };
         });
+        await this.records.discardReplacedLogo(row, logo);
+        return result;
     }
 
     private async editableRequest(userId: number): Promise<PartnerRow> {

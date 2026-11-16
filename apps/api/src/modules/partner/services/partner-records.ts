@@ -138,6 +138,10 @@ export class PartnerRecords {
         await this.fileStorage.remove(logoPath(partnerId, fileName)).catch(() => undefined);
     }
 
+    async discardReplacedLogo(row: PartnerRow, logo: string | null): Promise<void> {
+        if (row.logo && row.logo !== logo) await this.discardLogo(row.id, row.logo);
+    }
+
     async readLogo(row: PartnerRow): Promise<PartnerLogo> {
         if (!row.logo) throw logoNotFound();
         try {
