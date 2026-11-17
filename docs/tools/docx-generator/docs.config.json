@@ -73,6 +73,10 @@
     {
       "source": "../../testing/README.md",
       "output": "../../testing/documents/test-documents-index.docx"
+    },
+    {
+      "source": "../../testing/demo-and-sample-data.md",
+      "output": "../../testing/documents/demo-and-sample-data.docx"
     }
   ]
 }

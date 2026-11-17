@@ -33,6 +33,7 @@ export interface IUsersService {
     activeRoles(userId: number, metaRoleIds: readonly number[]): Promise<ActiveRole[]>;
     activeUserIdsWithRole(metaRoleId: number): Promise<number[]>;
     grantRole(userId: number, metaRoleId: MetaRoleId, actorId: number | null): Promise<void>;
+    revokeRole(userId: number, metaRoleId: MetaRoleId, actorId: number | null): Promise<void>;
     summary(): Promise<UsersSummaryDto>;
     pickUsers(search: string | undefined, pagination: PaginationQuery): Promise<UserPickerPage>;
     listUsers(filters: UserListFilters, pagination: PaginationQuery): Promise<UserListPage>;

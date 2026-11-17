@@ -100,11 +100,13 @@ export function usePackageEditor({
     listPath,
     create,
     revealFirstError,
+    offeredParkIds,
 }: {
     readonly initial: PackageView | null;
     readonly listPath: string;
     readonly create: ((body: BasicBody) => Promise<PackageView>) | undefined;
     readonly revealFirstError: () => void;
+    readonly offeredParkIds: readonly number[];
 }) {
     const t = useT();
     const router = useRouter();
@@ -231,7 +233,7 @@ export function usePackageEditor({
     };
 
     const saveBasic = async (confirmDayRemoval: boolean): Promise<void> => {
-        const found = checkBasic(t, basic);
+        const found = checkBasic(t, basic, offeredParkIds);
         setBasicErrors(found);
         if (hasErrors(found)) {
             announcePackageNotice(t('Check the highlighted fields.'), true);

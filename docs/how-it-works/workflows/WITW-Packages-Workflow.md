@@ -2,7 +2,7 @@
 
 Safari operators (**partners**) sell ready-made safari packages: a trip to one or more parks with its days, stay, inclusions and price. A person applies to become a partner, the Super Admin approves them, and they build packages and photo galleries in a new **Partner portal**. The Super Admin approves every package version and every gallery before it is used. On the website, users browse packages and parks and send a **quote request** to a package's partner. Nothing is paid in the app.
 
-**Status: in sync with the requirements** (`WITW-Packages-Requirements.docx`), in the same shape as the Shared Safari workflow. The requirements are the source: every rule here comes from them. Anything marked *(proposed)* (messages, screen names, rules) is not in the requirements yet; it is listed in §16 and goes into the requirements once signed off. Decided by the user on 2026-11-14 and no longer proposed: the Package Delete Reasons starting list (§16 #1), Hot / Cold can't be cleared (#8), the Super Admin's notification text (#10), the Super Admin edits all five sections (#17) and the park's calculated average price (§10).
+**Status: in sync with the requirements** (`WITW-Packages-Requirements.docx`), in the same shape as the Shared Safari workflow. The requirements are the source: every rule here comes from them, or from a decision of the user listed in §16. Anything still marked *(proposed, client confirm)* (the day image up to 20 MB, About up to 2,000 characters, a photo caption up to 1,000 characters, 20 photos per upload) is a limit the code uses that nobody has confirmed with the client. Decided by the user on 2026-11-14: the Package Delete Reasons starting list (§16 #1), Hot / Cold can't be cleared (#8), the Super Admin's notification text (#10), the Super Admin edits all five sections (#17) and the park's calculated average price (§10). Accepted by the user on 2026-11-12 (the other points of §16): #2–#7, #9, #11–#16 and #18.
 
 **Apps:** Website · **Partner portal** (new) · Console.
 **Roles:** Guest, User, Applicant, Partner, Super Admin.
@@ -109,7 +109,7 @@ stateDiagram-v2
 ### A. Guest (not signed in)
 
 - **Browsing:** the package list, the park list, package pages and park pages, with all filters and sorts.
-- **Request a quote:** takes the guest to Login *(proposed)*.
+- **Request a quote:** takes the guest to Login.
 - **Become a Partner:** fills the account details and the business details; sending creates the account, signs them in and sends the request.
 
 ### B. User (signed in, not a partner)
@@ -198,7 +198,7 @@ flowchart TD
 | Request | Portal shows |
 |---|---|
 | None | Only the business-details form |
-| Pending | Status page *(proposed: "Your request is under review.")* |
+| Pending | Status page ("Your request is under review.") |
 | Rejected | Status page with the **reason**, and **Edit and send again** |
 | Inactive partner | Only: "Your account has been deactivated. Please contact the administrator for further assistance." |
 | Active partner | The full portal (§3) |
@@ -218,14 +218,14 @@ The website's Sign Up fields and rules.
 
 ### 2.3 Business details
 
-| Field | Required | Rules · messages *(proposed)* |
+| Field | Required | Rules · messages |
 |---|---|---|
 | Business name | Yes | Up to 255 characters. "Enter the business name." · "Use up to 255 characters." |
 | Owner name | Yes | Up to 255 characters. "Enter the owner name." |
 | Business phone | Yes | 10 digits, starting 6–9. "Enter a 10-digit mobile number." |
 | Business email | Yes | Valid email. "Enter a valid email address." |
 | Parks you operate in | Yes | One or more **active** parks. "Select at least one park." |
-| About your business | No | Text |
+| About your business | No | Up to 2,000 characters *(proposed, client confirm)* |
 | Logo | No | JPG, JPEG, PNG or WEBP, up to **1 MB**. "Use a JPG, JPEG, PNG or WEBP image." · "Use an image up to 1 MB." |
 
 ### 2.4 Partner request statuses
@@ -267,10 +267,10 @@ Partner portal › Packages › **Create package**. Five sections, **each saved 
 
 ### 4.1 Section 1: Basic
 
-| Field | Required | Rules · messages *(proposed)* |
+| Field | Required | Rules · messages |
 |---|---|---|
 | Package name | Yes | Up to **215** characters. "Enter the package name." · "Use up to 215 characters." |
-| Parks | Yes | One or more of the **partner's own active parks**. The first is the **main park** *(proposed)*. "Select at least one park." |
+| Parks | Yes | One or more of the **partner's own active parks**. The first is the **main park**. "Select at least one park." A park that is no longer active or the partner's must be replaced (§16 #3). |
 | Days | Yes | 1 to 15; **nights = days − 1**, set automatically. "Enter a number from 1 to 15." |
 | Safari type | Yes | Shared · Private (§13). "Select a safari type." |
 | Vehicle | Yes | From the list (§13). "Select a vehicle." |
@@ -280,8 +280,8 @@ Partner portal › Packages › **Create package**. Five sections, **each saved 
 | Features | No | Any of the list (§13) |
 | Start place · End place | No | Letters, spaces and hyphens; up to 215 characters. "Use letters, spaces and hyphens only." |
 | Price per person (₹) | Yes | 1,000 to 99,99,999. "Enter whole rupees from ₹1,000 to ₹99,99,999." |
-| Total price (₹) | Yes | 1,000 to 99,99,999. At least the price per person *(proposed, §16 #6)*: "The total price can't be less than the price per person." |
-| Price before discount (₹) | No | 1,000 to 99,99,999; shown struck out on the card. Higher than the price per person *(proposed, §16 #6)*: "The price before discount must be higher than the price per person." |
+| Total price (₹) | Yes | 1,000 to 99,99,999. At least the price per person: "The total price can't be less than the price per person." |
+| Price before discount (₹) | No | 1,000 to 99,99,999; shown struck out on the card. Higher than the price per person: "The price before discount must be higher than the price per person." |
 | Activity message | No | Up to 255 characters; replaces the standard line, e.g. "3 Shared Safaris" |
 | Price message | No | Up to 255 characters; when empty, "Include taxes and fees" |
 | Tag | No | Text up to 255 characters, a **background colour** and a **text colour** (white by default) |
@@ -302,7 +302,7 @@ One block per day (the number of days from Basic).
 | Start location · End location · Hotel name | No | Up to 255 characters each |
 | Meals | No | Breakfast · Lunch · Dinner (checkboxes) |
 | Activity · Accommodation · Note | No | Up to 500 characters each |
-| Day image | No | JPG, JPEG or PNG, **any size** |
+| Day image | No | JPG, JPEG or PNG, up to **20 MB** *(proposed, client confirm)* |
 | Day gallery | No | One of the partner's approved galleries |
 
 ### 4.3 Section 3: Inclusions
@@ -337,7 +337,7 @@ The partner can **add, edit and delete** FAQs; there is no limit on the number.
 | **Waiting for approval** | Sent; read-only for the partner | View |
 | **Rejected** | Sent back with a reason (shown on the package) | Edit, Send again, Delete |
 | **Approved (live)** | On the website | Edit (makes a new Draft) |
-| **Replaced** | An older live version, after a newer one was approved | View *(proposed)* |
+| **Replaced** | An older live version, after a newer one was approved | View |
 
 - **v1** is made when the package is created.
 - **Any change** to an approved package (a price, a day, a photo, an FAQ, anything in the five sections) is made in a **new version**, a copy of the live one.
@@ -378,8 +378,9 @@ A gallery is a **named set of photos for one park**, attached to packages once a
 |---|---|
 | Title | Required, up to 255 characters |
 | Park | Required, one of the partner's own **active** parks |
-| Photos | JPG, JPEG or PNG, up to **8 MB** each; no limit on the number. "Use an image up to 8 MB." *(proposed)* |
-| Photo title · caption | Optional; title up to 255 characters |
+| Photos | JPG, JPEG or PNG, up to **8 MB** each; up to 20 photos per upload *(proposed, client confirm)*. "Use an image up to 8 MB." |
+| Photo title · caption | Optional; title up to 255 characters; caption up to 1,000 characters *(proposed, client confirm)* |
+| Send for approval | Needs at least one photo. "Add at least one photo first." (decided 2026-11-12, §16 #18) |
 | Photo actions | Replace · Remove · Reorder |
 | Thumbnail | The **first photo** by default; another can be set. The thumbnail **can't be removed** |
 | Menu tabs | Approved · In Draft · Waiting for Approval |
@@ -417,7 +418,7 @@ stateDiagram-v2
 | Filters | Search by name · Park · Price per person (slider; **₹50,000+** means no upper limit) · Nights (**10+**) · Number of safaris (**10+**) · Stay · Features · Inclusions (one or more; **any match**) |
 | Chips | Each chosen filter shows as a removable chip |
 | Sort | **Popular** (default: popular first, then newest) · Newest · Fewest safaris · Most safaris · Price low to high |
-| Empty state *(proposed)* | "No packages match your filters." with Clear filters |
+| Empty state | "No packages match your filters." with Clear filters |
 
 Shown only when the package has a **live version**, is **Active**, and its partner is **Active**.
 
@@ -438,7 +439,7 @@ Shown only when the package has a **live version**, is **Active**, and its partn
 
 ### 9.1 Sending (website)
 
-| Field | Required | Rules · messages *(proposed)* |
+| Field | Required | Rules · messages |
 |---|---|---|
 | Number of travellers | Yes | 1 to 100. "Enter a number from 1 to 100." |
 | Start date | Yes | Today or later (IST). "Choose a date from today." |
@@ -447,7 +448,7 @@ Shown only when the package has a **live version**, is **Active**, and its partn
 - **Who:** signed-in users only, not partners (§2.5), on an **Active** package.
 - **Saved with:** the user's name, email and mobile from their account, and the package's **live version**.
 - **No limit** on the number of requests.
-- **After sending** *(proposed)*: "Your quote request has been sent." The partner is notified.
+- **After sending**: "Your quote request has been sent." The partner is notified.
 - **My Quote Requests** (account menu) lists the user's **active** requests.
 
 ### 9.2 Receiving (Partner portal)
@@ -493,7 +494,7 @@ The Super Admin keeps the parks in the console (Console › Parks, as in the Sha
 
 ## 12. Console
 
-The sidebar gets a **Packages** group *(proposed name)* with the pages below. Lists follow the console's patterns from the prototype (S.No, icon actions with tooltips, Clear filters), as for Shared Safari.
+The sidebar gets a **Packages** group with the pages below. Lists follow the console's patterns from the prototype (S.No, icon actions with tooltips, Clear filters), as for Shared Safari.
 
 ### 12.1 Partner Requests
 
@@ -583,42 +584,43 @@ The sidebar gets a **Packages** group *(proposed name)* with the pages below. Li
 - **Dates** in Indian time (IST); **prices** in whole rupees with Indian grouping (₹1,25,000).
 - **All three apps** work on desktop and mobile.
 
-## 15. Screens (prototype boards) *(proposed)*
+## 15. Screens (prototype boards)
 
 | Website | Partner portal | Console |
 |---|---|---|
-| W1 Become a Partner (guest / signed in) | P1 Portal Sign In · Forgot Password | C1 Partner Requests |
-| W2 Package list (filters, chips, sort) | P2 Business details form · Pending · Rejected · Deactivated | C2 Partners (detail, edit, parks) |
-| W3 Package card | P3 Dashboard | C3 Package Approvals (preview, edit) |
-| W4 Package page (tabs, slider) | P4 Packages list (versions, actions) | C4 Packages (versions, delete with reason) |
-| W5 Request a quote · Partner note | P5 Package builder (5 sections) | C5 Package Delete Reasons |
-| W6 My Quote Requests | P6 Gallery list (3 tabs) · Gallery editor | C6 Gallery Approvals |
-| W7 Park list | P7 Quote Requests (Hot / Cold) | C7 Galleries |
-| W8 Park page (Overview · Packages · Shared Safaris) | P8 Business Profile · Notifications | C8 Quote Requests |
-| W9 Package Not In Use! | | |
+| P4 Become a Partner (guest / signed in) | PP1 Portal Sign In · Forgot Password | PC1 Partner Requests |
+| P1 Package list (filters, chips, sort) and its package cards | PP2 Business details form · Pending · Rejected · Deactivated | PC2 Partners (detail, edit, parks) |
+| P2 Package page (tabs, slider), with Request a quote · Partner note and Package Not In Use! | PP3 Dashboard | PC3 Package Approvals |
+| P3 My Quote Requests | PP4 Packages list (versions, actions) | PC4 Packages (versions, delete with reason) |
+| P5 Park list | PP5 Package builder (5 sections) | PC5 Package detail (preview, edit) |
+| P6 Park page (Overview · Packages · Shared Safaris) | PP6 Gallery list (3 tabs) · PP7 Gallery editor | PC6 Package Delete Reasons |
+| | PP8 Quote Requests (Hot / Cold) | PC7 Gallery Approvals |
+| | PP9 Business Profile · PP10 Notifications | PC8 Galleries |
+| | | PC9 Quote Requests |
 
 Each screen has a desktop (1366 px) and a mobile (390 px) board, in the WITW design system, as for Shared Safari.
 
 ## 16. Open points to confirm
 
-These points are **not in the requirements**. Each stays *(proposed)* in this workflow until it is signed off (those marked **Decided** below are signed off) and added to the requirements, so the two documents never disagree. The prototype boards decide the screens; the package pages are at `/packages` *(proposed)*. The park page map follows the requirements (Leaflet).
+These points are **not in the requirements**; every one is decided by the user (the date is in each row) and written in this workflow as decided. The prototype boards decide the screens; the package pages are at `/packages`. The park page map follows the requirements (Leaflet).
 
-| # | Point | Proposal (for sign-off) |
+| # | Point | Decision |
 |---|---|---|
 | 1 | Package Delete Reasons starting list | **Decided 2026-11-14:** Misleading information · Duplicate package · Wrong prices · Partner asked to delete · Other (the board's list). |
-| 2 | Error messages | The requirements give rules, not wording. Messages marked *(proposed)* follow the Shared Safari style; the prototype decides. |
-| 3 | A park made inactive, or removed from a partner | What happens to their live packages and galleries for that park? Proposal: live packages stay; on the next edit the partner must pick an active park of their own (as Shared Safari #32). |
-| 4 | Main park | Which park is the "main park" on the card and for the default image? Proposal: the first park chosen. |
-| 5 | Reducing the number of days | Are the extra itinerary day blocks removed? Proposal: yes, with a confirmation; increasing adds empty blocks. |
-| 6 | Price checks | Should total price be at least the price per person, and price before discount higher than the price per person? Proposal: yes to both. |
-| 7 | Quote request when the package later goes Inactive or is deleted | Does the partner still see it? Proposal: yes, while the request is Active. |
+| 2 | Error messages | **Decided 2026-11-12, accepted by the user:** The requirements give rules, not wording. The messages follow the Shared Safari style; the prototype decides. |
+| 3 | A park made inactive, or removed from a partner | **Decided 2026-11-12, accepted by the user:** Live packages stay; on the next edit the partner must pick an active park of their own (as Shared Safari #32). **Built 2026-11-16:** live packages stay on the website unchanged. When the partner edits one (and when the Super Admin edits Basic), a park that is inactive or no longer the partner's is shown marked *Not available* and must be unticked and replaced by one of the partner's own active parks before Basic can be saved or the version sent: "Untick the park marked Not available and choose one of your active parks." · "A park in Basic is no longer one of your active parks. Replace it in Basic, then send." |
+| 4 | Main park | **Decided 2026-11-12, accepted by the user:** The main park (on the card and for the default image) is the first park chosen. |
+| 5 | Reducing the number of days | **Decided 2026-11-12, accepted by the user:** The extra itinerary day blocks are removed, with a confirmation; increasing adds empty blocks. |
+| 6 | Price checks | **Decided 2026-11-12, accepted by the user:** Total price is at least the price per person, and price before discount is higher than the price per person. |
+| 7 | Quote request when the package later goes Inactive or is deleted | **Decided 2026-11-12, accepted by the user:** The partner still sees it, while the request is Active. |
 | 8 | Hot / Cold | **Decided 2026-11-14:** Hot or Cold only; once marked it can't be cleared back to no mark (it can be switched between Hot and Cold). |
-| 9 | Guest clicks Request a quote | Proposal: goes to Login, then back to the package. |
+| 9 | Guest clicks Request a quote | **Decided 2026-11-12, accepted by the user:** Goes to Login, then back to the package. |
 | 10 | Super Admin "Send a notification" | **Decided 2026-11-14:** free text, up to 255 characters, shown to the partner as "From the Super Admin about {user}'s request: {message}". |
-| 11 | Audit Log | Not mentioned. Proposal: record every console action (approve, reject, edit, delete, Popular, Best deal, partner and park changes), as Shared Safari §11.6. |
-| 12 | Image storage | Proposal: local storage as Shared Safari: `package/<package id>/<version>/…`, `partner/<partner id>/logo/…`, `gallery/<gallery id>/…`; file names only in the database. |
-| 13 | Wishlist | The live site has a Wishlist. Not in the requirements. Proposal: no Wishlist for packages in this version. |
-| 14 | Replaced versions | Can the partner open old versions read-only? Proposal: yes, View only. |
-| 15 | My Quote Requests columns | Proposal: Package · Travellers · Start date · Notes · Sent on. |
-| 16 | Deactivated partner's quote requests | Proposal: kept; visible again when the partner is activated. |
+| 11 | Audit Log | **Decided 2026-11-12, accepted by the user:** Not in the requirements. Record every console action (approve, reject, edit, delete, Popular, Best deal, partner and park changes), as Shared Safari §11.6. |
+| 12 | Image storage | **Decided 2026-11-12, accepted by the user:** Local storage as Shared Safari: `package/<package id>/<version>/…`, `partner/<partner id>/logo/…`, `gallery/<gallery id>/…`; file names only in the database. |
+| 13 | Wishlist | **Decided 2026-11-12, accepted by the user:** The live site has a Wishlist; not in the requirements. No Wishlist for packages in this version. |
+| 14 | Replaced versions | **Decided 2026-11-12, accepted by the user:** The partner can open old versions read-only (View only). |
+| 15 | My Quote Requests columns | **Decided 2026-11-12, accepted by the user:** Package · Travellers · Start date · Notes · Sent on. |
+| 16 | Deactivated partner's quote requests | **Decided 2026-11-12, accepted by the user:** Kept; visible again when the partner is activated. |
 | 17 | Fields the Super Admin can edit (waiting version and live package) | **Decided 2026-11-14:** all five sections (Basic, Itinerary, Inclusions, Getting there, FAQs), in the waiting version and in the live package. A live edit shows at once and the version is marked "edited by Super Admin". |
+| 18 | Gallery Send needs a photo | **Decided 2026-11-12, accepted by the user:** a gallery can be sent for approval only with at least one photo: "Add at least one photo first." (§7). |

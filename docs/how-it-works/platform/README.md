@@ -11,7 +11,7 @@ How the system itself works, and how we do things as developers.
 | [frontend-logging.md](frontend-logging.md) | How the apps save browser and server logs to their own `logs/` folder, and their errors to the database |
 | [background-jobs.md](background-jobs.md) | The worker the API starts, scheduled and one-time jobs, the console's Background Jobs, and **how to add a new worker command** or queue one from a module |
 | [file-storage.md](file-storage.md) | Where uploaded files are kept, the path rule every upload follows, how an app shows a file |
-| [frontend-apps.md](frontend-apps.md) | How manage and web are structured and how a screen gets data from the API |
+| [frontend-apps.md](frontend-apps.md) | How manage, web and partner are structured and how a screen gets data from the API |
 | [partner-portal.md](partner-portal.md) | The Partner portal app: sign-in with the website account, its own session, the guard by partner state, the frame |
 | [manage-console.md](manage-console.md) | The Super Admin console: login, frame, sidebar menu, its pages and the Tech Documentation viewer |
 | [local-development.md](local-development.md) | How the API and apps run locally: database, `.env`, ports, hostnames |

@@ -21,7 +21,7 @@
 |---|---|---|---|
 | `https://<domain>` | web | 4200 | `prod-web` |
 | `https://manage.<domain>` | manage | 4201 | `prod-manage` |
-| TBD - Umang confirm karega (Partner portal host) | partner | 4202 | `prod-partner` |
+| `https://partner.<domain>` (team confirm) | partner | 4202 | `prod-partner` |
 | `https://api.<domain>` | api | 4210 | `prod-api` |
 
 Every process listens on `127.0.0.1` only.
@@ -36,9 +36,9 @@ Every process listens on `127.0.0.1` only.
 
 ## Settings that differ from staging
 
-- **`apps/api/.env`:** `PORT=4210`, the `<project>_prod_db` database, `CORS_ORIGIN=https://<domain>,https://manage.<domain>,https://<partner host: TBD - Umang confirm karega>`, `APP_URL_PARTNER=https://<partner host: TBD - Umang confirm karega>`, **new** JWT secrets and `LOG_INGEST_KEY` (never staging's), `AUTH_COOKIE_PREFIX` empty, `LOG_LEVELS=error,warning`.
-- **The apps' `.env`** (`apps/web`, `apps/manage`, `apps/partner`): `NEXT_PUBLIC_API_URL=https://api.<domain>/api`, `NEXT_PUBLIC_AUTH_COOKIE_PREFIX` empty. `apps/partner/.env` also has `NEXT_PUBLIC_WEBSITE_URL=https://<domain>` and `LOG_INGEST_KEY` (the API's), and `apps/web/.env` has `NEXT_PUBLIC_PARTNER_PORTAL_URL=https://<partner host: TBD - Umang confirm karega>`.
-- **The Partner portal's host** is not decided yet (TBD - Umang confirm karega): its nginx name, certificate name and the settings above wait for it.
+- **`apps/api/.env`:** `PORT=4210`, the `<project>_prod_db` database, `CORS_ORIGIN=https://<domain>,https://manage.<domain>,https://partner.<domain>`, `APP_URL_PARTNER=https://partner.<domain>`, **new** JWT secrets and `LOG_INGEST_KEY` (never staging's), `AUTH_COOKIE_PREFIX` empty, `LOG_LEVELS=error,warning`.
+- **The apps' `.env`** (`apps/web`, `apps/manage`, `apps/partner`): `NEXT_PUBLIC_API_URL=https://api.<domain>/api`, `NEXT_PUBLIC_AUTH_COOKIE_PREFIX` empty. `apps/partner/.env` also has `NEXT_PUBLIC_WEBSITE_URL=https://<domain>` and `LOG_INGEST_KEY` (the API's), and `apps/web/.env` has `NEXT_PUBLIC_PARTNER_PORTAL_URL=https://partner.<domain>`.
+- **The Partner portal's host** is `partner.<domain>`, as `init.js` writes it (team confirm); its nginx name, certificate name and the settings above use it.
 - **Mail:** the starter's email driver is `capture` (mails are recorded, not sent). A live mail driver is its own feature before go-live.
 
 ## Updating production
@@ -50,7 +50,7 @@ As staging, in `~/prod_<project>` with `git pull origin main` and the `prod-*` p
 - `pm2 ls`: `prod-api`, `prod-manage`, `prod-web`, `prod-partner` online.
 - `https://api.<domain>/api/health` answers 200 with the database up.
 - Signing in to `https://manage.<domain>` works; a staging sign-in in the same browser stays separate (different cookie names).
-- The Partner portal (host: TBD - Umang confirm karega) opens its sign-in page, and signing in with a website account works.
+- The Partner portal (`partner.<domain>`, team confirm) opens its sign-in page, and signing in with a website account works.
 
 ## History
 

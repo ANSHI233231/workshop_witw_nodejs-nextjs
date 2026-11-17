@@ -361,6 +361,24 @@ export class UsersService implements IUsersService {
         }
     }
 
+    async revokeRole(userId: number, metaRoleId: MetaRoleId, actorId: number | null): Promise<void> {
+        const event = { action: AuditAction.USER_UPDATED, entityType: AuditEntity.USER, entityId: userId } as const;
+        try {
+            await this.db.transaction(async () => {
+                const before = await this.usersRepository.listActiveRoles(this.db, userId, [metaRoleId]);
+                if (before.length === 0) return;
+                await this.usersRepository.setUserRoleStatus(this.db, userId, metaRoleId, UserRoleStatus.INACTIVE, actorId);
+                await this.auditService.record({ ...event, details: { rolesRemoved: [metaRoleId] } });
+            });
+        } catch (error) {
+            await this.auditService.recordFailure(
+                { ...event, action: AuditAction.USER_UPDATE_FAILED, details: { rolesRemoved: [metaRoleId] } },
+                error,
+            );
+            throw error;
+        }
+    }
+
     activeUserIdsWithRole(metaRoleId: number): Promise<number[]> {
         return this.usersRepository.listActiveUserIdsWithRole(this.db, metaRoleId);
     }

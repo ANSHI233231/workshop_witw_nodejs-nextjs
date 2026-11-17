@@ -44,8 +44,12 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
         const outcomes: SeedOutcome[] = [];
         for (const safari of safaris) {
             const id = await this.seedOne(safari);
-            if (id !== null && safari.cover) await this.saveCover(id, safari);
-            outcomes.push({ slug: safari.slug, created: id !== null });
+            if (id !== null) {
+                if (safari.cover) await this.saveCover(id, safari);
+                outcomes.push({ slug: safari.slug, created: true, coverAdded: safari.cover !== null });
+                continue;
+            }
+            outcomes.push({ slug: safari.slug, created: false, coverAdded: await this.addMissingCover(safari) });
         }
         return outcomes;
     }
@@ -55,7 +59,7 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
         const event = {
             action: AuditAction.SHARED_SAFARI_SEED_REMOVED,
             entityType: AuditEntity.SHARED_SAFARI,
-            details: { slugs: removal.slugs, userIds: removal.userIds },
+            details: { slugs: removal.slugs, hostIds: removal.hostIds, userIds: removal.userIds },
         } as const;
         const others = await this.repository.otherHosted(this.db, removal.slugs, removal.userIds);
         if (others.length > 0) {
@@ -65,8 +69,8 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
             );
         }
         try {
-            const { counts, covers } = await this.db.transaction(async () => {
-                const safaris = await this.repository.seededSafaris(this.db, removal.slugs, removal.userIds);
+            const { counts, folders } = await this.db.transaction(async () => {
+                const safaris = await this.repository.seededSafaris(this.db, removal.slugs, removal.hostIds);
                 const scope = { safariIds: safaris.map((row) => row.id), userIds: removal.userIds };
                 const commentIds = await this.repository.commentIds(this.db, scope);
                 const notificationScope = {
@@ -77,7 +81,7 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
                 const covers = safaris.flatMap((row) => (row.coverImage ? [coverPath(row.id, row.coverImage)] : []));
                 if (!confirm) {
                     return {
-                        covers: [],
+                        folders: [],
                         counts: {
                             safaris: safaris.length,
                             members: await this.repository.countMembers(this.db, scope),
@@ -99,9 +103,9 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
                 if (counts.safaris > 0 || counts.members > 0 || counts.comments > 0) {
                     await this.auditService.record({ ...event, details: { ...event.details, removed: counts } });
                 }
-                return { counts, covers };
+                return { counts, folders: scope.safariIds.map((id) => `${COVER_FOLDER.PARENT}/${id}`) };
             });
-            for (const path of covers) await this.fileStorage.remove(path).catch(() => undefined);
+            for (const folder of folders) await this.fileStorage.removeFolder(folder);
             return counts;
         } catch (error) {
             await this.auditService.recordFailure({ ...event, action: AuditAction.SHARED_SAFARI_SEED_REMOVE_FAILED }, error);
@@ -177,12 +181,33 @@ export class SharedSafariSeedService implements ISharedSafariSeedService {
         for (const reply of comment.replies) await this.insertComment(safariId, id, reply);
     }
 
-    private async saveCover(id: number, safari: SeedSafari): Promise<void> {
-        if (!safari.cover) return;
+    private async saveCover(id: number, safari: SeedSafari): Promise<string | null> {
+        if (!safari.cover) return null;
         const extension = EXTENSION_OF[safari.cover.contentType] ?? 'jpg';
         const fileName = `${Date.now()}${randomBytes(RANDOM_BYTES).toString('hex')}.${extension}`;
         await this.fileStorage.save(coverPath(id, fileName), safari.cover.content);
         await this.repository.setCover(this.db, id, fileName);
+        return fileName;
+    }
+
+    private async addMissingCover(safari: SeedSafari): Promise<boolean> {
+        if (!safari.cover) return false;
+        const row = await this.repository.seededBySlug(this.db, safari.slug);
+        if (!row || row.coverImage !== null) return false;
+        const event = {
+            action: AuditAction.SHARED_SAFARI_SEEDED,
+            entityType: AuditEntity.SHARED_SAFARI,
+            entityId: row.id,
+            details: { slug: safari.slug },
+        } as const;
+        try {
+            const fileName = await this.saveCover(row.id, safari);
+            await this.auditService.record({ ...event, details: { ...event.details, changes: { coverImage: { from: null, to: fileName } } } });
+            return true;
+        } catch (error) {
+            await this.auditService.recordFailure({ ...event, action: AuditAction.SHARED_SAFARI_SEED_FAILED }, error);
+            throw error;
+        }
     }
 
     private refuseInProduction(): void {

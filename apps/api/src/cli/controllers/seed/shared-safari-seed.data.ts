@@ -1,9 +1,11 @@
+import { LOCAL_USER_ACCOUNT } from '../local-accounts/local-accounts.data';
+
 export const PROTOTYPE_TODAY = '2026-11-03';
 
 export const SEED_EMAIL_DOMAIN = '@example.test';
 
 export const SEED_PEOPLE = {
-    ananya: { name: 'Ananya Iyer', email: 'ananya.iyer@example.test' },
+    ananya: { name: LOCAL_USER_ACCOUNT.name, email: LOCAL_USER_ACCOUNT.email },
     riya: { name: 'Riya Sharma', email: 'riya.sharma@example.test' },
     amit: { name: 'Amit Verma', email: 'amit.verma@example.test' },
     neha: { name: 'Neha Singh', email: 'neha.singh@example.test' },
@@ -20,6 +22,10 @@ export const SEED_PEOPLE = {
 } as const;
 
 export type SeedPersonKey = keyof typeof SEED_PEOPLE;
+
+export const LOCAL_USER_KEY: SeedPersonKey = 'ananya';
+
+export const LEGACY_SEED_EMAILS: readonly string[] = ['ananya.iyer@example.test'];
 
 export type ProtoFlag = { readonly reason: string; readonly details: string; readonly who: SeedPersonKey; readonly at: string };
 
@@ -90,7 +96,7 @@ export const PROTOTYPE_SAFARIS: readonly ProtoSafari[] = [
         pinned: true,
         created: '2026-11-02 10:15',
         updated: '2026-11-03 09:40',
-        plan: 'Day 1: arrive at Tala by noon, evening safari in Tala zone.\nDay 2: morning safari in Magadhi zone, afternoon at the fort viewpoint.\nDay 3: morning and evening safaris in Tala zone.\nDay 4: breakfast and drive back to Umaria station.\nCall me on 98101 23456 or write to riya.sharma@example.test before you book your train.',
+        plan: 'Day 1: arrive at Tala by noon, evening safari in Tala zone.\nDay 2: morning safari in Magadhi zone, afternoon at the fort viewpoint.\nDay 3: morning and evening safaris in Tala zone.\nDay 4: breakfast and drive back to Umaria station.\nCall me on 98101 23456 before you book your train.',
         joined: [
             { who: 'amit', at: '02 Nov 2026 10:42' },
             { who: 'neha', at: '02 Nov 2026 11:05' },

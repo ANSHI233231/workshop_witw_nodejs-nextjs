@@ -1,6 +1,6 @@
 # Frontend apps
 
-**What it is.** The web apps people use: `manage` (the Super Admin console, port 3041 locally), `web` (the example portal, port 3040) and `partner` (the Partner portal, port 3042, [partner-portal.md](partner-portal.md)). Each is a separate Next.js app with **the same folder structure and rules**. They share no code: not with each other, not with the API. Everything they know comes from the API over HTTP.
+**What it is.** The web apps people use: `manage` (the Super Admin console, port 3041 locally), `web` (the WITW website, port 3040) and `partner` (the Partner portal, port 3042, [partner-portal.md](partner-portal.md)). Each is a separate Next.js app with **the same folder structure and rules**. They share no code: not with each other, not with the API. Everything they know comes from the API over HTTP.
 
 **Who uses it.** Developers working in `apps/manage`, `apps/web`, `apps/partner` and every app a project adds (a new app starts as a copy of `web`).
 
@@ -46,10 +46,10 @@ Named by who may open them, not by what the pages are:
 
 | App | Group | Who |
 |---|---|---|
-| both | `(public)` | anyone: login, forgot / reset password; in web also Sign Up |
+| manage, web | `(public)` | anyone: login, forgot / reset password; in web also Sign Up |
 | manage | `(dashboard)` | a signed-in Super Admin, from `/` ([manage-console.md](manage-console.md)) |
-| web | `(site)` | anyone, the viewer recognised when signed in: Shared Safaris at `/` (sign-in lands there) and a safari's page `/shared-safaris/<slug>` |
-| web | `(portal)` | any signed-in user: Notifications, My Shared Safaris |
+| web | `(site)` | anyone, the viewer recognised when signed in: Shared Safaris at `/` (sign-in lands there), a safari's page `/shared-safaris/<slug>`, Packages `/packages`, a package `/packages/<slug>`, Parks `/parks`, a park `/parks/<slug>`, Become a Partner `/become-a-partner` |
+| web | `(portal)` | any signed-in user: Notifications, My Shared Safaris, My Quote Requests |
 | partner | `(public)` | anyone: login, forgot / reset password (no Sign Up) |
 | partner | `(portal)` | a signed-in user; pages for Active partners call `requireActivePartner()`, everyone else is sent to `/partner-request` ([partner-portal.md](partner-portal.md)) |
 
@@ -59,8 +59,8 @@ Named by who may open them, not by what the pages are:
 - **`process.env` is read only in `src/lib/config.ts`** (public values) and `src/lib/server-config.ts` (server-only values), validated with zod (lint-enforced). `NEXT_PUBLIC_*` values end up in the browser: never put a secret in them, and rebuild after changing one.
 - **Pages stay thin:** get data from a service, pass it to components. No `fetch`, no business rules.
 - **API data is live by default** (`cache: 'no-store'`).
-- **Each app has its own theme and favicon:** both follow the prototype's WITW Design System (primary green #09422D, accents #99FF33 / #FD5634 / #F9D600, Roboto, corners 4 / 8 / 12 / 16 / 24 px, the WITW shadows). manage takes its Console values (`[data-portal="admin"]` and `:root` in its `globals.css`: status text darkened to meet WCAG AA, a red delete button #DC2626, a green overlay); web takes the Portal values (`[data-portal="web"]`: orange hover, a yellow delete button, the website banner title in Devator Exp falling back to Roboto). Roboto is loaded with `next/font/google` in `src/lib/fonts.ts` (self-hosted at build, the `--font-roboto` variable feeds `--font-sans`). The WITW logo and the website's pictures are in each app's `public/witw/`. The favicon is `public/favicon.ico`.
-- **Two frames:** the console has a sidebar (`app sl`, the admin frame) under a dark green header with the WITW logo. web is the WITW website: every page sits in the site frame (`components/website/witw-site-frame.tsx`, styles in `app/witw-site.css`): a dark green header with the logo (home), the menu Plan Safari · Safari Packages · Shared Safari (the first two display only), and on the right the mail-icon notifications popover and the account menu (My Shared Safaris, Change Password, Log Out) when signed in, or an account icon that opens Login; a page may show a green banner with its title (`SiteBanner`); the footer with the grass picture, About Us, Policy, Useful Links, Contact Info and the copyright line. Sign-in pages put their card in the middle (`WebsiteAuth`), other pages render `<div class="page">` inside `<main class="wb-main">`. The website has no language switch (its boards have none); pages keep the language chosen before.
+- **Each app has its own theme and favicon:** both follow the prototype's WITW Design System (primary green #09422D, accents #99FF33 / #FD5634 / #F9D600, Roboto, corners 4 / 8 / 12 / 16 / 24 px, the WITW shadows). manage takes its Console values (`[data-portal="admin"]` and `:root` in its `globals.css`: status text darkened to meet WCAG AA, a red delete button #DC2626, a green overlay); partner takes the Console values too (`[data-portal="admin"]`); web takes the Portal values (`[data-portal="web"]`: orange hover, a yellow delete button, the website banner title in Devator Exp falling back to Roboto). Roboto is loaded with `next/font/google` in `src/lib/fonts.ts` (self-hosted at build, the `--font-roboto` variable feeds `--font-sans`). The WITW logo and the website's pictures are in each app's `public/witw/`. The favicon is `public/favicon.ico`.
+- **Three frames:** the console and the Partner portal have a sidebar (`app sl`, the admin frame) under a dark green header with the WITW logo. web is the WITW website: every page sits in the site frame (`components/website/witw-site-frame.tsx`, styles in `app/witw-site.css`): a dark green header with the logo (home), the menu Plan Safari (`/parks`) · Safari Packages (`/packages`) · Shared Safari (`/`), the item of the current section highlighted and the first two greyed out on Sign In, Sign Up and Forgot Password, and on the right the mail-icon notifications popover and the account menu (My Shared Safaris; My Quote Requests, or Partner portal for a partner; Change Password, Log Out) when signed in, or an account icon that opens Login; a page may show a green banner with its title (`SiteBanner`); the footer with the grass picture, About Us, Policy, Useful Links, Contact Info and the copyright line. Sign-in pages put their card in the middle (`WebsiteAuth`), other pages render `<div class="page">` inside `<main class="wb-main">`. The website has no language switch (its boards have none); pages keep the language chosen before.
 - **Design tokens live in `src/app/globals.css`.** Never raw hex values in components. Tailwind v4 silently ignores a class whose token is missing, so add the token first.
 - **Types mirror the API.** When an API response shape changes, the matching `types/` file in every app that uses it changes in the same commit.
 - **No shared code between apps.** A component needed in two apps is copied, and the copies are kept identical (same path and name).
@@ -71,7 +71,7 @@ Named by who may open them, not by what the pages are:
 - **Number fields** are `type="text"` with `inputMode`, cleaned as typed (`lib/number-input.ts`, `lib/mobile-input.ts`), with no `maxLength`.
 - **Searchable dropdowns** (`SearchableSelect`, `RemoteSelect`) for any field choosing from a data list; the open list floats above the page.
 - **One pager on every list:** `components/ui/page-buttons.tsx`.
-- **Translations:** a page asks for its text in English, `t('Save')` from `serverTranslator()` in server components, `useT()` in client components ([modules/language](../modules/language/README.md)).
+- **Translations:** a page asks for its text in English, `t('Save')` from `serverTranslator()` in server components, `useT()` in client components ([modules/language](../modules/language/README.md)). The partner app has the same files and a language switch in the portal header; its folder is `partner=../partner/translations` in the API's `TRANSLATION_DIRS`.
 - **Hiding a link is not access control.** Restricted areas are guarded by the route group's layout and, for real, by the API.
 - **Read the Next.js 16 docs** in `node_modules/next/dist/docs/` before using a Next.js API.
 
@@ -88,4 +88,4 @@ A blur behind a popup or menu is written `-webkit-backdrop-filter:…;backdrop-f
 
 ## History
 
-- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-02-witw-theme](../../planning/features/2026-11-02-witw-theme.md)
+- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-02-witw-theme](../../planning/features/2026-11-02-witw-theme.md), [2026-11-12-safari-packages](../../planning/features/2026-11-12-safari-packages.md)

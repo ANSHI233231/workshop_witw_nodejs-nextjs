@@ -1,6 +1,6 @@
 import { QuoteMark, type QuoteMarkCode, QuoteRequestStatus, type QuoteRequestStatusCode } from '../../../modules/quote-request';
 
-import { DEMO_EMAIL_DOMAIN } from './packages-demo.data';
+import { ANANYA, NEHA, RIYA } from './packages-demo.data';
 
 export type DemoQuotePlan = {
     readonly key: string;
@@ -24,10 +24,6 @@ export type DemoNotePlan =
           readonly atIst: string;
           readonly isRead: boolean;
       };
-
-const ANANYA = `ananya.iyer${DEMO_EMAIL_DOMAIN}`;
-const RIYA = `riya.sharma${DEMO_EMAIL_DOMAIN}`;
-const NEHA = `neha.singh${DEMO_EMAIL_DOMAIN}`;
 
 export const DEMO_QUOTES: readonly DemoQuotePlan[] = [
     {
@@ -103,4 +99,6 @@ export const DEMO_QUOTE_NOTES: readonly DemoNotePlan[] = [
         isRead: true,
     },
     { kind: 'received', quoteKey: 'riya-mangrove', atIst: '2026-11-07T19:30', isRead: false },
+    { kind: 'received', quoteKey: 'ananya-corbett', atIst: '2026-11-05T12:00', isRead: true },
+    { kind: 'received', quoteKey: 'riya-wild-kanha', atIst: '2026-10-30T09:00', isRead: true },
 ];

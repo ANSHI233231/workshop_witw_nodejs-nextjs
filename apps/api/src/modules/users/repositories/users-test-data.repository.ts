@@ -1,6 +1,6 @@
 import type { DbExecutor, RowDataPacket } from '../../../database/connection';
 import { UsersTestDataSQL } from '../sql/users-test-data.sql';
-import { MetaRole } from '../types/users.types';
+import { MetaRole, UserRoleStatus } from '../types/users.types';
 
 const escapeLike = (text: string): string => text.replace(/[\\%_]/g, (character) => `\\${character}`);
 
@@ -25,6 +25,7 @@ export class UsersTestDataRepository {
         const pattern = `${escapeLike(emailPrefix)}%`;
         return db.query<MarkedAccountRow>(UsersTestDataSQL.findMarked(keptEmails.length), [
             MetaRole.SUPER_ADMIN,
+            UserRoleStatus.ACTIVE,
             pattern,
             pattern,
             ...keptEmails,

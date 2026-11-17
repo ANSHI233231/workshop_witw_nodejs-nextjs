@@ -31,6 +31,7 @@ const SITE_NAMES: Readonly<Record<LanguageSite, string>> = {
     manage: 'Manage',
     web: 'Web Portal',
     'web-website': 'Web Website',
+    partner: 'Partner Portal',
 };
 
 const siteRule = (message: string, field: string): ValidationException =>

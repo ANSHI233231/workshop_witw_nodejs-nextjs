@@ -1,6 +1,6 @@
 # jobs
 
-The schedules and runs of background work, and the worker that runs them. How to use and extend it: [platform/background-jobs.md](../../platform/background-jobs.md). .
+The schedules and runs of background work, and the worker that runs them. How to use and extend it: [platform/background-jobs.md](../../platform/background-jobs.md).
 
 **Who uses it.** The manage console's Platform › Background Jobs (Super Admin only), the worker (`src/worker.ts`), and any module that queues work through `IJobQueue`.
 
@@ -29,7 +29,7 @@ When a run ends as Failed (a non-zero exit, a signal, a time-out or a start erro
 
 ## Audit
 
-Module 5: 501 / 502 schedule added (failed), 503 / 504 schedule updated (failed; activate / deactivate too), 505 / 506 a run queued from the console (Run now, Run Command, Retry) (failed), 507 run cancelled, 508 run terminated, 509 cancel / terminate failed. Entities 6 (`JOB_SCHEDULE`), 7 (`JOB_RUN`). The worker's own changes to a run (claimed, finished, skipped, recovered) and `enqueue` are not audited: the run itself is the record.
+Module 5: 501 / 502 schedule added (failed), 503 / 504 schedule updated (failed; activate / deactivate too), 505 / 506 a run queued from the console (Run now, Run Command, Retry) (failed), 507 run cancelled, 508 run terminated, 509 cancel / terminate failed, 510 / 511 `ct_` test runs removed by `test-data/remove-ct` (failed). Entities 6 (`JOB_SCHEDULE`), 7 (`JOB_RUN`). The worker's own changes to a run (claimed, finished, skipped, recovered) and `enqueue` are not audited: the run itself is the record.
 
 ## Where
 

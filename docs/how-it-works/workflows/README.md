@@ -5,6 +5,8 @@ End-to-end journeys that cross several modules or apps, the technical document, 
 | Workflow | What it covers | Modules it uses |
 |---|---|---|
 | [Technical document](technical-document.md) | The whole system for reviewers and newcomers: architecture, stack, concepts, modules, database, how we build | all |
+| [WITW Shared Safari](WITW-Shared-Safari-Workflow.md) | Organising, finding, joining and discussing shared safaris on the website; parks, flags and moderation in the console | shared-safari, park, flag-reason, notification, users, auth, audit |
+| [WITW Packages](WITW-Packages-Workflow.md) | Becoming a partner, packages and galleries with their approval, the website's packages and parks, quote requests | partner, package, gallery, quote-request, park, notification, users, auth, audit |
 | [Staging deployment](staging-deployment.md) | Setting up and updating the staging server (branch `staging`): names, ports, nginx, HTTPS, database, `.env` files, pm2 | all apps |
 | [Production deployment](production-deployment.md) | Setting up and updating production (branch `main`), and the order of going live on the real names | all apps |
 

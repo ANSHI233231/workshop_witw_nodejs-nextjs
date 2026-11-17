@@ -19,7 +19,7 @@ import {
     type VehicleCode,
 } from '../../../modules/package';
 
-import { DEMO_EMAIL_DOMAIN } from './packages-demo.data';
+import { NIKHIL, TARA, VIVEK } from './packages-demo.data';
 
 export type DemoDayPlan = {
     readonly title: string;
@@ -89,12 +89,6 @@ export type DemoPackagePlan = {
     readonly deletedAtIst: string | null;
     readonly versions: readonly DemoVersionPlan[];
 };
-
-const VIVEK = `vivek.rao${DEMO_EMAIL_DOMAIN}`;
-
-const TARA = `tara.nambiar${DEMO_EMAIL_DOMAIN}`;
-
-const NIKHIL = `nikhil.bose${DEMO_EMAIL_DOMAIN}`;
 
 const KANHA_DAYS: readonly DemoDayPlan[] = [
     {

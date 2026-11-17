@@ -15,6 +15,7 @@ import {
     THEME_OPTIONS,
     VEHICLE_OPTIONS,
 } from './package-labels';
+import { PARK_NO_LONGER_AVAILABLE, unavailableParkIds } from './package-rules';
 
 type Editor = ReturnType<typeof usePackageEditor>;
 
@@ -109,12 +110,16 @@ export function PackageBasicSection({
     const { basic, basicErrors: errors, changeBasic, view } = editor;
     const version = view?.version;
     const packageId = view?.package.id ?? 0;
+    const offeredParkIds = options.parks.map((park) => park.id);
+    const unavailable = unavailableParkIds(basic, offeredParkIds);
     const parkChoices = [
         ...options.parks.map((park) => ({ code: park.id, label: park.name })),
         ...(version?.parks ?? [])
-            .filter((park) => !options.parks.some((offered) => offered.id === park.id))
-            .map((park) => ({ code: park.id, label: park.name ?? '' })),
+            .filter((park) => unavailable.includes(park.id))
+            .map((park) => ({ code: park.id, label: park.name ?? '', note: t('Not available') })),
     ];
+    const parksError =
+        errors['masterParkIds'] ?? (unavailable.length > 0 ? t(PARK_NO_LONGER_AVAILABLE) : undefined);
     const days = Number(basic.dayCount);
     const nights = Number.isInteger(days) && days >= 1 ? nightsText(days) : '';
     const safaris = Number(basic.safariCount);
@@ -150,7 +155,7 @@ export function PackageBasicSection({
                 id="e-parks"
                 label={t('Parks')}
                 required
-                error={errors['masterParkIds']}
+                error={parksError}
                 helper={t('Your own active parks. The first one is the main park.')}
             >
                 <CheckList

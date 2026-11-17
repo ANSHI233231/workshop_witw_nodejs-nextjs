@@ -77,5 +77,12 @@ The prototype template itself (a separate repo with the starter's design system 
 - In the starter itself: `--dry-run --prototype=<the template's address>` refuses it; a plain run says the copy is already set up.
 - Cleanup: the test database `ct_proto_one_db` dropped (no `ct_proto%` database left). The scratch test folder (`scratchpad/initproto`) was left for the user to delete (the safety check blocked its removal).
 - Docs: new [prototype](../../how-it-works/platform/prototype.md) (platform index updated); README install table and steps; `docs/README.md`; `AGENTS.md` (set up by init.js; every feature goes through the prototype; starter screen changes update the starter prototype); the new project's README lists `docs/prototype`. The technical document is not changed (only on request): its line "`docs/prototype/` (a separate repository, once added)" is now slightly out of date (it is set up by `init.js`); the user was told.
+- 2026-11-16: Full re-run ([2026-11-16-full-test-and-docs](2026-11-16-full-test-and-docs.md)), group auth-platform, after the machine restart; screenshots in `.work/screenshots/2026-11-16-full-test/` (local, git-ignored).
+- TC-PROTO-01 NOT RUN (needs an empty test repository and a push; not allowed here) 2026-11-16: only the read-only checks below.
+- TC-PROTO-02 NOT RUN (needs a test repository with a commit; not allowed here) 2026-11-16: no init.js run that adds a submodule.
+- TC-PROTO-03 NOT RUN (interactive answer; would change the repo's submodule state) 2026-11-16: not run.
+- TC-PROTO-04 NOT RUN (needs an empty test repository and a push) 2026-11-16: not run.
+- TC-PROTO-05 PASS (read-only; role: none; screenshots: none) 2026-11-16: `git submodule status` shows docs/prototype checked out at the pinned commit 868d62b with no "+" (no drift); a fresh-clone run of init.js was not done.
+- TC-PROTO-06 PASS (CLI dry run; role: none; screenshots: none) 2026-11-16: `node init.js --dry-run --yes` on this set-up copy says nothing to do; `node init.js --dry-run --yes --prototype=<current submodule URL>` prints "Prototype setup (dry run: nothing is written)" and "docs/prototype is already a submodule: left as it is"; `git status` of docs/prototype, .gitmodules and the pin unchanged.
 
 ## 6. Post-deploy

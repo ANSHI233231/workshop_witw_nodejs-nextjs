@@ -2,7 +2,9 @@
 
 **What it is.** A partner's photo galleries: a named set of photos for one of their parks (`gallery`, `gallery_photo`), sent to the Super Admin for approval and, once approved, attached to packages. The API module `apps/api/src/modules/gallery/`, mounted at `/api/gallery`. The process is in [WITW-Packages-Workflow](../../workflows/WITW-Packages-Workflow.md) §7, §11 and §12.6–12.7.
 
-**Who uses it.** An **active partner** in the Partner portal (Gallery: the Approved, In Draft and Waiting for Approval tabs; add and edit a gallery) and the **Super Admin** in the console (Packages › Gallery Approvals and Galleries). The package module (Safari Packages Phase 5) reads the approved galleries and copies their photos.
+**Who uses it.** An **active partner** in the Partner portal (Gallery: the Approved, In Draft and Waiting for Approval tabs; add and edit a gallery) and the **Super Admin** in the console (Packages › Gallery Approvals and Galleries). The package module reads the approved galleries and copies their photos.
+
+**Workflows:** [WITW Packages](../../workflows/WITW-Packages-Workflow.md).
 
 ## Statuses and the two photo sets
 
@@ -84,7 +86,7 @@ Module 11, entity 14 (`AuditEntity.GALLERY`): 1101 created · 1103 draft saved �
 
 ## Demo data (local only)
 
-`npm run cli packages-demo/add <password> confirm` also adds the prototype's six sample galleries for the two active demo partners, with photos from `apps/api/seed/packages-demo/gallery/` (copied from the prototype's images): Saccharum Safari Lodge (Jungle Trails, approved), Corbett Elephant Camp (Jungle Trails, approved with changes waiting), Jhalana Hills (Jungle Trails, waiting), Bandhavgarh Zones (Jungle Trails, in draft with a reject reason), Antara Cruises Catamaran (Tiger Trail, approved), Kuno Grasslands (Tiger Trail, waiting). A gallery is found again by its partner and title, so running it again adds nothing. `packages-demo/remove confirm` removes the demo partners' galleries, their photo rows and their folders `gallery/<id>/` in storage. The demo packages find the approved galleries' ids through `galleryDemoService.galleryIdsOf(partnerIds)`.
+`npm run cli packages-demo/add <password> confirm` also adds the prototype's six sample galleries for the two active demo partners (Jungle Trails Safaris is `partner@example.in`'s, so its galleries are the partner portal's Gallery when signed in as that account), with photos from `apps/api/seed/packages-demo/gallery/` (copied from the prototype's images): Saccharum Safari Lodge (Jungle Trails, approved), Corbett Elephant Camp (Jungle Trails, approved with changes waiting), Jhalana Hills (Jungle Trails, waiting), Bandhavgarh Zones (Jungle Trails, in draft with a reject reason), Antara Cruises Catamaran (Tiger Trail, approved), Kuno Grasslands (Tiger Trail, waiting). A gallery is found again by its partner and title, so running it again adds nothing. `packages-demo/remove confirm` removes the demo partners' galleries, their photo rows and their folders `gallery/<id>/` in storage. The demo packages find the approved galleries' ids through `galleryDemoService.galleryIdsOf(partnerIds)`.
 
 ## History
 

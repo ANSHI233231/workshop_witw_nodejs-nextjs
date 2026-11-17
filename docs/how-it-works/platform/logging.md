@@ -49,7 +49,7 @@ Besides the files, entries of the levels in `LOG_DB_LEVELS` (by default **errors
 
 - Rows are written in batches once a second by a timer that runs outside any request, so a request never waits for them, and an error logged inside a transaction that rolls back is still saved.
 - While the writer saves rows, whatever it logs itself (its SQL, its own failure) goes to the files only, never back to the database, so it cannot loop. If more than 1,000 rows wait (the database is down), the oldest are dropped and the count is written to the files.
-- The manage and web servers send their **errors** here too ([frontend logging](frontend-logging.md#errors-saved-in-the-database)), to `POST /api/system-log/app-log` with the shared key `LOG_INGEST_KEY`.
+- The manage, web and partner servers send their **errors** here too ([frontend logging](frontend-logging.md#errors-saved-in-the-database)), to `POST /api/system-log/app-log` with the shared key `LOG_INGEST_KEY`.
 - Old rows: `npm run cli app-log/prune <days>` counts the rows older than that; add `confirm` to delete them (audited).
 
 ## Settings (`apps/api/.env`)

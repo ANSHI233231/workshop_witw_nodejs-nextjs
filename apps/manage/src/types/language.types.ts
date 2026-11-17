@@ -24,7 +24,7 @@ export const APP_TRANSLATION_UPLOAD_LIMITS = { MAX_BYTES: 2 * 1024 * 1024 } as c
 
 export const APP_TRANSLATION_CSV_HEADERS = { ENGLISH: 'English Text', LANGUAGE_SUFFIX: ' Text' } as const;
 
-export const LANGUAGE_SITES = ['manage', 'web', 'web-website'] as const;
+export const LANGUAGE_SITES = ['manage', 'web', 'web-website', 'partner'] as const;
 
 export type LanguageSite = (typeof LANGUAGE_SITES)[number];
 
@@ -32,6 +32,7 @@ export const LANGUAGE_SITE_LABEL: Readonly<Record<LanguageSite, string>> = {
     manage: 'Manage',
     web: 'Web Portal',
     'web-website': 'Web Website',
+    partner: 'Partner Portal',
 };
 
 export type Language = {

@@ -4,16 +4,18 @@
 
 **Who uses it.** The Super Admin (Console › Shared Safari › Parks, `/parks` and `/parks/<id>`); the website (the Safari Park filter and the Organise form read the active parks; Plan Safari lists the parks and opens each park's page); other modules through `parkService`.
 
+**Workflows:** [WITW Shared Safari](../../workflows/WITW-Shared-Safari-Workflow.md), [WITW Packages](../../workflows/WITW-Packages-Workflow.md).
+
 ## Rules
 
 - A park has a name (unique, ignoring case), a slug made from the name when it is added (never changes), a region (North, Central, West, East, South, North East India), a description (up to 1,000 characters, optional), a location (latitude −90…90 and longitude −180…180, both or neither), a feature image, and a status (Active 1, Inactive 2). The official website comes from the starting data only.
 - Messages (board C5 / C6): "Use up to 1,000 characters." · "Enter a latitude from -90 to 90." · "Enter a longitude from -180 to 180." · "Enter both latitude and longitude, or leave both empty." (under the empty one) · "Use a JPG, JPEG or PNG image." · "Use an image up to 250 KB.".
 - **Add / Edit** (`POST /api/park`, `PUT /api/park/:id`) take `name`, `region`, `shortDescription`, `latitude`, `longitude` (and `status` on edit). Every key is sent; `null` (or an empty text) leaves it empty. Coordinates may be numbers or decimal texts.
-- **Feature image** (`PUT /api/park/:id/feature-image`, multipart field `image`): JPG, JPEG or PNG (checked from the bytes) up to 250 KB, stored at `park/<id>/feature_image/<file>` (file name only in `feature_image`). The form saves the park first, then sends the image. Each upload gets a new file name; the old file stays. There is no remove (the board has none).
-- **Average safari price** is calculated, never entered: the lowest and highest **price per person** of the park's packages **shown on the website** (any of a live version's parks), with how many (`avgSafariPriceMin`, `avgSafariPriceMax`, `packageCount`; both null with none: "Price not set" / "Not calculated yet"). It comes from `packageService.priceRangesOfParks` (the package module's one shown rule), so it changes by itself when a package is approved, made active or inactive, or deleted, or its partner is deactivated or activated. The park module reads it at every answer; nothing is stored. `master_park` has no price columns (the entered min / max were dropped by `2026-11-14-drop-park-average-price.sql`).
+- **Feature image** (`PUT /api/park/:id/feature-image`, multipart field `image`): JPG, JPEG or PNG (checked from the bytes) up to 250 KB, stored at `park/<id>/feature_image/<file>` (file name only in `feature_image`). The form saves the park first, then sends the image. Each upload gets a new file name; the old file is deleted once the new name is saved (kept if the save fails). There is no remove (the board has none).
+- **Average safari price** is calculated, never entered: the lowest and highest **price per person** of the park's packages **shown on the website** (any of a live version's parks), with how many (`avgSafariPriceMin`, `avgSafariPriceMax`, `packageCount`; both null with none: "Price not set" / "Not calculated yet"). The screens show one amount ("₹18,500") when the two are equal and a range ("₹18,500 – ₹20,000") otherwise; the API returns the numbers as they are. It comes from `packageService.priceRangesOfParks` (the package module's one shown rule), so it changes by itself when a package is approved, made active or inactive, or deleted, or its partner is deactivated or activated. The park module reads it at every answer; nothing is stored. `master_park` has no price columns (the entered min / max were dropped by `2026-11-14-drop-park-average-price.sql`).
 - A new park is Active. Parks are never deleted. Making a park inactive hides it from the Organise form, the Safari Park filter and the website's park list and page; safaris already planned there stay as they are (a host editing one must pick an active park).
 - **Upcoming safaris** of a park: its Active and Seat full safaris starting today or later (Indian time).
-- Every add, edit (fields, location, description, feature image) and status change is in the audit log (module 9, actions 901–906, entity 12; 907 / 908 when `test-data/remove-ct` removes a `ct_` test park); an edit or image change is 903 with what changed.
+- Every add, edit (fields, location, description, feature image) and status change is in the audit log (module 9, actions 901–906, entity 12; 907 / 908 when `test-data/remove-ct` removes a `ct_` test park; 909–912 when `park-images/add` / `remove` add or remove a sample image); an edit or image change is 903 with what changed.
 
 ## How the price is wired
 
@@ -26,6 +28,10 @@ The park module is built before the partner and package modules (the partner mod
 - **Feature image** (`GET /api/park/parks/:slug/feature-image?v=<file name>`): an active park's image, `Cache-Control: public` (also the package cards' fallback picture through the main park's slug); 404 `PARK_IMAGE_NOT_FOUND` without one.
 - The page's tabs read other modules' lists: **Packages** `GET /api/package/packages?masterParkId=<id>` (the list's filters except park and search), **Shared Safaris** `GET /api/shared-safari/safaris?parkId=<id>`.
 
+
+## Sample images (local only)
+
+`npm run cli park-images/add confirm` gives every park with no feature image the prototype's picture for it (P5 / P6 `parkImg`): Kanha the barasingha, Corbett the elephant, Gir and Jhalana the leopard, Kuno the cheetah, Bhitarkanika the river cruise, Bandhavgarh and Satpura the jeeps (`apps/api/seed/packages-demo/gallery/`), every other park one of the three Shared Safari covers in turn (`apps/api/seed/shared-safari/covers/`, by the prototype's park order). The table is `src/cli/controllers/park-images/park-images.data.ts`. A park that has an image is never changed, so it is safe to run again. `park-images/remove confirm` clears only images whose stored bytes equal one of those sample files, and deletes the files; an uploaded image is never touched. Both go through `createParkDemoModule` (audit 909–912), dry run without `confirm`, refused in production.
 ## Routes
 
 | Route | Access |

@@ -15,7 +15,7 @@ Every mail the system writes is rendered from a **template** and recorded in the
 - **Log** (`mail_log`): template id and code, `client_app` (the app of the request), `user_id` (the recipient), recipient, sender (`MAIL_FROM`), subject, rendered body, status, error, `created_by` (the signed-in person, if any), `created_at`. Rows are never deleted.
 - **Email tab of Notification Templates** (manage, `/notifications/templates`, Super Admin): the templates from `GET /api/mail/templates` (`search` name / subject, `status` 1–3); View opens one (`GET /api/mail/templates/:id`) with its body in a sandboxed frame, placeholders shown as `{{name}}`. Read-only (templates come from migrations and CLI commands). See [manage console](../../platform/manage-console.md).
 - **Mails in the Delivery Log** (manage, `/notifications/delivery-log`, Super Admin): the list comes from the notification module's `GET /api/notification/delivery-log` (mails and in-app together; mail status shown as 1 Delivered, 2 Failed, 3 Captured (not sent)); a mail's details from `GET /api/mail/logs/:id` (the full mail). `GET /api/mail/logs` still lists mails alone. The detail shows the rendered mail in a **sandboxed frame** (no scripts, links open in a new tab), so while mails are only captured an admin can open a reset link from here.
-- Settings: `EMAIL_DRIVER` (`capture`), `MAIL_FROM`, and the app addresses used in links `APP_URL_MANAGE`, `APP_URL_WEB` (`.env.example`).
+- Settings: `EMAIL_DRIVER` (`capture`), `MAIL_FROM`, and the app addresses used in links `APP_URL_MANAGE`, `APP_URL_WEB`, `APP_URL_PARTNER` (`.env.example`).
 
 ## Where it lives
 

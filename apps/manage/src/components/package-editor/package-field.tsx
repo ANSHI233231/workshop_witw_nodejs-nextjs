@@ -41,7 +41,7 @@ export function CheckList({
     selected,
     onToggle,
 }: {
-    readonly options: readonly { readonly code: number; readonly label: string }[];
+    readonly options: readonly { readonly code: number; readonly label: string; readonly note?: string }[];
     readonly selected: readonly number[];
     readonly onToggle: (code: number) => void;
 }) {
@@ -55,6 +55,7 @@ export function CheckList({
                         onChange={() => onToggle(option.code)}
                     />
                     {option.label}
+                    {option.note && <span className="badge badge-danger">{option.note}</span>}
                 </label>
             ))}
         </div>

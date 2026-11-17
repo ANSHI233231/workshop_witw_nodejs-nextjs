@@ -1,6 +1,6 @@
 import type { DbExecutor, RowDataPacket } from '../../../database/connection';
 import { UsersDemoSQL } from '../sql/users-demo.sql';
-import { MetaRole } from '../types/users.types';
+import { MetaRole, UserRoleStatus } from '../types/users.types';
 
 export interface DemoAccountRow extends RowDataPacket {
     id: number;
@@ -11,7 +11,7 @@ export interface DemoAccountRow extends RowDataPacket {
 export class UsersDemoRepository {
     async findByEmails(db: DbExecutor, emails: readonly string[]): Promise<DemoAccountRow[]> {
         if (emails.length === 0) return [];
-        return db.query<DemoAccountRow>(UsersDemoSQL.findByEmails(emails.length), [MetaRole.SUPER_ADMIN, ...emails]);
+        return db.query<DemoAccountRow>(UsersDemoSQL.findByEmails(emails.length), [MetaRole.SUPER_ADMIN, UserRoleStatus.ACTIVE, ...emails]);
     }
 
     async deleteUsers(db: DbExecutor, ids: readonly number[]): Promise<number> {

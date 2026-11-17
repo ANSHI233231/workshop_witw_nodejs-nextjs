@@ -1,6 +1,7 @@
 import type { AppTranslationDto, LanguageDto, TranslatedTexts } from '../dto/language.dto';
 import {
     type AppTranslationLanguage,
+    BASE_LANGUAGE_CODE,
     type AppTranslationRow,
     LANGUAGE_SITES,
     type LanguageRecord,
@@ -17,7 +18,7 @@ export const toLanguage = ({ row, sites }: LanguageRecord): LanguageDto => ({
     name: row.name,
     nativeName: row.native_name,
     shortName: row.short_name,
-    shownIn: sitesWhere(sites, () => true),
+    shownIn: row.code === BASE_LANGUAGE_CODE ? [...LANGUAGE_SITES] : sitesWhere(sites, () => true),
     defaultFor: sitesWhere(sites, (site) => Number(site.is_default) === 1),
     status: row.status,
 });

@@ -242,6 +242,7 @@ export class PackagePortalService implements IPackagePortalService {
             if (!(await this.records.repository.send(this.records.db, versionId, userId))) {
                 throw new ConflictException(PACKAGE_MESSAGES.NOT_SENDABLE, 'PACKAGE_VERSION_NOT_SENDABLE');
             }
+            await this.editor.checkVersionParks(partner.id, versionId);
             await this.records.repository.touch(this.records.db, packageId, userId);
             await this.notifySuperAdmins(partner, packageId, version, userId);
             return {

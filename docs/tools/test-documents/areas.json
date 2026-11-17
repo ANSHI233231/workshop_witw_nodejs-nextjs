@@ -24,7 +24,7 @@
     {
       "title": "Parks",
       "slug": "parks",
-      "ids": ["PARK"],
+      "ids": ["PARK", "FIX-09"],
       "refs": [
         { "doc": "docs/how-it-works/workflows/WITW-Shared-Safari-Workflow.md", "sections": "§3, §11.5" },
         { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§10" }
@@ -41,14 +41,14 @@
     {
       "title": "Partner",
       "slug": "partner",
-      "ids": ["PTR-01..05", "PTR-08..10", "LOGO", "LOCAL-11", "PKSS-01"],
+      "ids": ["PTR-01..05", "PTR-08..10", "LOGO", "LOCAL-11", "PKSS-01", "FIX-05..08"],
       "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§1, §2.1 to §2.5, §12.1, §12.2" }],
       "howItWorks": ["docs/how-it-works/modules/partner/README.md"]
     },
     {
       "title": "Partner portal",
       "slug": "partner-portal",
-      "ids": ["PTR-06", "PTR-11", "PTR-12", "LOCAL-06", "PORTAL"],
+      "ids": ["PTR-06", "PTR-11", "PTR-12", "LOCAL-06", "PORTAL", "FIX-10..15"],
       "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§2.4, §3" }],
       "howItWorks": ["docs/how-it-works/platform/partner-portal.md"]
     },
@@ -62,7 +62,7 @@
     {
       "title": "Packages",
       "slug": "packages",
-      "ids": ["PKG", "LOCAL-09"],
+      "ids": ["PKG", "LOCAL-09", "FIX-01..04"],
       "refs": [{ "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§4, §5, §6.1, §6.2, §8.1, §8.2, §12.3 to §12.5, §13" }],
       "howItWorks": ["docs/how-it-works/modules/package/README.md"]
     },
@@ -107,7 +107,7 @@
     {
       "title": "Repo tooling",
       "slug": "repo-tooling",
-      "ids": ["PROTO", "BTEST"],
+      "ids": ["PROTO", "BTEST", "FIX-16..18"],
       "refs": [{ "doc": "docs/how-it-works/platform/prototype.md", "sections": "whole file" }],
       "howItWorks": ["docs/how-it-works/platform/prototype.md", "docs/how-it-works/platform/browser-testing.md"]
     },
@@ -120,6 +120,15 @@
         { "doc": "docs/how-it-works/workflows/WITW-Packages-Workflow.md", "sections": "§1 to §13" }
       ],
       "howItWorks": ["docs/how-it-works/README.md"]
+    },
+    {
+      "title": "Demo and sample data",
+      "slug": "demo-and-sample-data",
+      "ids": ["DEMO"],
+      "refs": [
+        { "doc": "docs/planning/features/2026-11-16-full-test-and-docs.md", "sections": "§1 (added 2026-11-16, points 2–4), §4" }
+      ],
+      "howItWorks": ["docs/how-it-works/platform/local-development.md"]
     }
   ]
 }

@@ -4,6 +4,8 @@
 
 **Who uses it.** The Super Admin (manage › Shared Safari › Flag Reasons, `/flag-reasons`, board C7). Signed-in website users see the active reasons in the Flag dialog.
 
+**Workflows:** [WITW Shared Safari](../../workflows/WITW-Shared-Safari-Workflow.md).
+
 ## The flow
 
 1. **List** (`/flag-reasons`): S.No · Reason · Used in flags · Status · Actions, in the order the reasons were added (by id; there is no sort order and no reordering, a new reason comes last). The whole list is shown, without pages, with Total Items. Filters: reason search and Status (All / Active / Inactive); **Clear filters** shows while a filter is set. On a phone (below 768 px) each reason is a card ("1. Reason", status badge, "Used in N flags", the actions).
@@ -19,7 +21,7 @@
 - **No delete.** A reason is made inactive instead. An inactive reason is hidden from the Flag dialog.
 - **Past flags keep their reason:** a flag stores the reason's name when it is raised (`reason_name`), so renaming or deactivating a reason doesn't change past flags; Used in flags still counts them by id.
 - **Access:** `GET /api/flag-reason/active` needs a signed-in user; every other route is Super Admin only (console area `platform`).
-- **Audit:** add 831 (832 failed), edit 833 (834), status 835 (836), entity Flag reason (11), with what changed.
+- **Audit:** add 831 (832 failed), edit 833 (834), status 835 (836), `ct_` test reasons removed by `test-data/remove-ct` 843 (844), entity Flag reason (11), with what changed.
 
 ## Where it lives
 

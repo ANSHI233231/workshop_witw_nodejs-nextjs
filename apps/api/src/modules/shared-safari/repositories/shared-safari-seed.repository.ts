@@ -151,6 +151,11 @@ export class SharedSafariSeedRepository {
         await db.execute(SharedSafariSeedSQL.setCover, [fileName, safariId]);
     }
 
+    async seededBySlug(db: DbExecutor, slug: string): Promise<SeededSafariRow | undefined> {
+        const [row] = await db.query<SeededSafariRow>(SharedSafariSeedSQL.seededBySlug, [slug]);
+        return row;
+    }
+
     async seededSafaris(db: DbExecutor, slugs: readonly string[], userIds: readonly number[]): Promise<SeededSafariRow[]> {
         return db.query<SeededSafariRow>(SharedSafariSeedSQL.seededSafaris(slugs.length, userIds.length), [
             ...slugs,

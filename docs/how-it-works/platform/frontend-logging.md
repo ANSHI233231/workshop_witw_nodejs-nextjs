@@ -1,6 +1,6 @@
 # Frontend logging
 
-**What it is.** How `manage` and `web` record what happened, in the browser and on their own server, into **each app's own** `logs/` folder (`apps/manage/logs/`, `apps/web/logs/`), in the same line format as the API. Nothing is sent to any third party; only errors also go to the API's database (see "Errors saved in the database" below).
+**What it is.** How `manage`, `web` and `partner` record what happened, in the browser and on their own server, into **each app's own** `logs/` folder (`apps/manage/logs/`, `apps/web/logs/`, `apps/partner/logs/`), in the same line format as the API. Nothing is sent to any third party; only errors also go to the API's database (see "Errors saved in the database" below).
 
 **Who uses it.** Anyone debugging a frontend app; developers writing log calls in it.
 

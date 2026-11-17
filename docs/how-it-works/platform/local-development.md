@@ -6,7 +6,7 @@
 
 ## First run
 
-**`node init.js`** at the repo root does all of it: it asks for the environment, the database connection and your repository (and, only when a project is created from the starter, its name), writes the three `.env` files with new secrets, creates the database with the migrations, installs the packages, creates the first Super Admin and sets up git. `--dry-run` shows what it would do. It runs once per machine: when this copy is already set up (`apps/api/.env` exists) it does nothing unless `--force` (new `.env` files with new secrets, which sign everyone out); a database with tables is never touched.
+**`node init.js`** at the repo root does all of it: it asks for the environment, the database connection and your repository (and, only when a project is created from the starter, its name), writes the four `.env` files (`apps/api`, `apps/manage`, `apps/web`, `apps/partner`) with new secrets, creates the database with the migrations, installs the packages, creates the first Super Admin and sets up git. `--dry-run` shows what it would do. It runs once per machine: when this copy is already set up (`apps/api/.env` exists) it does nothing unless `--force` (new `.env` files with new secrets, which sign everyone out); a database with tables is never touched.
 
 By hand, the same steps:
 
@@ -48,20 +48,43 @@ Accounts to sign in with on a local database, all with one password that you cho
 ```bash
 cd apps/api
 npm run cli local-accounts/add <password>          # dry run: lists what it would create
-npm run cli local-accounts/add <password> confirm   # creates them
-npm run cli local-accounts/remove confirm           # removes them and only their rows
+npm run cli local-accounts/add <password> confirm   # creates the accounts
+npm run cli local-accounts/remove confirm           # removes them (after the sample data, see below)
 ```
 
 | Account | Email | What it is | Signs in to |
 |---|---|---|---|
 | Super Admin | `anshika@example.in` | Super Admin role | Console |
-| Partner | `partner@example.in` | Active partner "Tiger Song Safaris": logo, Kanha, Bandhavgarh and Tadoba-Andhari, one approved gallery, two live packages | Partner portal and website |
-| User | `user@example.in` | website user with one quote request to the partner's Kanha Escape | Website |
+| Partner | `partner@example.in` | Vivek Rao; with the sample data the prototype's signed-in partner "Jungle Trails Safaris" (PP boards): a "JT" logo, Kanha, Bandhavgarh, Corbett and Jhalana, its packages Wild Kanha Special, Wildlife Marathon, Corbett Elephant Trails…, galleries and quote notifications | Partner portal and website |
+| User | `user@example.in` | Ananya Iyer; with the sample data the prototype's signed-in website user (W / P boards): host of Leopards of Jhalana, Corbett birding trail, Tadoba weekend and Kanha in the rains, with her quote requests (Wild Kanha Special Hot, Corbett Elephant Trails Cold) and "joined / commented on your safari" notifications | Website |
 
-- Safe to run again: whatever is there is kept (its password too), nothing is duplicated. Refused in production. The data is in `apps/api/src/cli/controllers/local-accounts/`, the logo in `apps/api/seed/local-accounts/`.
-- `remove` takes only these three accounts, their partner, logo, gallery, packages and quote requests. The Shared Safari sample users (`@example.test`), the Packages demo (`@packages-demo.test`) and every other account are never touched. Their storage folders (`storage/partner/<id>/`, `storage/gallery/<id>/`, `storage/package/<id>/`) go with them.
+- `local-accounts/add` creates only the accounts; the sample commands below add their data to them and create them too when they are missing, so the commands run in any order. Safe to run again: an account that is there keeps its password and name, nothing is duplicated. Refused in production. The data is in `apps/api/src/cli/controllers/local-accounts/`.
+- `local-accounts/remove` is refused while the sample data that uses these accounts is there (it says so); remove that first. It then takes the three accounts and anything still their own (a partner of `partner@example.in` with its logo, galleries and packages, quote requests by or to them, with their storage folders). No other account is touched.
 - A guest has no account: browse `/packages` and `/parks` signed out.
 - Sign-in failing with "The mobile number, email, username or password is not correct." (`INVALID_CREDENTIALS`, audit action 202) means the password is wrong for that account, not a cookie or CORS problem.
+
+## Sample data
+
+Sample data for the screens, local only (refused in production), each a dry run unless `confirm`, each safe to run again (what is there is kept, nothing is duplicated):
+
+| Command | Adds | Remove command takes |
+|---|---|---|
+| `seed/shared-safari <password> confirm` | the prototype's 14 Shared Safari people (13 on `@example.test`, Ananya Iyer = `user@example.in`) and 14 safaris with members, comments, flags, a cover each (the 3 sample covers in turn) and notifications ([shared-safari](../modules/shared-safari/README.md)) | `seed/shared-safari-remove confirm`: the 14 safaris (also the ones `user@example.in` hosts) with everything on them and the `@example.test` accounts; keeps the local accounts, and Riya Sharma and Neha Singh while the packages demo is there |
+| `packages-demo/add <password> confirm` | the prototype's partners (Jungle Trails Safaris on `partner@example.in`, with the logo `apps/api/seed/packages-demo/jungle-trails-logo.png`, the others on `@packages-demo.test`), galleries, packages and quote requests from Ananya Iyer (`user@example.in`), Riya Sharma and Neha Singh (the `@example.test` people) ([partner](../modules/partner/README.md), [package](../modules/package/README.md)) | `packages-demo/remove confirm`: the demo partners (Jungle Trails' Partner role is taken back from `partner@example.in`), their galleries, packages, quote requests and the `@packages-demo.test` accounts; never the local or Shared Safari accounts |
+| `park-images/add confirm` | a feature image for every park that has none: the prototype's photo (Kanha, Corbett, Gir, Jhalana, Kuno, Bhitarkanika, Bandhavgarh, Satpura) or one of the 3 safari covers in turn ([park](../modules/park/README.md)) | `park-images/remove confirm`: only park images that are byte for byte one of those sample photos |
+
+Order on a fresh database (any order works; this one gives every account the same password in one go):
+
+```bash
+npm run cli local-accounts/add <password> confirm
+npm run cli seed/shared-safari <password> confirm
+npm run cli packages-demo/add <password> confirm
+npm run cli park-images/add confirm
+```
+
+To remove everything: `packages-demo/remove confirm`, then `seed/shared-safari-remove confirm`, then `local-accounts/remove confirm`, and `park-images/remove confirm` at any time. `packages-demo/add` refuses while `partner@example.in` has a partner of another name.
+
+- `test-data/remove-ct confirm`: removes every `ct_` test row and its storage folders ([browser testing](browser-testing.md)).
 
 ## Rules
 
@@ -72,4 +95,4 @@ npm run cli local-accounts/remove confirm           # removes them and only thei
 
 ## History
 
-- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-16-local-accounts-and-logo-field](../../planning/features/2026-11-16-local-accounts-and-logo-field.md)
+- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-16-local-accounts-and-logo-field](../../planning/features/2026-11-16-local-accounts-and-logo-field.md), [2026-11-16-full-test-and-docs](../../planning/features/2026-11-16-full-test-and-docs.md) (Step 6: sample data on the local accounts)

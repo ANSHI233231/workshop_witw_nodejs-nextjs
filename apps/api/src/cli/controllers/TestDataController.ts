@@ -2,7 +2,10 @@ import { config } from '../../config';
 import { createFileStorage } from '../../infrastructure/storage';
 import { AuditEntity, createAuditModule } from '../../modules/audit';
 import { createAuthTestDataModule } from '../../modules/auth';
+import { createFlagReasonTestDataModule } from '../../modules/flag-reason';
 import { createGalleryTestDataModule } from '../../modules/gallery';
+import { createJobsTestDataModule } from '../../modules/jobs';
+import { createLanguageTestDataModule } from '../../modules/language';
 import { createNotificationTestDataModule } from '../../modules/notification';
 import { createPackageTestDataModule } from '../../modules/package';
 import { createParkTestDataModule } from '../../modules/park';
@@ -20,7 +23,7 @@ const CT_SLUG_PREFIX = 'ct-';
 
 const CT_ACCOUNTS: TestAccountMarker = {
     emailPrefix: CT_TEXT_PREFIX,
-    keptEmails: ['ct_partner_admin@ct-packages.test'],
+    keptEmails: [],
     protectedEmailSuffixes: ['@example.test', '@packages-demo.test'],
 };
 
@@ -48,7 +51,7 @@ type Found = Awaited<ReturnType<TestDataController['findAll']>>;
 
 export class TestDataController extends ConsoleController {
     /**
-     * Removes the local test data marked "ct_": accounts whose email starts with "ct_" (except ct_partner_admin@ct-packages.test, which stays) with their roles, sessions and password resets; their partners with parks and logos; galleries, packages (every version, day, FAQ, photo, park, feature, inclusion) and package delete reasons named "ct_" or owned by those partners, with their files; quote requests from or to them or with notes starting "ct_"; parks named "ct_"; shared safaris, members, comments and flags of those accounts or titled "ct_"; notifications to or from them, about any of these rows, or with a "ct_" title or text. The audit, app and mail logs stay. Sample (@example.test) and demo (@packages-demo.test) accounts are never selected. e.g. "npm run cli test-data/remove-ct confirm". Dry run unless "confirm" is given; safe to run again; refused in production.
+     * Removes the local test data marked "ct_": accounts whose email starts with "ct_" with their roles, sessions and password resets; their partners with parks and logos; galleries, packages (every version, day, FAQ, photo, park, feature, inclusion) and package delete reasons named "ct_" or owned by those partners, with their files; quote requests from or to them or with notes starting "ct_"; parks named "ct_"; flag reasons named "ct_"; languages named "ct_" with their texts, data translations and column (the apps' translation files are published again), and screen texts (app translations) starting with "ct_"; background job runs titled "ct_" (and their retries); shared safaris, members, comments and flags of those accounts or titled "ct_"; notifications to or from them, about any of these rows, or with a "ct_" title or text. The audit, app and mail logs stay. Sample (@example.test) and demo (@packages-demo.test) accounts are never selected. e.g. "npm run cli test-data/remove-ct confirm". Dry run unless "confirm" is given; safe to run again; refused in production.
      */
     public async actionRemoveCt(confirm?: string): Promise<void> {
         if (config.isProduction) {
@@ -77,12 +80,15 @@ export class TestDataController extends ConsoleController {
             galleries: await services.galleryTestDataService.remove(found.galleries),
             partners: await services.partnerTestDataService.remove(found.partners),
             parks: await services.parkTestDataService.remove(found.parks),
+            flagReasons: await services.flagReasonTestDataService.remove(found.flagReasons),
+            languageRows: await services.languageTestDataService.remove(found.languages),
+            jobRuns: await services.jobTestDataService.remove(found.jobs),
             sessions: await services.authTestDataService.remove(found.auth),
             users: await services.usersTestDataService.remove(found.users),
         };
         this.stdout(
             this.ansiFormat(
-                `Removed: ${removed.notifications} notifications, ${removed.quoteRequests} quote requests, ${removed.safaris} shared safaris, ${removed.packages} packages, ${removed.galleries} galleries, ${removed.partners} partners, ${removed.parks} parks, ${removed.sessions} sessions and password resets, ${removed.users} accounts.\n`,
+                `Removed: ${removed.notifications} notifications, ${removed.quoteRequests} quote requests, ${removed.safaris} shared safaris, ${removed.packages} packages, ${removed.galleries} galleries, ${removed.partners} partners, ${removed.parks} parks, ${removed.flagReasons} flag reasons, ${removed.languageRows} language rows (languages and screen texts), ${removed.jobRuns} job runs, ${removed.sessions} sessions and password resets, ${removed.users} accounts.\n`,
                 'green',
             ),
         );
@@ -116,6 +122,9 @@ export class TestDataController extends ConsoleController {
             slugPrefix: CT_SLUG_PREFIX,
         });
         const parks = await services.parkTestDataService.find({ textPrefix: CT_TEXT_PREFIX, slugPrefix: CT_SLUG_PREFIX });
+        const flagReasons = await services.flagReasonTestDataService.find({ textPrefix: CT_TEXT_PREFIX });
+        const languages = await services.languageTestDataService.find({ textPrefix: CT_TEXT_PREFIX });
+        const jobs = await services.jobTestDataService.find({ textPrefix: CT_TEXT_PREFIX });
         const auth = await services.authTestDataService.find(userIds);
         const notifications = await services.notificationTestDataService.find({
             userIds,
@@ -131,7 +140,7 @@ export class TestDataController extends ConsoleController {
                 { entityType: AuditEntity.PARK, entityIds: parks.parkIds },
             ],
         });
-        return { users, partners, packages, galleries, quoteRequests, safaris, parks, auth, notifications };
+        return { users, partners, packages, galleries, quoteRequests, safaris, parks, flagReasons, languages, jobs, auth, notifications };
     }
 
     private blockersOf(found: Found): string[] {
@@ -144,7 +153,19 @@ export class TestDataController extends ConsoleController {
                 .filter((row) => !removing.get(reference.table)?.has(row.id))
                 .map((row) => `${reference.table} ${row.id} uses test ${row.label}, and stays`),
         );
-        return [...found.users.blockers, ...found.galleries.blockers, ...found.packages.blockers, ...parkBlockers];
+        const flagReasonBlockers = found.flagReasons.references.flatMap((reference) =>
+            reference.rows
+                .filter((row) => !removing.get(reference.table)?.has(row.id))
+                .map((row) => `${reference.table} ${row.id} uses test ${row.label}, and stays`),
+        );
+        return [
+            ...found.users.blockers,
+            ...found.galleries.blockers,
+            ...found.packages.blockers,
+            ...found.jobs.blockers,
+            ...parkBlockers,
+            ...flagReasonBlockers,
+        ];
     }
 
     private removedTables(found: Found): TestDataTable[] {
@@ -156,6 +177,9 @@ export class TestDataController extends ConsoleController {
             ...found.galleries.tables,
             ...found.partners.tables,
             ...found.parks.tables,
+            ...found.flagReasons.tables,
+            ...found.languages.tables,
+            ...found.jobs.tables,
             ...found.auth.tables,
             ...found.users.tables,
         ];
@@ -175,6 +199,8 @@ export class TestDataController extends ConsoleController {
         for (const folder of folders) this.stdout(`    ${folder}\n`);
         this.stdout(this.ansiFormat('Rows that point at the test parks:\n', 'bold'));
         for (const reference of found.parks.references) this.printTable(reference);
+        this.stdout(this.ansiFormat('Rows that point at the test flag reasons:\n', 'bold'));
+        for (const reference of found.flagReasons.references) this.printTable(reference);
         this.stdout(this.ansiFormat('Kept:\n', 'bold'));
         for (const table of [
             ...found.users.kept,
@@ -224,6 +250,9 @@ export class TestDataController extends ConsoleController {
             ...createQuoteRequestTestDataModule(base),
             ...createSharedSafariTestDataModule(withFiles),
             ...createParkTestDataModule(withFiles),
+            ...createFlagReasonTestDataModule(base),
+            ...createLanguageTestDataModule({ ...base, translationDirectories: config.translationDirs }),
+            ...createJobsTestDataModule(base),
             ...createNotificationTestDataModule(base),
         };
     }

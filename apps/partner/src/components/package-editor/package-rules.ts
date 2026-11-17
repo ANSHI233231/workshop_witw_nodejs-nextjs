@@ -190,12 +190,18 @@ const priceProblem = (t: Translate, value: string): string | null => {
         : null;
 };
 
-export const checkBasic = (t: Translate, draft: BasicDraft): FieldErrors => {
+export const PARK_NO_LONGER_AVAILABLE = 'Untick the park marked Not available and choose one of your active parks.';
+
+export const unavailableParkIds = (draft: BasicDraft, offeredParkIds: readonly number[]): readonly number[] =>
+    draft.masterParkIds.filter((parkId) => !offeredParkIds.includes(parkId));
+
+export const checkBasic = (t: Translate, draft: BasicDraft, offeredParkIds: readonly number[]): FieldErrors => {
     const errors: Record<string, string> = {};
     const name = draft.name.trim();
     if (!name) errors['name'] = t('Enter the package name.');
     else if (name.length > PACKAGE_LIMITS.NAME_MAX) errors['name'] = tooLong(t, PACKAGE_LIMITS.NAME_MAX);
     if (draft.masterParkIds.length === 0) errors['masterParkIds'] = t('Choose at least one park.');
+    else if (unavailableParkIds(draft, offeredParkIds).length > 0) errors['masterParkIds'] = t(PARK_NO_LONGER_AVAILABLE);
     const days = draft.dayCount.trim();
     if (!days) errors['dayCount'] = t('Enter the number of days.');
     else {

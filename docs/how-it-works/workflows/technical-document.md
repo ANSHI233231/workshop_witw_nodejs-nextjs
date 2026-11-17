@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Version | 0.1 (starter) |
-| Date | 2026-10-28 |
+| Version | 0.2 |
+| Date | 2026-11-16 |
 | Purpose | Helps anyone joining or taking over the project understand how it is built and work on it correctly. |
 
 **Who should read this**
@@ -19,20 +19,23 @@ This document is an overview. How each part works in detail (screens, fields, ru
 
 ## 1. What the product is
 
-To be written by the project: what the product does, for whom, and which apps it has. The starter gives it a Super Admin console (`manage`) and an example portal (`web`).
+To be written by the project: what the product does, for whom, and which apps it has. WITW is a platform for safaris: users browse parks, shared safaris and ready-made safari packages, and partners (safari operators) sell packages. It has three apps: the Super Admin console (`manage`, port 3041 locally), the WITW website (`web`, port 3040: shared safaris, packages, parks, Become a Partner, sign-in and the signed-in pages) and the Partner portal (`partner`, port 3042: for safari partners, with a sidebar frame like the console's: partner request, packages, galleries, quote requests, business profile and notifications). All three use the one API.
 
 ## 2. Glossary
 
 | Word | Meaning |
 |---|---|
-| App | One Next.js application under `apps/` (manage, web …) |
+| App | One Next.js application under `apps/` (manage, web, partner) |
+| Website | The web app: the public WITW site and the signed-in pages for website users |
+| Partner portal | The partner app, for safari partners |
+| Partner | A safari operator whose request the Super Admin approved; has the Partner role |
 | Module | One business area of the API, in `apps/api/src/modules/<module>/` |
 | Console | The manage app, for Super Admins |
 | Super Admin | The system role that runs the platform |
 
 ## 3. Core concepts
 
-- **One account, one session:** a person signs in once and is signed in on every app; what they may open is decided per app and, for real, by the API.
+- **One account, a session per app:** one account works in every app, but each app keeps its own session (its own pair of cookies, told apart by the `X-Client-App` header every app sends); signing in on the website does not sign in to the console. What a person may open is decided per app and, for real, by the API.
 - **Audit:** every write is recorded with who, when, from which app and what changed.
 - **Languages:** screen text is written in English and translated in the console; data text is translated per record.
 - **Background jobs:** maintenance and later work run as CLI commands, scheduled or queued, managed in the console.
@@ -42,17 +45,21 @@ To be written by the project: what the product does, for whom, and which apps it
 | Role | App | Can |
 |---|---|---|
 | Super Admin | manage | Every console page ([roles/super-admin.md](../roles/super-admin.md)) |
-| Signed-in user | web | The portal's pages |
+| Partner | partner, web | Their own packages, galleries and quote requests in the Partner portal ([roles/partner.md](../roles/partner.md)) |
+| Website user | web | An account with no role: shared safaris, quote requests, Become a Partner ([roles/website-user.md](../roles/website-user.md)) |
+| Guest | web | Not signed in: browses shared safaris, packages and parks ([roles/guest.md](../roles/guest.md)) |
+
+All the roles are in [roles/](../roles/README.md).
 
 ## 5. Architecture, and why
 
 ```
             Browser
                │
-       ┌───────┴───────┐
-       ▼               ▼
-     manage           web           one Next.js app per product
-       └───────┬───────┘
+   ┌───────────┼───────────┐
+   ▼           ▼           ▼
+ manage        web       partner    one Next.js app per product
+   └───────────┼───────────┘
                ▼
               API                   Node.js, /api/<module>
    ┌───────────┼───────────┐
@@ -67,7 +74,7 @@ To be written by the project: what the product does, for whom, and which apps it
 | **A separate frontend app per product**, no shared code package | Each product can change and be released on its own |
 | **One API for all apps**, a **modular monolith** with enforced module boundaries | One place for every rule and every write, without the cost of separate services |
 | **Hand-written SQL, no ORM** | Full control of queries and indexes; what runs is what you read |
-| **One account and one session for all apps** | A person signs in once for every app; what they may open is still decided per app |
+| **One account, a session per app** | The same login works in every app, but a console session never opens the website or the Partner portal; what they may open is still decided per app and by the API |
 | **Files served by the API** behind each feature's access check | No public file links; where files are stored is a setting |
 | **Outside services behind adapters** (email, SMS, payments, storage) | Modules never depend on a vendor; changing vendor is a new provider and a setting |
 | **A CLI inside the API** for maintenance and one-off tasks | Tasks use the same modules and rules as the API; a task that changes data is a dry run unless confirmed |
@@ -108,7 +115,7 @@ The full rule set is in [AGENTS.md](../../../AGENTS.md).
 1. **Plan first.** Every feature gets a planning file with its test cases before code; every decision is written into it.
 2. **Build from the prototype.** Only boards the business has declared ready are built; differences are recorded in PROTOTYPE-SYNC.
 3. **Change a field through every layer at once:** migration, API, validation and every app that uses it.
-4. **Verify:** type check, lint and build; run the test cases; check the live data; remove test data.
+4. **Verify:** type check, lint and build; run the test cases; check the live data; remove test data. The per-area test documents in `docs/testing` are generated from the planning files (`docs/tools/test-documents`) and never edited.
 5. **Document:** update `docs/how-it-works/` in the same change and mark the plan shipped.
 
 ## 8. Where everything lives
@@ -118,6 +125,7 @@ The full rule set is in [AGENTS.md](../../../AGENTS.md).
 | How a module or flow works **today** | `docs/how-it-works/` (`modules/`, `platform/`, `roles/`, `workflows/`) |
 | **Why** a feature is the way it is, and its test results | `docs/planning/features/` |
 | What is built, screen by screen, against the design | [PROTOTYPE-SYNC.md](../../PROTOTYPE-SYNC.md) |
+| The test cases and their results, by area (generated, read-only) | [docs/testing/](../../testing/README.md); built by `docs/tools/test-documents` |
 | The design prototype | `docs/prototype/` (a separate repository; `init.js` starts it as a copy of the starter prototype) |
 | The database tables | `apps/api/src/database/migrations/` (its README gives the order) |
 | Background jobs, and adding one | [background-jobs.md](../platform/background-jobs.md) |
@@ -136,8 +144,9 @@ apps/
 │   ├── routes/index.ts       where every module is mounted
 │   └── cli/                  console commands
 ├── manage/                   the Super Admin console
-└── web/                      the example portal
-docs/  how-it-works/  planning/  PROTOTYPE-SYNC.md  tools/
+├── web/                      the WITW website
+└── partner/                  the Partner portal
+docs/  how-it-works/  planning/  testing/  PROTOTYPE-SYNC.md  tools/
 environments/                 pm2 files and the port table
 storage/                      uploaded files (not in git)
 ```

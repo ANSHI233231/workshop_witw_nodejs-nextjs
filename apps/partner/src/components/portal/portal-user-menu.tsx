@@ -5,14 +5,16 @@ import Link from 'next/link';
 import { useT } from '@/hooks/i18n/use-t';
 import { config } from '@/lib/config';
 
-import { ExternalLinkIcon, LogOutIcon } from './portal-icons';
+import { ExternalLinkIcon, LockIcon, LogOutIcon } from './portal-icons';
 import type { PortalIdentity } from './portal-identity';
 
 export function PortalUserMenu({
     identity,
+    onChangePassword,
     onSignOut,
 }: {
     readonly identity: PortalIdentity;
+    readonly onChangePassword: () => void;
     readonly onSignOut: () => void;
 }) {
     const t = useT();
@@ -27,6 +29,10 @@ export function PortalUserMenu({
                 <ExternalLinkIcon />
                 {t('Website')}
             </a>
+            <button type="button" className="mega-link dd-btn" onClick={onChangePassword}>
+                <LockIcon />
+                {t('Change Password')}
+            </button>
             <div className="dd-sep"></div>
             <Link
                 className="mega-link"

@@ -148,7 +148,7 @@ export class ParkService implements IParkService {
         if (!current) throw notFound();
         const fileName = await this.images.store(id, content);
         try {
-            return await this.audited(
+            const saved = await this.audited(
                 AuditAction.PARK_UPDATED,
                 AuditAction.PARK_UPDATE_FAILED,
                 id,
@@ -162,6 +162,8 @@ export class ParkService implements IParkService {
                     };
                 },
             );
+            if (current.feature_image && current.feature_image !== fileName) await this.images.discard(id, current.feature_image);
+            return saved;
         } catch (error) {
             await this.images.discard(id, fileName);
             throw error;

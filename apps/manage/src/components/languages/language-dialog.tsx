@@ -19,7 +19,7 @@ import {
 
 import { clearField, type FieldErrors, saveErrorsOf } from './language-errors';
 
-const DEFAULT_FOR_ORDER: readonly LanguageSite[] = ['web', 'web-website', 'manage'];
+const DEFAULT_FOR_ORDER: readonly LanguageSite[] = ['web', 'web-website', 'partner', 'manage'];
 
 const FIELDS = ['name', 'nativeName', 'shortName', 'code', 'shownIn', 'defaultFor'] as const;
 

@@ -22,7 +22,7 @@ const duration = z
     );
 
 const LOG_VIEWER_APPS = ['api', 'manage', 'web', 'partner'] as const;
-const TRANSLATION_APPS = ['manage', 'web'] as const;
+const TRANSLATION_APPS = ['manage', 'web', 'partner'] as const;
 const appFolders = <App extends string>(apps: readonly App[]) =>
     z.string().transform((value, context) => {
         const entries = value

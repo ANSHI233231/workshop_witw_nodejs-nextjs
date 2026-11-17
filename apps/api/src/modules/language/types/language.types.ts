@@ -38,7 +38,7 @@ export const APP_TRANSLATION_TEXT_COLUMN = /^([a-z]{2,3})_text$/;
 
 export const appTranslationColumnOf = (code: string): string => `${code}_text`;
 
-export const LANGUAGE_SITES = ['manage', 'web', 'web-website'] as const;
+export const LANGUAGE_SITES = ['manage', 'web', 'web-website', 'partner'] as const;
 
 export type LanguageSite = (typeof LANGUAGE_SITES)[number];
 
@@ -46,6 +46,7 @@ export const LanguageSiteCode = {
     MANAGE: 1,
     WEB_PORTAL: 2,
     WEB_WEBSITE: 3,
+    PARTNER_PORTAL: 4,
 } as const;
 
 export type LanguageSiteCodeValue = (typeof LanguageSiteCode)[keyof typeof LanguageSiteCode];
@@ -54,6 +55,7 @@ export const SITE_CODE_OF: Readonly<Record<LanguageSite, LanguageSiteCodeValue>>
     manage: LanguageSiteCode.MANAGE,
     web: LanguageSiteCode.WEB_PORTAL,
     'web-website': LanguageSiteCode.WEB_WEBSITE,
+    partner: LanguageSiteCode.PARTNER_PORTAL,
 };
 
 export const siteOfCode = (code: number): LanguageSite | undefined =>

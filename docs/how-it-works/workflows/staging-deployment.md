@@ -21,7 +21,7 @@
 |---|---|---|---|
 | `https://stag.<domain>` | web | 4100 | `stag-web` |
 | `https://stag-manage.<domain>` | manage | 4101 | `stag-manage` |
-| TBD - Umang confirm karega (Partner portal host) | partner | 4102 | `stag-partner` |
+| `https://stag-partner.<domain>` (team confirm) | partner | 4102 | `stag-partner` |
 | `https://stag-api.<domain>` | api | 4110 | `stag-api` |
 
 Every process listens on `127.0.0.1` only; the outside world reaches them through nginx.
@@ -54,7 +54,7 @@ The usual task. Run in `~/stag_<project>`:
 
 ### 1. Domain names
 
-Point `stag.<domain>`, `stag-manage.<domain>`, the Partner portal's host (TBD - Umang confirm karega) and `stag-api.<domain>` at the server (a wildcard record works). The Partner portal's host is not decided yet: write no name for it until it is confirmed. Check with `dig +short stag-api.<domain>`.
+Point `stag.<domain>`, `stag-manage.<domain>`, `stag-partner.<domain>` (the Partner portal, team confirm) and `stag-api.<domain>` at the server (a wildcard record works). Check with `dig +short stag-api.<domain>`.
 
 ### 2. Code
 
@@ -72,13 +72,13 @@ cd ~ && git clone --branch staging <repository URL> stag_<project>
 map $host $stag_port {
     stag.<domain>          4100;
     stag-manage.<domain>   4101;
-    TBD - Umang confirm karega   4102;
+    stag-partner.<domain>   4102;
     stag-api.<domain>      4110;
 }
 
 server {
     listen 80;
-    server_name stag.<domain> stag-manage.<domain> TBD - Umang confirm karega stag-api.<domain>;
+    server_name stag.<domain> stag-manage.<domain> stag-partner.<domain> stag-api.<domain>;
 
     client_max_body_size 50M;
 
@@ -99,7 +99,7 @@ server {
 ```bash
 sudo ln -s /etc/nginx/sites-available/stag_<project> /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx --cert-name stag-<project> -d stag.<domain> -d stag-manage.<domain> -d <partner host: TBD - Umang confirm karega> -d stag-api.<domain>
+sudo certbot --nginx --cert-name stag-<project> -d stag.<domain> -d stag-manage.<domain> -d stag-partner.<domain> -d stag-api.<domain>
 ```
 
 ### 4. The `.env` files
@@ -108,9 +108,9 @@ sudo certbot --nginx --cert-name stag-<project> -d stag.<domain> -d stag-manage.
 
 Each app's `.env` is copied from its `.env.example` and written on the server only, never committed. Generate **new** secrets with `openssl rand -hex 32`: `JWT_SECRET`, `JWT_REFRESH_SECRET`, `LOG_INGEST_KEY` (the same key in all four files).
 
-- **`apps/api/.env`:** `NODE_ENV=production`, `HOST=127.0.0.1`, `PORT=4110`, the `DB_*` of `<project>_stag_db`, `CORS_ORIGIN=https://stag.<domain>,https://stag-manage.<domain>,https://<partner host: TBD - Umang confirm karega>`, the JWT secrets, `AUTH_COOKIE_DOMAIN=.<domain>`, `AUTH_COOKIE_PREFIX=stag_`, `MAIL_FROM`, `STORAGE_LOCAL_ROOT`, `WORKER_ENABLED=true`, `APP_URL_MANAGE`, `APP_URL_WEB`, `APP_URL_PARTNER` (the Partner portal's address, used in the password reset mail), `LOG_ENABLED=true`, `LOG_LEVELS=error,warning,info`, `LOG_INGEST_KEY`, `LOG_VIEWER_DIRS`, `TRANSLATION_DIRS`.
+- **`apps/api/.env`:** `NODE_ENV=production`, `HOST=127.0.0.1`, `PORT=4110`, the `DB_*` of `<project>_stag_db`, `CORS_ORIGIN=https://stag.<domain>,https://stag-manage.<domain>,https://stag-partner.<domain>`, the JWT secrets, `AUTH_COOKIE_DOMAIN=.<domain>`, `AUTH_COOKIE_PREFIX=stag_`, `MAIL_FROM`, `STORAGE_LOCAL_ROOT`, `WORKER_ENABLED=true`, `APP_URL_MANAGE`, `APP_URL_WEB`, `APP_URL_PARTNER` (the Partner portal's address, used in the password reset mail), `LOG_ENABLED=true`, `LOG_LEVELS=error,warning,info`, `LOG_INGEST_KEY`, `LOG_VIEWER_DIRS`, `TRANSLATION_DIRS`.
 - **`apps/manage/.env`, `apps/web/.env`, `apps/partner/.env`:** `NEXT_PUBLIC_API_URL=https://stag-api.<domain>/api`, `NEXT_PUBLIC_AUTH_COOKIE_PREFIX=stag_`, `NEXT_PUBLIC_LOCALE_COOKIE_DOMAIN=.<domain>`, `LOG_ENABLED=true`, `LOG_INGEST_KEY`.
-- **Two more settings link the apps to the Partner portal:** `apps/partner/.env` has `NEXT_PUBLIC_WEBSITE_URL=https://stag.<domain>` (the Become a Partner link on its sign-in page), and `apps/web/.env` has `NEXT_PUBLIC_PARTNER_PORTAL_URL=https://<partner host: TBD - Umang confirm karega>`. Both are built into the app: rebuild it after changing them.
+- **Two more settings link the apps to the Partner portal:** `apps/partner/.env` has `NEXT_PUBLIC_WEBSITE_URL=https://stag.<domain>` (the Become a Partner link on its sign-in page), and `apps/web/.env` has `NEXT_PUBLIC_PARTNER_PORTAL_URL=https://stag-partner.<domain>`. Both are built into the app: rebuild it after changing them.
 
 The cookie prefix keeps the staging and production sign-ins apart on the same parent domain.
 
@@ -151,7 +151,7 @@ The last line must say "Dump completed".
 - `pm2 ls`: `stag-api`, `stag-manage`, `stag-web`, `stag-partner` online.
 - `https://stag-api.<domain>/api/health` answers 200 with the database up.
 - Signing in to `https://stag-manage.<domain>` works, and the API's `logs/info.log` shows `[jobs] Worker started`.
-- The Partner portal (host: TBD - Umang confirm karega) opens its sign-in page, signing in with a website account works, and it stays separate from a website or console sign-in in the same browser (its own cookie names).
+- The Partner portal (`stag-partner.<domain>`, team confirm) opens its sign-in page, signing in with a website account works, and it stays separate from a website or console sign-in in the same browser (its own cookie names).
 
 ## History
 

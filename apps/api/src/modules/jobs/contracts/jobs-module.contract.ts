@@ -11,3 +11,9 @@ export type JobsModuleDependencies = {
     readonly notificationService: INotificationService;
     readonly usersService: IUsersService;
 };
+
+export type JobsTestDataModuleDependencies = {
+    readonly db: Database;
+    readonly auditService: IAuditService;
+    readonly isProduction: boolean;
+};

@@ -43,7 +43,8 @@ export const yearAheadOf = (isoDate: string): string => `${Number(isoDate.slice(
 
 export const rupees = (value: number): string => `₹${formatCount(Math.round(value))}`;
 
-export const priceRange = (from: number, to: number): string => `${rupees(from)} – ${rupees(to)}`;
+export const priceRange = (from: number, to: number): string =>
+    Math.round(from) === Math.round(to) ? rupees(from) : `${rupees(from)} – ${rupees(to)}`;
 
 export const monthShort = (isoDate: string): string => MONTHS[partsOf(isoDate).m] ?? '';
 

@@ -55,7 +55,13 @@ export function PackageEditor({
 }) {
     const t = useT();
     const { formRef, revealFirstError } = useRevealFirstError<HTMLDivElement>();
-    const editor = usePackageEditor({ initial, listPath, create, revealFirstError });
+    const editor = usePackageEditor({
+        initial,
+        listPath,
+        create,
+        revealFirstError,
+        offeredParkIds: options.parks.map((park) => park.id),
+    });
     const { view, section } = editor;
     const version = view?.version ?? null;
     const canEdit = view === null || version?.canEdit === true;

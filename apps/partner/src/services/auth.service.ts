@@ -1,5 +1,5 @@
 import { ACCESS_TOKEN_COOKIE } from '@/lib/config';
-import { type AuthUser, type PasswordResetInput, type SignInInput } from '@/types/auth.types';
+import { type AuthUser, type ChangePasswordInput, type PasswordResetInput, type SignInInput } from '@/types/auth.types';
 
 import { apiClient } from './api-client';
 import { ApiError } from './api-error';
@@ -72,3 +72,6 @@ export const checkPasswordReset = async (token: string): Promise<string> =>
 
 export const resetPassword = (input: PasswordResetInput): Promise<void> =>
     apiClient.post<void>('/auth/reset-password', input);
+
+export const changePassword = (input: ChangePasswordInput): Promise<void> =>
+    apiClient.post<void>('/auth/change-password', input);

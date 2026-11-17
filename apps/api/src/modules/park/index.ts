@@ -1,14 +1,17 @@
 import type { AccessGuard } from '../../core/http';
 
+import type { IParkDemoService } from './contracts/park-demo-service.contract';
 import type { ParkModuleDependencies, ParkTestDataModuleDependencies } from './contracts/park-module.contract';
 import type { IParkPriceSource } from './contracts/park-price-source.contract';
 import type { IParkService } from './contracts/park-service.contract';
 import type { IParkTestDataService } from './contracts/park-test-data-service.contract';
 import { ParkController } from './controllers/park.controller';
 import { ParkWebsiteController } from './controllers/park-website.controller';
+import { ParkDemoRepository } from './repositories/park-demo.repository';
 import { ParkTestDataRepository } from './repositories/park-test-data.repository';
 import { ParkRepository } from './repositories/park.repository';
 import { createParkRouter } from './routes/park.routes';
+import { ParkDemoService } from './services/park-demo.service';
 import { ParkImages } from './services/park-images';
 import { ParkPrices } from './services/park-prices';
 import { ParkTestDataService } from './services/park-test-data.service';
@@ -21,6 +24,8 @@ export type { IParkService } from './contracts/park-service.contract';
 export type { ParkOptionDto, ParkPriceRange, ParkStateDto } from './dto/park.dto';
 export { ParkRegion, ParkStatus, type ParkRegionCode, type ParkStatusCode } from './types/park.types';
 
+export type { IParkDemoService } from './contracts/park-demo-service.contract';
+export type { DemoParkImage, ParkImageOutcome, ParkImageState } from './dto/park-demo.dto';
 export type { IParkTestDataService } from './contracts/park-test-data-service.contract';
 export type { ParkTestData, ParkTestDataMarker } from './dto/park-test-data.dto';
 
@@ -33,6 +38,17 @@ export const createParkTestDataModule = (dependencies: ParkTestDataModuleDepende
         dependencies.isProduction,
     );
     return { parkTestDataService };
+};
+
+export const createParkDemoModule = (dependencies: ParkTestDataModuleDependencies) => {
+    const parkDemoService: IParkDemoService = new ParkDemoService(
+        dependencies.db,
+        new ParkDemoRepository(),
+        new ParkImages(dependencies.fileStorage),
+        dependencies.auditService,
+        dependencies.isProduction,
+    );
+    return { parkDemoService };
 };
 
 export const createParkModule = (dependencies: ParkModuleDependencies) => {

@@ -1,6 +1,9 @@
+import { useT } from '@/hooks/i18n/use-t';
 import { cn } from '@/lib/class-names';
 import { partnerLogoUrl } from '@/services/partner.service';
 import type { Person } from '@/types/shared-safari.types';
+
+const DEFAULT_LOGO = '/witw/logo.png';
 
 export function PersonAvatar({
     person,
@@ -11,11 +14,14 @@ export function PersonAvatar({
     readonly className?: string;
     readonly title?: string;
 }) {
+    const t = useT();
     const logoVersion = person.partner?.logoVersion;
     return (
         <span className={cn('avatar', className)} title={title}>
-            {logoVersion && person.partner ? (
+            {person.partner && logoVersion ? (
                 <img className="avatar-photo" src={partnerLogoUrl(person.partner.id, logoVersion)} alt="" />
+            ) : person.partner ? (
+                <img className="avatar-photo avatar-photo-default" src={DEFAULT_LOGO} alt={t('No logo yet')} />
             ) : (
                 person.initials
             )}

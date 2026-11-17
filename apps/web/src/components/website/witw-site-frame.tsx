@@ -7,7 +7,6 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ChangePasswordDialog } from '@/components/console/change-password-dialog';
 import { PORTAL_NOTIFICATION_LINKS, PORTAL_NOTIFICATIONS_PATH } from '@/components/console/portal-notifications';
 import { NotificationFeedBell } from '@/components/notification-feed/notification-feed-bell';
-import { initialsOf } from '@/components/partner/partner-rules';
 import { Toast } from '@/components/ui/toast';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSessionWatch } from '@/hooks/session/use-session-watch';
@@ -119,7 +118,7 @@ function AccountMenu({
                     {partner?.logoVersion ? (
                         <img className="avatar-photo" src={partnerLogoUrl(partner.id, partner.logoVersion)} alt="" />
                     ) : partner ? (
-                        initialsOf(partner.businessName)
+                        <img className="avatar-photo avatar-photo-default" src="/witw/logo.png" alt={t('No logo yet')} />
                     ) : (
                         user.name.trim().charAt(0).toUpperCase()
                     )}

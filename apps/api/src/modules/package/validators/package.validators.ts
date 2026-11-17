@@ -33,6 +33,8 @@ export const PACKAGE_MESSAGES = {
     PARKS_EMPTY: 'Choose at least one park.',
     PARK_TWICE: 'Choose each park only once.',
     PARK_NOT_AVAILABLE: 'This park is not available. Choose another park.',
+    PARK_NO_LONGER_AVAILABLE: 'Untick the park marked Not available and choose one of your active parks.',
+    PARK_TO_REPLACE_BEFORE_SEND: 'A park in Basic is no longer one of your active parks. Replace it in Basic, then send.',
     DAYS_EMPTY: 'Enter the number of days.',
     DAYS_RANGE: 'Enter 1 to 15 days.',
     SAFARIS_EMPTY: 'Enter the number of safaris.',

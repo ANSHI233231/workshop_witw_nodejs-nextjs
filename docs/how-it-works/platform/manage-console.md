@@ -14,11 +14,20 @@
 | `/roles` | User & Role › Roles: the `meta_role` list (read only) |
 | `/notifications/templates` | System › Notification › Notification Templates: Email and In-app tabs ([modules/notification](../modules/notification/README.md), [modules/mail](../modules/mail/README.md)) |
 | `/notifications/delivery-log` | System › Notification › Delivery Log: mails and in-app notifications in one list |
-| `/notifications` | The header bell's full page: your own notifications in the console (tabs All, Unread, Account, Jobs; gallery sent 1101 and package version sent 1201 show under All and Unread, 1201 opens `/packages/<id>?version=waiting`) |
+| `/notifications` | The header bell's full page: your own notifications in the console (tabs All, Unread, Account, Jobs; gallery sent 1101 and package version sent 1201 show under All and Unread; 1101 opens `/gallery-approvals`, 1201 opens `/package-approvals`) |
+| `/shared-safaris`, `/shared-safaris/<id>` (`?tab=left` / `comments`) | Shared Safari › Shared Safaris (C1–C3): list (pinned first; search, status, host), detail with joined / left lists and comments, Delete with a reason, Make active, Pin / Unpin ([modules/shared-safari](../modules/shared-safari/README.md)) |
+| `/flagged-comments` | Shared Safari › Flagged Comments (C4): comments with open flags, View flags, Ignore, Delete |
+| `/parks`, `/parks/<id>` | Shared Safari › Parks (C5, C6): add / edit (description, location, feature image), status, the calculated price range, the park's upcoming safaris ([modules/park](../modules/park/README.md)) |
+| `/flag-reasons` | Shared Safari › Flag Reasons (C7): add, edit with status ([modules/flag-reason](../modules/flag-reason/README.md)) |
+| `/partner-requests` | Partners › Partner Requests (PC1): Pending first; view, Approve, Reject with a reason ([modules/partner](../modules/partner/README.md)) |
+| `/partners` | Partners › Partners (PC2): Active and Inactive partners; edit details, parks and logo, Show phone numbers, Deactivate / Activate, live package count |
+| `/quote-requests` | Partners › Quote Requests (PC9): every quote request; search, status filter, View, Make inactive / active, Send a notification to the partner ([modules/quote-request](../modules/quote-request/README.md)) |
 | `/package-approvals` | Packages › Package Approvals (PC3): waiting versions, oldest sent first; search, picture, partner, version ("First version" / "Live now: vN"), sent on; Preview, Edit, Approve, Reject with a reason ([modules/package](../modules/package/README.md)) |
 | `/packages` | Packages › Packages (PC4): live and deleted packages; search, website status and partner filters; Popular and Best deal switches; View, Edit, Delete with a reason |
 | `/packages/<id>?version=waiting\|live&tab=preview\|edit` | Package preview / edit (PC5): the website-style preview and the same five-section editor as the Partner portal; Approve / Reject on a waiting version |
 | `/package-delete-reasons` | Packages › Package Delete Reasons (PC6): add, edit with status, make active / inactive, the "Used" count |
+| `/gallery-approvals` | Packages › Gallery Approvals (PC7): galleries waiting, oldest sent first; View photos, Approve, Reject with a reason ([modules/gallery](../modules/gallery/README.md)) |
+| `/galleries` | Packages › Galleries (PC8): approved galleries, newest approved first; View photos, Delete with a reason |
 | `/audit-log` | System › Logs › Audit Log ([modules/audit](../modules/audit/README.md)) |
 | `/system-logs` | System › Logs › System Logs: the log files of the API and the apps ([modules/system-log](../modules/system-log/README.md)) |
 | `/error-logs` | System › Logs › Error Logs: the `app_log` rows |
@@ -41,7 +50,7 @@
 - **Active item:** the link whose route best matches the current page is marked (`is-active` / `is-current`, `aria-current="page"`); its group and sub-group start open.
 - **Menu groups are only how the menu is drawn.** A page's route and API follow its own area (`/users`, `GET /api/users`), never the menu's group.
 - **A link without a route** (`href: undefined`) is shown like the others but goes nowhere, for a page not built yet.
-- **Shared Safari** is the first group, above Platform: Shared Safaris (`/shared-safaris`), Flagged Comments (`/flagged-comments`), Parks (`/parks`), Flag Reasons (`/flag-reasons`). Its screens use their boards' patterns (`console-shared-safari.css`: S.No, alternate row colours, icon actions, the status switch inside Edit), scoped to a page root with the class `ssc-screen` so the platform's own screens keep theirs ([shared-safari](../modules/shared-safari/README.md), [park](../modules/park/README.md), [flag-reason](../modules/flag-reason/README.md)).
+- **Shared Safari**, **Partners** (Partner Requests, Partners, Quote Requests) and **Packages** (Package Approvals, Packages, Gallery Approvals, Galleries, Package Delete Reasons) come before Platform, in that order. Shared Safari: Shared Safaris (`/shared-safaris`), Flagged Comments (`/flagged-comments`), Parks (`/parks`), Flag Reasons (`/flag-reasons`). Its screens use their boards' patterns (`console-shared-safari.css`: S.No, alternate row colours, icon actions, the status switch inside Edit), scoped to a page root with the class `ssc-screen` so the platform's own screens keep theirs ([shared-safari](../modules/shared-safari/README.md), [park](../modules/park/README.md), [flag-reason](../modules/flag-reason/README.md)).
 
 ## Tech Documentation
 
@@ -64,10 +73,10 @@
 ## Where it lives
 
 - **Routes:** `apps/manage/src/app/(public)/`, `apps/manage/src/app/(dashboard)/`
-- **Components:** `apps/manage/src/components/console/` (frame, menu), `components/dashboard/`, `components/sign-in/`, `components/users/`, `components/roles/`, `components/mail/`, `components/audit/`, `components/app-log/`, `components/system-log/`, `components/background-jobs/`, `components/languages/`, `components/docs/`, `components/ui/`
+- **Components:** `apps/manage/src/components/console/` (frame, menu), `components/dashboard/`, `components/sign-in/`, `components/users/`, `components/roles/`, `components/mail/`, `components/audit/`, `components/app-log/`, `components/system-log/`, `components/background-jobs/`, `components/languages/`, `components/docs/`, `components/shared-safari/`, `components/parks/`, `components/flag-reasons/`, `components/partner/`, `components/partners/`, `components/quote-requests/`, `components/package/`, `components/package-editor/`, `components/galleries/`, `components/ui/`
 - **Docs viewer:** `apps/manage/src/lib/docs/`, `app/(dashboard)/docs/`, `docs-source/`, `docs-diagram/`
 - **Styles:** `apps/manage/src/app/globals.css`, `console-extras.css`, `console-mobile.css`
 
 ## History
 
-- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md)
+- Planning files: [2026-10-28-starter-core](../../planning/features/2026-10-28-starter-core.md), [2026-11-04-shared-safari](../../planning/features/2026-11-04-shared-safari.md), [2026-11-12-safari-packages](../../planning/features/2026-11-12-safari-packages.md)

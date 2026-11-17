@@ -6,3 +6,7 @@ export type LanguageModuleDependencies = {
     readonly auditService: IAuditService;
     readonly translationDirectories: Readonly<Record<string, string>>;
 };
+
+export type LanguageTestDataModuleDependencies = LanguageModuleDependencies & {
+    readonly isProduction: boolean;
+};

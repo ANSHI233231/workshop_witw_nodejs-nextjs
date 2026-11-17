@@ -4,8 +4,8 @@ import { EditIcon, ViewIcon } from '@/components/ui/icons';
 import { Toast } from '@/components/ui/toast';
 import { useT } from '@/hooks/i18n/use-t';
 import { usePartnerActions } from '@/hooks/partners/use-partner-actions';
-import { initialsOf } from '@/components/partner/partner-rules';
 import { formatCount } from '@/lib/format';
+import { partnerLogoUrl } from '@/services/partner.service';
 import { type ParkOption, type Partner, PartnerStatus } from '@/types/partner.types';
 
 import { PARTNER_STATUS_BADGE, parkNamesOf } from './partner-format';
@@ -53,9 +53,16 @@ function RowActions({ partner, actions }: { readonly partner: Partner; readonly 
 }
 
 function Business({ partner }: { readonly partner: Partner }) {
+    const t = useT();
     return (
         <div className="ss-row" style={{ flexWrap: 'nowrap' }}>
-            <span className="avatar">{initialsOf(partner.businessName)}</span>
+            <span className="avatar">
+                {partner.logoVersion ? (
+                    <img className="avatar-photo" src={partnerLogoUrl(partner.id, partner.logoVersion)} alt="" />
+                ) : (
+                    <img className="avatar-photo avatar-photo-default" src="/witw/logo.png" alt={t('No logo yet')} />
+                )}
+            </span>
             <div className="pq-cell">
                 <b>{partner.businessName}</b>
                 <span className="ss-cap">{partner.ownerName}</span>

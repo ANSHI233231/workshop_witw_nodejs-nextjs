@@ -1,15 +1,34 @@
-import type { FlagReasonModuleDependencies } from './contracts/flag-reason-module.contract';
+import type {
+    FlagReasonModuleDependencies,
+    FlagReasonTestDataModuleDependencies,
+} from './contracts/flag-reason-module.contract';
 import type { IFlagReasonService } from './contracts/flag-reason-service.contract';
 import { FlagReasonController } from './controllers/flag-reason.controller';
+import type { IFlagReasonTestDataService } from './contracts/flag-reason-test-data-service.contract';
+import { FlagReasonTestDataRepository } from './repositories/flag-reason-test-data.repository';
 import { FlagReasonRepository } from './repositories/flag-reason.repository';
 import { createFlagReasonRouter, type FlagReasonAccess } from './routes/flag-reason.routes';
 import { FlagReasonService } from './services/flag-reason.service';
+import { FlagReasonTestDataService } from './services/flag-reason-test-data.service';
 
 export type { FlagReasonModuleDependencies } from './contracts/flag-reason-module.contract';
 export type { IFlagReasonService } from './contracts/flag-reason-service.contract';
 export type { FlagReasonAccess } from './routes/flag-reason.routes';
 export type { ActiveFlagReasonDto } from './dto/flag-reason.dto';
 export { FlagReasonStatus, type FlagReasonStatusCode } from './types/flag-reason.types';
+
+export type { IFlagReasonTestDataService } from './contracts/flag-reason-test-data-service.contract';
+export type { FlagReasonTestData, FlagReasonTestDataMarker } from './dto/flag-reason-test-data.dto';
+
+export const createFlagReasonTestDataModule = (dependencies: FlagReasonTestDataModuleDependencies) => {
+    const flagReasonTestDataService: IFlagReasonTestDataService = new FlagReasonTestDataService(
+        dependencies.db,
+        new FlagReasonTestDataRepository(),
+        dependencies.auditService,
+        dependencies.isProduction,
+    );
+    return { flagReasonTestDataService };
+};
 
 export const createFlagReasonModule = (dependencies: FlagReasonModuleDependencies) => {
     const flagReasonService: IFlagReasonService = new FlagReasonService(

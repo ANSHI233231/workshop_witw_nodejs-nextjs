@@ -288,16 +288,27 @@ export class PackageEditorService {
         };
     }
 
-    private async checkParks(partnerId: number, chosen: readonly number[], current: readonly number[]): Promise<void> {
-        const parks = await this.partnerService.parksOf(partnerId);
-        const allowed = new Set(
-            parks
-                .filter((park) => park.status === ParkStatus.ACTIVE || current.includes(park.id))
-                .map((park) => park.id),
-        );
-        if (chosen.some((parkId) => !allowed.has(parkId))) {
-            throw fieldError('masterParkIds', PACKAGE_MESSAGES.PARK_NOT_AVAILABLE, 'PACKAGE_PARK_NOT_AVAILABLE');
+    async checkVersionParks(partnerId: number, versionId: number): Promise<void> {
+        const parks = await this.records.repository.parksOf(this.records.db, [versionId]);
+        const active = await this.activeParkIdsOf(partnerId);
+        if (parks.some((park) => !active.has(park.master_park_id))) {
+            throw fieldError('masterParkIds', PACKAGE_MESSAGES.PARK_TO_REPLACE_BEFORE_SEND, 'PACKAGE_PARK_NO_LONGER_AVAILABLE');
         }
+    }
+
+    private async activeParkIdsOf(partnerId: number): Promise<ReadonlySet<number>> {
+        const parks = await this.partnerService.parksOf(partnerId);
+        return new Set(parks.filter((park) => park.status === ParkStatus.ACTIVE).map((park) => park.id));
+    }
+
+    private async checkParks(partnerId: number, chosen: readonly number[], current: readonly number[]): Promise<void> {
+        const active = await this.activeParkIdsOf(partnerId);
+        const unavailable = chosen.filter((parkId) => !active.has(parkId));
+        if (unavailable.length === 0) return;
+        if (unavailable.every((parkId) => current.includes(parkId))) {
+            throw fieldError('masterParkIds', PACKAGE_MESSAGES.PARK_NO_LONGER_AVAILABLE, 'PACKAGE_PARK_NO_LONGER_AVAILABLE');
+        }
+        throw fieldError('masterParkIds', PACKAGE_MESSAGES.PARK_NOT_AVAILABLE, 'PACKAGE_PARK_NOT_AVAILABLE');
     }
 
     private async prepareGalleries(

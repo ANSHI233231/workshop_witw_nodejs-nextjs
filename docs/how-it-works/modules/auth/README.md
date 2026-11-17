@@ -1,10 +1,10 @@
 # Auth
 
-**What it is.** Signing in and out, and knowing who is signed in: a user proves who they are with a username, email or mobile number and a password, and gets two tokens in cookies. **One session serves every app** (manage, web, partner).
+**What it is.** Signing in and out, and knowing who is signed in: a user proves who they are with a username, email or mobile number and a password, and gets two tokens in cookies. **Each app has its own session** (manage, web, partner): signing in to one app does not sign in to the others.
 
-**Who uses it.** The login pages and signed-in areas of manage and web.
+**Who uses it.** The login pages and signed-in areas of manage, web and the Partner portal (partner).
 
-**Workflows:** none yet.
+**Workflows:** [WITW Shared Safari](../../workflows/WITW-Shared-Safari-Workflow.md), [WITW Packages](../../workflows/WITW-Packages-Workflow.md).
 
 ## The flow
 
@@ -30,13 +30,13 @@ sequenceDiagram
   A-->>B: 204, cookies cleared
 ```
 
-1. **Sign-in** (`POST /api/auth/sign-in`, `{ identifier, password, remember }`), from manage, web or partner only: the API knows the app from the `X-Client-App` header every app sends; any other caller → 422 `AUTH_APP_NOT_ALLOWED`. The identifier's shape says where to look: contains `@` → email (lower case); exactly 10 digits → mobile; else username. For manage, the user also needs an active Super Admin role, else 403 `CONSOLE_ACCESS_DENIED`. The Partner portal (`ClientApp.PARTNER = 5`) lets any active account sign in (its form asks for the email); what they see then depends on their partner request ([partner-portal.md](../../platform/partner-portal.md)).
+1. **Sign-in** (`POST /api/auth/sign-in`, `{ identifier, password, remember }`), from manage, web or partner only: the API knows the app from the `X-Client-App` header every app sends; any other caller → 422 `AUTH_APP_NOT_ALLOWED`. The identifier's shape says where to look: contains `@` → email (lower case); exactly 10 digits → mobile; else username. For manage, the user also needs an active Super Admin role, else 403 `CONSOLE_ACCESS_DENIED`. The Partner portal (`ClientApp.PARTNER = 5`) lets any active account sign in (its form asks for the Login ID: mobile number, email or username, as the website's); what they see then depends on their partner request ([partner-portal.md](../../platform/partner-portal.md)).
    - **Sign Up** (`POST /api/auth/sign-up`, public, website only, `{ name, email, mobile, password }`): Full Name 2–100 ("Enter your full name."), a valid email ≤ 254 ("Enter a valid email address."), a mobile of 10 digits starting 6–9 ("Enter a 10-digit mobile number."), a password of 8–72 characters ("Use at least 8 characters."). The `users` module creates an active user with **no role** (a taken email or mobile → 409 `EMAIL_TAKEN` "An account with this email already exists." / `MOBILE_TAKEN` "An account with this mobile number already exists."); then the user is signed in exactly as at sign-in (both cookies, remembered, 201 SIGNED_IN audit) and the answer is 201 `{ user }`. From any app but web → 422 `AUTH_APP_NOT_ALLOWED`. No verification email and no sign-up limit. The website page `/sign-up` lands on `/` and shows "Welcome, {first name}! Your account is created." (the form stores the first name in `sessionStorage`; `SignedUpWelcome` on the landing page shows it once). A user without a role signs in to the website; the console refuses them (`CONSOLE_ACCESS_DENIED`).
    - **Sign Up with something else in one step**: `authService.signUpWith(account, alsoCreate)` signs up, runs `alsoCreate(user)` and signs in, all in one transaction (website only, Sign Up's rules from `signUpAccountSchema`); the module's `sessionCookies.write(res, session)` sets the cookies as Sign Up does. Used by Become a Partner as a guest ([partner](../partner/README.md)).
 2. **Every protected request** carries the access cookie and the calling app's `X-Client-App`. The API checks the token's signature and expiry and that the user is still active, then the route's own rule; the request's log lines carry the user id.
 3. **Refresh** (`POST /api/auth/refresh`): when the access token has expired, the refresh token gets a new pair, and the used one is retired at once (rotation). A refresh token retired more than **30 seconds** ago is treated as stolen: every active refresh token of that user is retired (signed out everywhere). Two tabs refreshing at the same moment both succeed: the second gets `{ user }` and no new cookies.
 4. **Who am I** (`GET /api/auth/me`): the signed-in user, or 401. `GET /api/auth/console-roles`: the user's console roles.
-5. **Sign-out** (`POST /api/auth/sign-out`): retires the refresh token and clears both cookies (204), so every app is signed out.
+5. **Sign-out** (`POST /api/auth/sign-out`): retires the refresh token and clears both cookies of the calling app (204); the other apps stay signed in.
 6. **Change password** (`POST /api/auth/change-password`, `{ currentPassword, password, confirmPassword }`) for the signed-in person; a wrong current password → 422 `CURRENT_PASSWORD_INCORRECT` on `currentPassword`.
 7. **Forgot password**, for any app (the link belongs to the app the request came from):
    - `POST /api/auth/forgot-password` `{ email }` → always 200 "If this email is registered, a password reset link has been sent to it." For an active user with that email: earlier links of that app are retired, a new token is stored (hash only, **60 minutes**, single use), and the [mail](../mail/README.md) module sends the `password_reset` template with the link `APP_URL_<APP>/forgot-password?token=…` (`APP_URL_MANAGE`, `APP_URL_WEB`, `APP_URL_PARTNER`; the mail names the app: Admin Console, Partner Portal or Portal).
@@ -61,8 +61,8 @@ sequenceDiagram
 - **Module:** `apps/api/src/modules/auth/`
 - **Endpoints:** `POST /api/auth/sign-in`, `POST /api/auth/sign-up`, `POST /api/auth/refresh`, `POST /api/auth/sign-out`, `GET /api/auth/me`, `GET /api/auth/console-roles`, `POST /api/auth/change-password`, `POST /api/auth/forgot-password`, `GET` / `POST /api/auth/reset-password`
 - **Tables:** `user_refresh_token`, `user_password_reset` (migration `2026-10-28-users-and-auth.sql`); users in `user` ([users](../users/README.md))
-- **Settings:** `JWT_*`, `AUTH_COOKIE_DOMAIN`, `AUTH_COOKIE_PREFIX`, `CORS_ORIGIN`, `APP_URL_MANAGE`, `APP_URL_WEB` in `apps/api/.env`
-- **Screens:** `/login` and `/forgot-password` in manage and web, `/sign-up` in web; Change Password in the user menu
+- **Settings:** `JWT_*`, `AUTH_COOKIE_DOMAIN`, `AUTH_COOKIE_PREFIX`, `CORS_ORIGIN`, `APP_URL_MANAGE`, `APP_URL_WEB`, `APP_URL_PARTNER` in `apps/api/.env`
+- **Screens:** `/login` and `/forgot-password` in manage, web and partner, `/sign-up` in web; Change Password in the user menu of the console, the website and the Partner portal (the same dialog and the same API call in each)
 
 ## History
 

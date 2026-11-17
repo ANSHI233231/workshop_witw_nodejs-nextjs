@@ -46,9 +46,13 @@ export type SeedSafari = {
     readonly notes: readonly SeedNote[];
 };
 
-export type SeedOutcome = { readonly slug: string; readonly created: boolean };
+export type SeedOutcome = { readonly slug: string; readonly created: boolean; readonly coverAdded: boolean };
 
-export type SeedRemoval = { readonly slugs: readonly string[]; readonly userIds: readonly number[] };
+export type SeedRemoval = {
+    readonly slugs: readonly string[];
+    readonly hostIds: readonly number[];
+    readonly userIds: readonly number[];
+};
 
 export type SeedRemovalCounts = {
     readonly safaris: number;

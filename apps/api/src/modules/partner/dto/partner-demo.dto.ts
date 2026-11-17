@@ -29,6 +29,7 @@ export type DemoPartnerState = {
     readonly hasPartner: boolean;
     readonly userId: number | null;
     readonly partnerId: number | null;
+    readonly businessName: string | null;
 };
 
 export type DemoPartnerOutcome = {

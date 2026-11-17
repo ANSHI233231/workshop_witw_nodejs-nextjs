@@ -26,10 +26,10 @@ A page for Active partners starts with `await requireActivePartner()`. Hiding th
 ## The frame
 
 - `components/portal/portal-shell.tsx` holds the header, the sidebar (`portal-menu.ts`: six items for Active, Partner request otherwise), the user menu and the footer.
-- The user menu shows the business name for a partner (Active or Inactive) and the person's name otherwise, the email, "Partner" or "Partner request: Pending / Rejected / not sent", a **Website** link and **Log Out**.
+- The user menu shows the business name for a partner (Active or Inactive) and the person's name otherwise, the email, "Partner" or "Partner request: Pending / Rejected / not sent", a **Website** link, **Change Password** (the console's dialog, copied: current / new / confirm password, `POST /api/auth/change-password`; "Password updated." on success) and **Log Out**.
 - The bell is the shared notification feed for this app (`clientApp` 5); "Show all notifications" goes to `/notifications`.
 - The boards' own styles (`pq-*`, `pk4`, `pk-*`) are in `app/partner-portal.css`; the rest is the console's stylesheets.
-- English only for now: the boards have no language switch, and the API publishes no translations for this app.
+- **Language:** the header has the same language switch as the console (one button per language shown in Partner Portal; the boards draw none). The portal reads `translations/<code>.json` and `languages.json` from its own folder, written by Publish translations, so every text goes through `t()`; English shows until a language is published. The partner's choice is the `locale` cookie; a new visitor starts in the language set as Partner Portal's default. See [language](../modules/language/README.md).
 
 ## The pages
 

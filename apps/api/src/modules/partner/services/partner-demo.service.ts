@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '../../../core/exceptions';
+import { ConflictException, ForbiddenException, NotFoundException } from '../../../core/exceptions';
 import type { Database } from '../../../database/connection';
 import type { IFileStorage } from '../../../infrastructure/storage';
 import { AuditAction, AuditEntity, type IAuditService } from '../../audit';
@@ -50,6 +50,7 @@ export class PartnerDemoService implements IPartnerDemoService {
                 hasPartner: row !== undefined,
                 userId: account?.id ?? null,
                 partnerId: row?.id ?? null,
+                businessName: row?.business_name ?? null,
             };
         });
     }
@@ -104,17 +105,20 @@ export class PartnerDemoService implements IPartnerDemoService {
         }
     }
 
-    async remove(emails: readonly string[], write: boolean): Promise<{ partners: number; accounts: number }> {
+    async remove(
+        target: { readonly partnerIds: readonly number[]; readonly accountEmails: readonly string[] },
+        write: boolean,
+    ): Promise<{ partners: number; accounts: number }> {
         this.refuseInProduction();
-        const accounts = await this.usersDemoService.findAccounts(emails);
-        const rows = await this.repository.findByUserIds(
-            this.db,
-            accounts.map((account) => account.id),
-        );
-        if (!write) return { partners: rows.length, accounts: accounts.length };
+        const accounts = await this.usersDemoService.findAccounts(target.accountEmails);
+        if (!write) return { partners: target.partnerIds.length, accounts: accounts.length };
         const event = { action: AuditAction.PARTNER_DEMO_REMOVED, entityType: AuditEntity.PARTNER } as const;
         try {
+            const rows = (await Promise.all(target.partnerIds.map((id) => this.repository.findById(this.db, id)))).flatMap(
+                (row) => (row ? [row] : []),
+            );
             const partners = await this.db.transaction(async () => {
+                for (const row of rows) await this.usersService.revokeRole(row.user_id, MetaRole.PARTNER, null);
                 const removed = await this.repository.deletePartners(
                     this.db,
                     rows.map((row) => row.id),
@@ -127,7 +131,7 @@ export class PartnerDemoService implements IPartnerDemoService {
                 }
                 return removed;
             });
-            const removedAccounts = await this.usersDemoService.removeAccounts(emails);
+            const removedAccounts = await this.usersDemoService.removeAccounts(target.accountEmails);
             for (const row of rows) await this.fileStorage.removeFolder(`${LOGO_FOLDER.PARENT}/${row.id}`);
             return { partners, accounts: removedAccounts };
         } catch (error) {
@@ -148,6 +152,12 @@ export class PartnerDemoService implements IPartnerDemoService {
         if (!business) return { ...outcome, partnerId: null, partnerCreated: false, missingParks: [] };
         const existing = await this.repository.findByUserId(this.db, userId);
         const missingParks = business.parkNames.filter((name) => !parkIdOf.has(name));
+        if (existing && existing.business_name !== business.businessName) {
+            throw new ConflictException(
+                `${partner.account.email} already has the partner "${existing.business_name}", not "${business.businessName}". Remove it first.`,
+                'DEMO_PARTNER_TAKEN',
+            );
+        }
         if (existing) return { ...outcome, partnerId: existing.id, partnerCreated: false, missingParks };
         const decided = business.status !== PartnerStatus.PENDING && business.decidedDaysAgo !== null;
         const decidedAt = decided && business.decidedDaysAgo !== null ? daysAgo(business.decidedDaysAgo) : null;

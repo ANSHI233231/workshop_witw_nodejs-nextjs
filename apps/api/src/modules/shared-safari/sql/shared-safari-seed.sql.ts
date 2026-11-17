@@ -40,6 +40,9 @@ export const SharedSafariSeedSQL = {
     setCover: `
         UPDATE shared_safari SET cover_image = ?, updated_at = updated_at WHERE id = ?`,
 
+    seededBySlug: `
+        SELECT id, slug, cover_image AS coverImage FROM shared_safari WHERE slug = ? ORDER BY id LIMIT 1`,
+
     seededSafaris: (slugs: number, users: number) => `
         SELECT id, slug, cover_image AS coverImage FROM shared_safari
         WHERE slug IN (${inList(slugs)}) AND user_id IN (${inList(users)})`,

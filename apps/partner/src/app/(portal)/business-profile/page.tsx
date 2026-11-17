@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 
-import { initialsOf } from '@/components/partner/partner-rules';
 import { PageBreadcrumb } from '@/components/portal/page-breadcrumb';
 import { formatDate } from '@/lib/format';
 import { serverTranslator } from '@/lib/i18n/server-translator';
@@ -36,7 +35,7 @@ export default async function BusinessProfilePage() {
                         {request.logoVersion ? (
                             <img src={partnerLogoUrl(request.logoVersion)} alt={t('Logo')} />
                         ) : (
-                            initialsOf(request.businessName)
+                            <img className="pk-logo-default" src="/witw/logo.png" alt={t('No logo yet')} />
                         )}
                     </span>
                     <dl className="ss-dl">

@@ -70,6 +70,7 @@
 .al-box code.al-pre{white-space:pre-wrap}
 .avatar-photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .avatar:has(> .avatar-photo){overflow:hidden;padding:0}
+.avatar-photo.avatar-photo-default{object-fit:contain;padding:2px;background:var(--color-surface)}
 .root .app.e4-app{display:flex !important;flex-direction:column;min-height:100vh;grid-template-columns:none !important}
 .root .app.e4-app .app-content{flex:1;display:flex;margin:0 !important;padding:0 !important}
 .e4-wrap{flex:1;width:100%}

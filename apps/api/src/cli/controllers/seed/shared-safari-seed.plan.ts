@@ -9,6 +9,7 @@ import {
 } from '../../../modules/shared-safari';
 
 import {
+    LOCAL_USER_KEY,
     type ProtoComment,
     type ProtoNote,
     type ProtoSafari,
@@ -21,8 +22,6 @@ import {
 const DAY_MS = 86_400_000;
 
 const INDIA_OFFSET_MINUTES = 330;
-
-const COVERED_UP_TO_ID = 13;
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -124,6 +123,28 @@ const deletedByOf = (safari: ProtoSafari, context: SeedContext): number | null =
     return null;
 };
 
+const commentsOf = (comments: readonly ProtoComment[]): ProtoComment[] =>
+    comments.flatMap((comment) => [comment, ...commentsOf(comment.replies)]);
+
+const sameNote = (a: ProtoNote, b: ProtoNote): boolean => a.kind === b.kind && a.who === b.who && a.at === b.at;
+
+const localUserNotes = (safari: ProtoSafari): ProtoNote[] => {
+    if (safari.host !== LOCAL_USER_KEY) return [];
+    const base = { to: LOCAL_USER_KEY, sid: safari.id, read: true } as const;
+    return [
+        ...safari.joined.map((member): ProtoNote => ({ ...base, kind: 'joined', who: member.who, at: member.at })),
+        ...commentsOf(safari.comments)
+            .filter((comment) => comment.who !== LOCAL_USER_KEY)
+            .map((comment): ProtoNote => ({ ...base, kind: 'commented', who: comment.who, at: comment.at })),
+    ];
+};
+
+export const notesOf = (safari: ProtoSafari): ProtoNote[] => {
+    const prototype = PROTOTYPE_NOTES.filter((note) => note.sid === safari.id);
+    const extra = localUserNotes(safari).filter((note) => !prototype.some((known) => sameNote(known, note)));
+    return [...prototype, ...extra];
+};
+
 export const seedSafariOf = (safari: ProtoSafari, context: SeedContext): SeedSafari => {
     const shift = shiftOf(safari, context.today);
     const createdAt = indiaTime(safari.created);
@@ -150,7 +171,7 @@ export const seedSafariOf = (safari: ProtoSafari, context: SeedContext): SeedSaf
         deletedById: deletedByOf(safari, context),
         createdAt,
         updatedAt: indiaTime(safari.updated),
-        cover: safari.id <= COVERED_UP_TO_ID ? (context.covers[(safari.id - 1) % context.covers.length] ?? null) : null,
+        cover: context.covers[(safari.id - 1) % context.covers.length] ?? null,
         joined: safari.joined.map((member) => ({ userId: context.userIdOf(member.who), at: indiaTime(member.at) })),
         left: safari.left.map((member) => ({
             userId: context.userIdOf(member.who),
@@ -158,7 +179,7 @@ export const seedSafariOf = (safari: ProtoSafari, context: SeedContext): SeedSaf
             leftAt: indiaTime(member.at),
         })),
         comments: safari.comments.map((comment) => commentOf(comment, context)),
-        notes: PROTOTYPE_NOTES.filter((note) => note.sid === safari.id).map((note) => ({
+        notes: notesOf(safari).map((note) => ({
             userId: context.userIdOf(note.to),
             kind: NOTE_KIND_OF[note.kind],
             actorId: context.userIdOf(note.who),

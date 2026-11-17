@@ -48,5 +48,10 @@ Today every error goes through the error handler, but a success response is kept
 - TC-RESP-03 PASS: `GET /api/system-log/api/error.log/download` as a Super Admin: 200, `text/plain`, `attachment; filename="api-error.log"`, `private, no-store`, `Content-Length` 2283, content identical to `logs/error.log`.
 - TC-RESP-04 PASS: health `{ success, message, data }`; `GET /api/users?page=1&limit=2` with `meta` `{ page, limit, total, totalPages }`; `GET /api/nope` 404 `{ success: false, code: "ENDPOINT_NOT_FOUND", requestId }`.
 - Test data: a temporary Super Admin `ct_resp@example.test` (user 2) made with the CLI; removed with its role, refresh token and its two audit rows (26, 27).
+- 2026-11-16: Full re-run ([2026-11-16-full-test-and-docs](2026-11-16-full-test-and-docs.md)), group auth-platform, after the machine restart; screenshots in `.work/screenshots/2026-11-16-full-test/` (local, git-ignored).
+- TC-RESP-04 PASS (API; role: Super Admin; screenshots: none) 2026-11-16: GET /api/health 200 keys success,message,data; GET /api/users keys success,message,data,meta meta page,limit,total,totalPages; unknown route 404 {success:false, code:ENDPOINT_NOT_FOUND}
+- TC-RESP-03 PASS (API; role: Super Admin; screenshots: none) 2026-11-16: GET /api/system-log/api/error.log/download -> 200, text/plain; charset=utf-8, attachment; filename="api-error.log", private, no-store, 38249 bytes of the file
+- TC-RESP-01 PASS (CLI; role: none; screenshots: none) 2026-11-16: `npm run verify` in apps/api exit 0, no lint errors.
+- TC-RESP-02 PASS (CLI; role: none; screenshots: none) 2026-11-16: scratch `res.json({ items: [] })`, `res.status(404).send('x')` and `stream.pipe(res)` each failed `npm run lint` with "Respond through core/http: ok(), created(), ..."; scratch removed.
 
 ## 6. Post-deploy

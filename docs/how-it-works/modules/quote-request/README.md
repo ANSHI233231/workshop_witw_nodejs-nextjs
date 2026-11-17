@@ -4,6 +4,8 @@
 
 **Who uses it.** A **signed-in website user who is not a partner** sends a request from the package page (the quote form, P2) and sees their active requests in **My Quote Requests** (P3). An **active partner** sees the active requests for their packages in the Partner portal's **Quote Requests** (PP8, with the count on the Dashboard, PP3) and marks each Hot or Cold. The **Super Admin** sees every request in Console › Partners › **Quote Requests** (PC9), views one with the user's email and mobile, makes it inactive or active, and sends the partner a notification about it.
 
+**Workflows:** [WITW Packages](../../workflows/WITW-Packages-Workflow.md).
+
 ## Statuses and marks
 
 - `quote_request.status` (`QuoteRequestStatus`): 1 Active (set by sending), 2 Inactive (set by the Super Admin). A request is never deleted.
@@ -53,7 +55,7 @@ Module 13, entity 17 `QUOTE_REQUEST`: 1301 sent · 1303 marked (from / to) · 13
 
 ## Demo data (local only)
 
-`npm run cli packages-demo/add <password> confirm` also adds the prototype's five sample quote requests (`src/cli/controllers/packages-demo/packages-demo.quotes.ts`) from three demo website users, Ananya Iyer, Riya Sharma and Neha Singh (`@packages-demo.test`): to Jungle Trails Safaris on Wild Kanha Special (Hot), Corbett Elephant Trails (Cold), Wildlife Marathon (no mark) and one inactive request, and to Tiger Trail Tours on Mangrove Majesty (no mark), with the board's dates. It also writes the board's four partner notifications (three 1301 and one 1302 message, read) through the notification module's seed service. Requests already there (same user, package and sent time) are kept. `packages-demo/remove confirm` removes the requests sent to or by the demo accounts and their notifications first.
+`npm run cli packages-demo/add <password> confirm` also adds the prototype's five sample quote requests (`src/cli/controllers/packages-demo/packages-demo.quotes.ts`) from three website users, Ananya Iyer (the local account `user@example.in`), Riya Sharma and Neha Singh (the Shared Safari sample accounts `@example.test`): to Jungle Trails Safaris on Wild Kanha Special (Hot), Corbett Elephant Trails (Cold), Wildlife Marathon (no mark) and one inactive request, and to Tiger Trail Tours on Mangrove Majesty (no mark), with the board's dates. It also writes the board's four partner notifications (three 1301 and one 1302 message, read) and a read 1301 for the two other requests (Corbett Elephant Trails, the inactive Wild Kanha Special) through the notification module's seed service. Requests already there (same user, package and sent time) are kept. `packages-demo/remove confirm` removes the requests sent to the demo partners or by the `@packages-demo.test` accounts, and their notifications, first.
 
 ## Where it lives
 

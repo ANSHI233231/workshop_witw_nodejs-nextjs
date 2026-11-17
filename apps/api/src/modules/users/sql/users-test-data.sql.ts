@@ -6,10 +6,10 @@ export const UsersTestDataSQL = {
         SELECT user.id, user.name, user.email,
             (SELECT COUNT(*)
                 FROM user_role
-                WHERE user_role.user_id = user.id AND user_role.meta_role_id = ?) AS super_admin_roles
+                WHERE user_role.user_id = user.id AND user_role.meta_role_id = ? AND user_role.status = ?) AS super_admin_roles
         FROM user
         WHERE (user.email LIKE ? OR user.username LIKE ?)
-            AND user.email NOT IN (${inList(keptCount)})
+            ${keptCount === 0 ? '' : `AND user.email NOT IN (${inList(keptCount)})`}
         ORDER BY user.id`,
 
     rolesOf: (count: number) => `

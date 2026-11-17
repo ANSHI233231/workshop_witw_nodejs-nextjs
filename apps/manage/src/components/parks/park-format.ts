@@ -17,12 +17,16 @@ export const rupees = (amount: number): string => `₹${RUPEES.format(amount)}`;
 export const parkPriceShort = (park: Park): string =>
     park.avgSafariPriceMin === null || park.avgSafariPriceMax === null
         ? NO_VALUE
-        : `${rupees(park.avgSafariPriceMin)}–${RUPEES.format(park.avgSafariPriceMax)}`;
+        : park.avgSafariPriceMin === park.avgSafariPriceMax
+          ? rupees(park.avgSafariPriceMin)
+          : `${rupees(park.avgSafariPriceMin)}–${RUPEES.format(park.avgSafariPriceMax)}`;
 
 export const parkPriceRange = (park: Park): string | null =>
     park.avgSafariPriceMin === null || park.avgSafariPriceMax === null
         ? null
-        : `${rupees(park.avgSafariPriceMin)} – ${rupees(park.avgSafariPriceMax)}`;
+        : park.avgSafariPriceMin === park.avgSafariPriceMax
+          ? rupees(park.avgSafariPriceMin)
+          : `${rupees(park.avgSafariPriceMin)} – ${rupees(park.avgSafariPriceMax)}`;
 
 export const parkLocation = (latitude: number | null, longitude: number | null): string =>
     latitude === null || longitude === null ? NO_VALUE : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;

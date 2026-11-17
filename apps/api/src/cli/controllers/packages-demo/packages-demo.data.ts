@@ -1,11 +1,15 @@
 import { type DemoGalleryPhoto, GalleryStatus, type GalleryStatusCode } from '../../../modules/gallery';
 import { type DemoPartner, PartnerStatus } from '../../../modules/partner';
+import { LOCAL_PARTNER_ACCOUNT, LOCAL_USER_ACCOUNT } from '../local-accounts/local-accounts.data';
+import { SEED_PEOPLE } from '../seed/shared-safari-seed.data';
 
 export const DEMO_EMAIL_DOMAIN = '@packages-demo.test';
 
+const isDemoDomain = (email: string): boolean => email.toLowerCase().endsWith(DEMO_EMAIL_DOMAIN);
+
 export const DEMO_PARTNERS: readonly DemoPartner[] = [
     {
-        account: { name: 'Vivek Rao', email: `vivek.rao${DEMO_EMAIL_DOMAIN}`, mobile: '9876500101' },
+        account: LOCAL_PARTNER_ACCOUNT,
         business: {
             businessName: 'Jungle Trails Safaris',
             ownerName: 'Vivek Rao',
@@ -90,20 +94,47 @@ export const DEMO_PARTNERS: readonly DemoPartner[] = [
         },
     },
     {
-        account: { name: 'Ananya Iyer', email: `ananya.iyer${DEMO_EMAIL_DOMAIN}`, mobile: '9876500106' },
+        account: LOCAL_USER_ACCOUNT,
         business: null,
     },
     {
-        account: { name: 'Riya Sharma', email: `riya.sharma${DEMO_EMAIL_DOMAIN}`, mobile: '9876500107' },
+        account: { ...SEED_PEOPLE.riya, mobile: '9876500111' },
         business: null,
     },
     {
-        account: { name: 'Neha Singh', email: `neha.singh${DEMO_EMAIL_DOMAIN}`, mobile: '9876500108' },
+        account: { ...SEED_PEOPLE.neha, mobile: '9876500112' },
         business: null,
     },
 ];
 
-export const DEMO_EMAILS: readonly string[] = DEMO_PARTNERS.map((partner) => partner.account.email);
+export const VIVEK = LOCAL_PARTNER_ACCOUNT.email;
+
+export const TARA = `tara.nambiar${DEMO_EMAIL_DOMAIN}`;
+
+export const NIKHIL = `nikhil.bose${DEMO_EMAIL_DOMAIN}`;
+
+export const ANANYA = LOCAL_USER_ACCOUNT.email;
+
+export const RIYA = SEED_PEOPLE.riya.email;
+
+export const NEHA = SEED_PEOPLE.neha.email;
+
+const JUNGLE_TRAILS = DEMO_PARTNERS.find((partner) => partner.account.email === VIVEK)?.business ?? null;
+
+export const DEMO_PARTNER_LOGOS: readonly { readonly ownerEmail: string; readonly file: string }[] = [
+    { ownerEmail: VIVEK, file: 'jungle-trails-logo.png' },
+];
+
+export const LEGACY_DEMO_PARTNERS: readonly DemoPartner[] = [
+    { account: { name: 'Vivek Rao', email: `vivek.rao${DEMO_EMAIL_DOMAIN}`, mobile: '9876500101' }, business: JUNGLE_TRAILS },
+    { account: { name: 'Ananya Iyer', email: `ananya.iyer${DEMO_EMAIL_DOMAIN}`, mobile: '9876500106' }, business: null },
+    { account: { name: 'Riya Sharma', email: `riya.sharma${DEMO_EMAIL_DOMAIN}`, mobile: '9876500107' }, business: null },
+    { account: { name: 'Neha Singh', email: `neha.singh${DEMO_EMAIL_DOMAIN}`, mobile: '9876500108' }, business: null },
+];
+
+export const DEMO_OWNED_EMAILS: readonly string[] = [...DEMO_PARTNERS, ...LEGACY_DEMO_PARTNERS]
+    .map((partner) => partner.account.email)
+    .filter(isDemoDomain);
 
 export type DemoGalleryPlan = {
     readonly ownerEmail: string;
@@ -122,10 +153,6 @@ const photo = (picture: string, title: string | null, caption: string | null): D
     title,
     caption,
 });
-
-const VIVEK = `vivek.rao${DEMO_EMAIL_DOMAIN}`;
-
-const TARA = `tara.nambiar${DEMO_EMAIL_DOMAIN}`;
 
 export const DEMO_GALLERIES: readonly DemoGalleryPlan[] = [
     {

@@ -4,7 +4,7 @@ import { ClientApp } from '../../../core/context';
 import { ForbiddenException, NotFoundException, ValidationException } from '../../../core/exceptions';
 import { freeSlug, slugOf } from '../../../core/validation';
 import type { Database } from '../../../database/connection';
-import type { IFileStorage } from '../../../infrastructure/storage';
+import { type IFileStorage, StoredFileNotFoundError } from '../../../infrastructure/storage';
 import { AuditAction, type AuditActionCode, AuditEntity, type IAuditService } from '../../audit';
 import { type INotificationService, NotificationKind } from '../../notification';
 import type { ParkLookup, PartnerLookup } from '../contracts/shared-safari-module.contract';
@@ -234,6 +234,9 @@ export class WebsiteSafariService implements IWebsiteSafariService {
             await this.fileStorage.remove(coverPath(id, fileName)).catch(() => undefined);
             throw error;
         }
+        if (before.coverImage && before.coverImage !== fileName) {
+            await this.fileStorage.remove(coverPath(id, before.coverImage)).catch(() => undefined);
+        }
         return { coverVersion: fileName };
     }
 
@@ -245,9 +248,13 @@ export class WebsiteSafariService implements IWebsiteSafariService {
 
     async readCover(row: SafariRow): Promise<CoverImage> {
         if (!row.coverImage) throw notAvailable();
-        const content = await this.fileStorage.read(coverPath(row.id, row.coverImage));
         const contentType = row.coverImage.endsWith('.png') ? 'image/png' : 'image/jpeg';
-        return { content, contentType };
+        try {
+            return { content: await this.fileStorage.read(coverPath(row.id, row.coverImage)), contentType };
+        } catch (error) {
+            if (error instanceof StoredFileNotFoundError) throw notAvailable();
+            throw error;
+        }
     }
 
     async setStatus(id: number, status: number, viewer: { readonly id: number }): Promise<void> {
