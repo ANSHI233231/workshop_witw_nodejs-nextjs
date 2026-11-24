@@ -2,7 +2,7 @@
 
 Four additions to the website: a **Wishlist** for saving packages and shared safaris, a public **Partner Profile**, a public **User Profile**, and **Direct Chat** between users. They build on Shared Safari and on the Packages feature.
 
-**Status: in sync with the requirements** (`WITW-Profiles-Wishlist-Chat-Requirements.docx`) and the user's answers of **2026-11-20**. Every rule here comes from the requirements or from those answers (marked *(user, 2026-11-20)*). Nothing else has been added. Points still unclear are **not** written as workflow: they are listed as questions in §9 and stay out of the flows until answered.
+**Status: in sync with the requirements** (`WITW-Profiles-Wishlist-Chat-Requirements.docx`) and the user's answers of **2026-11-20** and **2026-11-24**. Every rule here comes from the requirements or from those answers (marked *(user, 2026-11-20)* or *(user, 2026-11-24)*). Nothing else has been added. Points still unclear are **not** written as workflow: they are listed as questions in §9 and stay out of the flows until answered.
 
 **App:** Website (plus one link in the Partner portal).
 **Who appears:** Guest · signed-in user · Partner.
@@ -15,7 +15,7 @@ Four additions to the website: a **Wishlist** for saving packages and shared saf
 | Partner Profile | A public page for each active partner, with tabs **Packages** and **Parks** |
 | User Profile | A public page for each user, with tabs **Profile** and **Shared Safaris**; **Edit Profile** for the user's own |
 | Direct Chat | **Message** on a profile; a **Messages** page; an in-app notification for each new message |
-| Account menu | **Wishlist**, **My Profile**, **Messages** |
+| Account menu | User: **Wishlist**, **My Profile**, **Messages**. Partner: its own menu (§C) |
 | Partner portal | **Business Profile** gets a **View public page** link |
 
 ## The whole flow at a glance
@@ -69,6 +69,18 @@ flowchart TD
 
 - Partners have **no wishlist** and **don't use Direct Chat**.
 - In the Partner portal, **Business Profile** has a **View public page** link to the Partner Profile.
+- **Shared safaris: view only** *(user, 2026-11-24)*. A partner can browse the shared safari list and open a safari page, but **can't organise** a shared safari and **can't join** one. The **Organize a Shared Safari** and **Join Safari** buttons are **not shown** to a partner.
+- **Account menu on the website** *(user, 2026-11-24)*, in this order:
+
+| # | Menu item |
+|---|---|
+| 1 | **My Profile** |
+| 2 | **My Packages** |
+| 3 | **Change Password** |
+| 4 | **Partner portal** |
+| 5 | **Log Out** |
+
+- A partner's menu has **no** Wishlist, Messages, My Shared Safaris or My Quote Requests. Where **My Profile** and **My Packages** lead: §9 #8.
 
 ---
 
@@ -203,7 +215,8 @@ Account menu › **Messages**.
 | Wishlist page | Package cards and package page (♥; the partner's business name links to the profile) |
 | Partner Profile | Shared safari page (♥) |
 | User Profile | Every user name on the website (opens the profile) |
-| Edit Profile | Account menu (Wishlist, My Profile, Messages) |
+| Edit Profile | Account menu (user: Wishlist, My Profile, Messages · partner: My Profile, My Packages, Change Password, Partner portal, Log Out) |
+| | Shared safari list and page for a partner (no Organize, no Join) |
 | Messages | Business Profile in the Partner portal (View public page) |
 
 ## 7. Reference
@@ -212,6 +225,8 @@ Account menu › **Messages**.
 |---|---|
 | Gender | Male · Female · Other |
 | Social links | Facebook · X · Instagram · YouTube |
+| Partner account menu (website) | My Profile · My Packages · Change Password · Partner portal · Log Out |
+| Partner on shared safaris | View only: no Organize, no Join |
 | Wishlist tabs | Packages (default) · Shared Safaris |
 | Partner Profile tabs | Packages · Parks |
 | User Profile tabs | Profile · Shared Safaris |
@@ -238,3 +253,5 @@ These are **not answered** yet, so the flows above say nothing about them.
 | 5 | **Error messages** for Edit Profile and for the chat: not confirmed yet |
 | 6 | **Notification text** for a new message: not given. Please confirm the wording |
 | 7 | **Message maximum of 1,000 characters:** please confirm this number with the client |
+| 8 | **Partner menu targets:** where does **My Profile** open (the public Partner Profile, or the person's User Profile / Edit Profile)? Where does **My Packages** open (the Packages tab of the Partner Profile on the website, or Partner portal › Packages)? |
+| 9 | **Partner and old shared safaris:** the Packages requirement (§1.1) lets a partner keep commenting on safaris they hosted or joined before becoming a partner. "View only" (2026-11-24): does that also stop **commenting** on those safaris? |
