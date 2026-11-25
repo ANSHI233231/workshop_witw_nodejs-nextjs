@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from 'react';
 
+import { PersonLink } from '@/components/profile/person-link';
 import { useT } from '@/hooks/i18n/use-t';
 import type { Translate } from '@/lib/i18n/locale';
 import { daysAgo, isWithinAgoDays, shortDate, wordCount } from '@/lib/shared-safari-format';
@@ -180,10 +181,10 @@ export function SafariDiscussion({
                 <div className="ss3-cb">
                     <div className="ss3-ch">
                         <span>
-                            <span className="ss3-cn">
+                            <PersonLink person={comment.writer} className="ss3-cn">
                                 {comment.writer.name}
-                                {comment.isHost ? ` ${t('(Host)')}` : ''}
-                            </span>{' '}
+                            </PersonLink>
+                            {comment.isHost ? ` ${t('(Host)')}` : ''}{' '}
                             <span className="ss-cap">· {agoText(comment.createdAt, t)}</span>
                         </span>
                         <span className="ss3-cacts">

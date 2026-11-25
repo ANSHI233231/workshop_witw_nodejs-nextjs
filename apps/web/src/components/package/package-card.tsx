@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { WishlistHeart } from '@/components/wishlist/wishlist-heart';
 import { useT } from '@/hooks/i18n/use-t';
 import { activityText, cardImageSources, durationText, priceMessageOf } from '@/lib/package-format';
 import { rupees } from '@/lib/shared-safari-format';
 import type { PackageCard as PackageCardValue } from '@/types/package.types';
+import { WishlistItemType } from '@/types/wishlist.types';
 
 import { CarIcon, MapPinIcon } from '../shared-safari/safari-icons';
 
@@ -24,6 +26,7 @@ export function PackageCard({ card }: { readonly card: PackageCardValue }) {
         <div className="pk-card" onClick={() => router.push(path)}>
             <div className="pk-img">
                 <FallbackImage sources={cardImageSources(card)} />
+                <WishlistHeart itemType={WishlistItemType.PACKAGE} itemId={card.id} />
                 {card.isBestDeal && (
                     <span className="pk-best">
                         <StarIcon />

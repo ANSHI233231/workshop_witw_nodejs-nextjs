@@ -55,6 +55,26 @@ export class PackageWebsiteRepository {
         return (await db.query<WebsiteCardRow>(WebsiteSQL.shownById, [...shown, packageId]))[0];
     }
 
+    async shownByIds(db: DbExecutor, shown: ShownCondition, packageIds: readonly number[]): Promise<WebsiteCardRow[]> {
+        if (packageIds.length === 0) return [];
+        return db.query<WebsiteCardRow>(WebsiteSQL.shownByIds(packageIds.length), [...shown, ...packageIds]);
+    }
+
+    async shownOfPartner(
+        db: DbExecutor,
+        shown: ShownCondition,
+        partnerId: number,
+        page: number,
+        size: number,
+    ): Promise<WebsiteCardRow[]> {
+        return db.query<WebsiteCardRow>(WebsiteSQL.shownOfPartner, [...shown, partnerId, size, (page - 1) * size]);
+    }
+
+    async countShownOfPartner(db: DbExecutor, shown: ShownCondition, partnerId: number): Promise<number> {
+        const rows = await db.query<CountRow>(WebsiteSQL.countShownOfPartner, [...shown, partnerId]);
+        return Number(rows[0]?.total ?? 0);
+    }
+
     async shownBySlug(db: DbExecutor, shown: ShownCondition, slug: string): Promise<WebsiteCardRow | undefined> {
         return (await db.query<WebsiteCardRow>(WebsiteSQL.shownBySlug, [...shown, slug]))[0];
     }

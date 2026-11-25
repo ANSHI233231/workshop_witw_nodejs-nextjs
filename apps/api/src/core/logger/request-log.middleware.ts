@@ -18,6 +18,10 @@ export const markErrorLogged = (res: Response): void => {
     res.locals['errorLogged'] = true;
 };
 
+export const markEventStream = (res: Response): void => {
+    res.locals['isEventStream'] = true;
+};
+
 /** The request context dump: what the request was. Values of credential-like keys are redacted. */
 const contextDump = (req: Request, res: Response, durationMs: number): string => {
     const route = req.route ? `${req.baseUrl}${(req.route as { path?: string }).path ?? ''}` : null;
@@ -66,6 +70,11 @@ export const recordRequestLog = (req: Request, res: Response, next: NextFunction
     res.on('close', () =>
         withRequestContext(req, () => {
             if (res.writableFinished || !res.headersSent) return;
+            if (res.locals['isEventStream'] === true) {
+                const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+                logger.access(`${describeRequest(req)} ${res.statusCode} stream closed ${durationMs.toFixed(1)}ms`);
+                return;
+            }
             logger.category('http.error').error(`${describeRequest(req)} -> connection closed before the response completed`);
         }),
     );

@@ -25,6 +25,8 @@
 - **Notifications** ([notification](../notification/README.md)): creating an account (Add User, the CLI; not Sign Up, whose template would read "created by") sends the new user 101 Account created (website); changing, resetting or setting a password sends 102 Password changed (in the app it was changed in; set by an administrator → the website), in the same transaction. `activeUserIdsWithRole(roleId)` lists the active users holding a role (the jobs worker uses it for Super Admins).
 - **Audit** (module 1): 101 user created, 102 create failed, 103 user updated (with what changed and the roles added / removed), 104 update failed, 105 password changed, 106 password change failed, 107 user signed up, 108 sign-up failed (the email typed as the actor label), 109 sample accounts created, 110 failed, 111 sample accounts removed, 112 failed, 113 demo accounts removed (Safari Packages demo data, `createUsersDemoModule`), 114 failed, 115 `ct_` test accounts removed (`test-data/remove-ct`), 116 failed. Demo accounts are created as 101 events.
 
+- **Name from Edit Profile:** `usersService.rename(userId, name, actorId)` changes only the name of an active account (a missing or inactive account is 404 `USER_NOT_FOUND`) and records a 103 event with the name's from / to (nothing when it is the same). The [profile](../profile/README.md) module calls it inside its own save, so both succeed or fail together.
+
 ## Where it lives
 
 - **Module:** `apps/api/src/modules/users/`

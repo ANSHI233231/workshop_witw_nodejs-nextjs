@@ -22,7 +22,13 @@ import type {
 import type { AuthUserDto } from '../dto/auth.dto';
 import { toAuthUser } from '../mappers/auth.mapper';
 import { type AuthSettings, currentSessionApp, REFRESH_REUSE_GRACE_SECONDS } from '../types/auth.types';
-import type { ChangePasswordBody, SignInBody, SignUpBody } from '../validators/auth.validators';
+import type { ISignUpProfileWriter } from '../contracts/sign-up-profile-writer.contract';
+import type {
+    ChangePasswordBody,
+    SignInBody,
+    SignUpBody,
+    WebsiteSignUpBody,
+} from '../validators/auth.validators';
 import {
     hashToken,
     isPast,
@@ -90,6 +96,7 @@ export class AuthService implements IAuthService {
         private readonly usersService: IUsersService,
         private readonly auditService: IAuditService,
         private readonly settings: AuthSettings,
+        private readonly signUpProfiles: ISignUpProfileWriter,
     ) {}
 
     async signIn(body: SignInBody): Promise<SignedInSession> {
@@ -119,11 +126,13 @@ export class AuthService implements IAuthService {
         });
     }
 
-    async signUp(body: SignUpBody): Promise<SignedInSession> {
+    async signUp(body: WebsiteSignUpBody): Promise<SignedInSession> {
         refuseOutsideWebsite();
-        const user = await this.usersService.signUp(body);
-        markSignedIn(user.id);
+        const { dateOfBirth, gender, ...account } = body;
         return this.db.transaction(async () => {
+            const user = await this.usersService.signUp(account);
+            markSignedIn(user.id);
+            await this.signUpProfiles.saveAtSignUp(user.id, { dateOfBirth, gender });
             const session = await this.issue(user, SIGN_UP_REMEMBERED);
             await this.auditService.record({ action: AuditAction.SIGNED_IN, details: { remember: SIGN_UP_REMEMBERED } });
             return session;

@@ -19,9 +19,11 @@ export const NotificationSQL = {
     list: (shape: NotificationListShape) => `
         SELECT n.id, n.notification_kind AS notificationKind, n.entity_type AS entityType, n.entity_id AS entityId,
                n.title, n.excerpt, n.read_at AS readAt, n.created_at AS createdAt, n.created_by AS actorId,
-               COALESCE(n.actor_name, u.name) AS actorName
+               COALESCE(n.actor_name, u.name) AS actorName,
+               IF(n.actor_name IS NULL, ap.photo, NULL) AS actorPhotoVersion
         FROM notification n
         LEFT JOIN user u ON u.id = n.created_by
+        LEFT JOIN user_profile ap ON ap.user_id = n.created_by
         ${listWhere(shape)}
         ORDER BY n.created_at DESC, n.id DESC
         LIMIT ? OFFSET ?`,

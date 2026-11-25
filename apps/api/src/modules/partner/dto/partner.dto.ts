@@ -52,6 +52,15 @@ export type PartnerRef = {
     readonly isPhoneShown: boolean;
 };
 
+export type PublicPartnerDto = {
+    readonly id: number;
+    readonly userId: number;
+    readonly businessName: string;
+    readonly about: string | null;
+    readonly logoVersion: string | null;
+    readonly activeParkIds: readonly number[];
+};
+
 export type PartnerFilters = {
     readonly search: string | undefined;
     readonly status: PartnerStatusCode | undefined;

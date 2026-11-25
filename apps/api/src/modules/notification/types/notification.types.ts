@@ -12,6 +12,7 @@ export const NotificationKind = {
     PACKAGE_VERSION_SENT: 1201,
     QUOTE_REQUEST_RECEIVED: 1301,
     QUOTE_REQUEST_ADMIN_MESSAGE: 1302,
+    CHAT_MESSAGE_RECEIVED: 1601,
 } as const;
 
 export type NotificationKindCode = (typeof NotificationKind)[keyof typeof NotificationKind];
@@ -58,6 +59,7 @@ export interface NotificationRow extends RowDataPacket {
     createdAt: string;
     actorId: number | null;
     actorName: string | null;
+    actorPhotoVersion: string | null;
 }
 
 export interface NotificationKindCountRow extends RowDataPacket {

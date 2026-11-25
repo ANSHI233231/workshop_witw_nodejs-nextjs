@@ -4,6 +4,7 @@ import { AccessGuard, asyncHandler } from '../../core/http';
 import type { AuthModuleDependencies, AuthTestDataModuleDependencies } from './contracts/auth-module.contract';
 import type { IAuthService, SignedInSession } from './contracts/auth-service.contract';
 import type { IAuthTestDataService } from './contracts/auth-test-data-service.contract';
+import type { ISignUpProfileWriter } from './contracts/sign-up-profile-writer.contract';
 import { AuthController } from './controllers/auth.controller';
 import { AuthTestDataRepository } from './repositories/auth-test-data.repository';
 import { AuthRepository } from './repositories/auth.repository';
@@ -11,10 +12,12 @@ import { createAuthRouter } from './routes/auth.routes';
 import { AuthTestDataService } from './services/auth-test-data.service';
 import { AuthService } from './services/auth.service';
 import { PasswordResetService } from './services/password-reset.service';
+import { SignUpProfileSlot } from './services/sign-up-profile-slot';
 
 export type { AuthModuleDependencies } from './contracts/auth-module.contract';
 export type { IAuthService, SignedInSession, SignedUpWith } from './contracts/auth-service.contract';
 export { signUpAccountSchema, type SignUpBody } from './validators/auth.validators';
+export type { ISignUpProfileWriter, SignUpProfile } from './contracts/sign-up-profile-writer.contract';
 
 export type SessionCookies = {
     readonly write: (res: Response, session: SignedInSession) => void;
@@ -37,12 +40,14 @@ export const createAuthTestDataModule = (dependencies: AuthTestDataModuleDepende
 
 export const createAuthModule = (dependencies: AuthModuleDependencies) => {
     const authRepository = new AuthRepository();
+    const signUpProfiles = new SignUpProfileSlot();
     const authService: IAuthService = new AuthService(
         dependencies.db,
         authRepository,
         dependencies.usersService,
         dependencies.auditService,
         dependencies.settings,
+        signUpProfiles,
     );
     const passwordResetService = new PasswordResetService(
         dependencies.db,
@@ -69,6 +74,7 @@ export const createAuthModule = (dependencies: AuthModuleDependencies) => {
         authService,
         sessionCookies,
         access,
+        connectSignUpProfiles: (writer: ISignUpProfileWriter): void => signUpProfiles.connect(writer),
         createRouter: () => createAuthRouter(authController, access.session),
     };
 };

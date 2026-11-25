@@ -1,6 +1,6 @@
 import type { AuthSession, AuthUserDto } from '../dto/auth.dto';
 import type { ActiveRole } from '../../users';
-import type { ChangePasswordBody, SignInBody, SignUpBody } from '../validators/auth.validators';
+import type { ChangePasswordBody, SignInBody, SignUpBody, WebsiteSignUpBody } from '../validators/auth.validators';
 
 export type SignedInSession = AuthSession & { readonly remember: boolean };
 
@@ -10,7 +10,7 @@ export type RefreshedSession = SignedInSession | { readonly user: AuthUserDto; r
 
 export interface IAuthService {
     signIn(body: SignInBody): Promise<SignedInSession>;
-    signUp(body: SignUpBody): Promise<SignedInSession>;
+    signUp(body: WebsiteSignUpBody): Promise<SignedInSession>;
     signUpWith<T>(body: SignUpBody, alsoCreate: (user: AuthUserDto) => Promise<T>): Promise<SignedUpWith<T>>;
     refresh(refreshToken: string | undefined): Promise<RefreshedSession>;
     signOut(refreshToken: string | undefined): Promise<void>;

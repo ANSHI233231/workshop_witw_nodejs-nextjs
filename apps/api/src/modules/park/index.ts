@@ -21,7 +21,7 @@ import { ParkWebsiteService } from './services/park-website.service';
 export type { ParkModuleDependencies } from './contracts/park-module.contract';
 export type { IParkPriceSource } from './contracts/park-price-source.contract';
 export type { IParkService } from './contracts/park-service.contract';
-export type { ParkOptionDto, ParkPriceRange, ParkStateDto } from './dto/park.dto';
+export type { ParkOptionDto, ParkPriceRange, ParkStateDto, WebsiteParkCardDto } from './dto/park.dto';
 export { ParkRegion, ParkStatus, type ParkRegionCode, type ParkStatusCode } from './types/park.types';
 
 export type { IParkDemoService } from './contracts/park-demo-service.contract';

@@ -200,6 +200,22 @@ export class UsersService implements IUsersService {
         await this.changePassword(userId, await bcrypt.hash(password, PASSWORD_HASH_ROUNDS), actorId);
     }
 
+    async rename(userId: number, name: string, actorId: number): Promise<void> {
+        const event = { action: AuditAction.USER_UPDATED, entityType: AuditEntity.USER, entityId: userId } as const;
+        try {
+            await this.db.transaction(async () => {
+                const before = await this.usersRepository.findUserById(this.db, userId);
+                if (!before || before.status !== UserStatus.ACTIVE) throw userNotFound();
+                if (before.name === name) return;
+                if (!(await this.usersRepository.updateName(this.db, userId, name, actorId))) throw userNotFound();
+                await this.auditService.record({ ...event, changes: { name: { from: before.name, to: name } } });
+            });
+        } catch (error) {
+            await this.auditService.recordFailure({ ...event, action: AuditAction.USER_UPDATE_FAILED, details: { name } }, error);
+            throw error;
+        }
+    }
+
     async updateUser(id: number, update: UserUpdate, actorId: number): Promise<UserDetailDto> {
         try {
             await this.db.transaction(async () => {

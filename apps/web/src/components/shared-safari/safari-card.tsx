@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type MouseEvent, useState } from 'react';
 
+import { PersonLink } from '@/components/profile/person-link';
 import { SITE_PATHS } from '@/components/website/witw-site-frame';
 import { useT } from '@/hooks/i18n/use-t';
 import { cn } from '@/lib/class-names';
@@ -20,9 +21,9 @@ export const safariPath = (slug: string): string => `/shared-safaris/${encodeURI
 
 type ButtonState = { readonly label: string; readonly className: string };
 
-const buttonOf = (card: SafariCardValue): ButtonState => {
+const buttonOf = (card: SafariCardValue, viewOnly: boolean): ButtonState => {
     const full = card.status === SafariStatus.SEAT_FULL;
-    if (card.viewer.isHost) return { label: 'View Safari', className: 'btn-secondary' };
+    if (card.viewer.isHost || viewOnly) return { label: 'View Safari', className: 'btn-secondary' };
     if (card.viewer.joined) return { label: 'Leave Safari', className: 'btn-secondary wb-leave' };
     if (full) return { label: 'Seat Full', className: 'btn-secondary is-full' };
     return { label: 'Join Safari', className: 'btn-primary' };
@@ -33,8 +34,10 @@ export function SafariCard({
     onChanged,
     onMessage,
     onError,
+    viewOnly = false,
 }: {
     readonly card: SafariCardValue;
+    readonly viewOnly?: boolean;
     readonly onChanged: (card: SafariCardValue) => void;
     readonly onMessage: (message: string) => void;
     readonly onError: (message: string) => void;
@@ -43,7 +46,7 @@ export function SafariCard({
     const router = useRouter();
     const [busy, setBusy] = useState(false);
     const full = card.status === SafariStatus.SEAT_FULL;
-    const button = buttonOf(card);
+    const button = buttonOf(card, viewOnly);
     const path = safariPath(card.slug);
     const showButton = !card.viewer.isPartner || card.viewer.isHost || card.viewer.joined;
     const more = card.joinedCount - card.faces.length;
@@ -59,7 +62,7 @@ export function SafariCard({
     const act = async (event: MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
         if (busy) return;
-        if (card.viewer.isHost || (full && !card.viewer.joined)) {
+        if (card.viewer.isHost || viewOnly || (full && !card.viewer.joined)) {
             router.push(path);
             return;
         }
@@ -115,7 +118,10 @@ export function SafariCard({
                     <PersonAvatar person={card.host} />
                     <div>
                         <div className="wb-by">
-                            <b>{card.host.name}</b> {t('has shared a safari')}
+                            <PersonLink person={card.host}>
+                                <b>{card.host.name}</b>
+                            </PersonLink>{' '}
+                            {t('has shared a safari')}
                         </div>
                         <div className="wb-park">
                             <MapPinIcon />

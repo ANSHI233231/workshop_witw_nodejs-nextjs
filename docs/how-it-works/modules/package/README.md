@@ -93,7 +93,9 @@ Send notifies every active Super Admin: `NotificationKind.PACKAGE_VERSION_SENT` 
 
 `packageService` from `createPackageModule` (`IPackageService`), every method on the shown rule above:
 
-- `shownPackage(packageId)`: `{ packageId, slug, partnerId, partnerUserId, businessName, liveVersionId, liveVersionNumber, name }` when the package is shown, else null ([quote-request](../quote-request/README.md) checks this, stores the live version and notifies `partnerUserId`).
+- `shownPackage(packageId)`: `{ packageId, slug, partnerId, partnerUserId, businessName, liveVersionId, liveVersionNumber, name, pricePerPerson }` when the package is shown, else null ([quote-request](../quote-request/README.md) checks this, stores the live version and notifies `partnerUserId`; the [wishlist](../wishlist/README.md) stores `pricePerPerson` as the price when saved).
+- `shownCards(packageIds)`: the website cards of those packages that are shown now (any order): the wishlist lists them and compares each card's `pricePerPerson` with the saved price (the come-back rule).
+- `listShownOfPartner(partnerId, page)`: the partner's shown packages, newest live first, 12 a page, as website cards (the [profile](../profile/README.md) module's Partner Profile).
 - `listShown(query)`: the website list (filters, sorts, page of 12).
 - `pageBySlug(slug)`: the package page, `{ inUse: false }`, or 404 when never approved.
 - `priceRangesOfParks(masterParkIds)`: per park, the lowest and highest price per person of its shown packages and how many (`[]` = every park): the park's average safari price (plan Q2). It changes by itself when a package is approved, made inactive or deleted, or its partner is deactivated.

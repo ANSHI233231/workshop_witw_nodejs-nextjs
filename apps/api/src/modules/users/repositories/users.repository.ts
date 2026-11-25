@@ -156,6 +156,11 @@ export class UsersRepository implements IUsersRepository {
         return db.query<SystemRoleRow>(UsersSQL.listSystemRoles(SYSTEM_ROLE_IDS.length), [userId, ...SYSTEM_ROLE_IDS]);
     }
 
+    async updateName(db: DbExecutor, id: number, name: string, actorId: number): Promise<boolean> {
+        const result = await db.execute(UsersSQL.updateName, [name, actorId, id, UserStatus.ACTIVE]);
+        return result.affectedRows === 1;
+    }
+
     async updateStatus(db: DbExecutor, id: number, status: number, actorId: number): Promise<void> {
         await db.execute(UsersSQL.updateStatus, [status, actorId, id, UserStatus.DELETED]);
     }

@@ -14,8 +14,16 @@ import type {
     ParkPage,
     ParkStateDto,
     ParkUpdate,
+    WebsiteParkCardDto,
 } from '../dto/park.dto';
-import { editableFieldsOf, toPark, toParkDetail, toParkOption, toParkState } from '../mappers/park.mapper';
+import {
+    editableFieldsOf,
+    toPark,
+    toParkDetail,
+    toParkOption,
+    toParkState,
+    toWebsiteParkCard,
+} from '../mappers/park.mapper';
 import {
     PARK_LIMITS,
     PARK_SLUG_FALLBACK,
@@ -174,6 +182,12 @@ export class ParkService implements IParkService {
         const row = await this.repository.featureImageById(this.db, id);
         if (!row) throw notFound();
         return this.images.read(row.id, row.feature_image);
+    }
+
+    async websiteCardsOf(masterParkIds: readonly number[]): Promise<WebsiteParkCardDto[]> {
+        const rows = await this.repository.websiteCardsByIds(this.db, [...new Set(masterParkIds)]);
+        const prices = await this.prices.of(rows.map((row) => row.id));
+        return rows.map((row) => toWebsiteParkCard(row, priceIn(prices, row.id)));
     }
 
     private async row(id: number): Promise<ParkDetailRow> {

@@ -9,6 +9,7 @@ import type { ICommandRunner } from '../infrastructure/process';
 import type { IFileStorage } from '../infrastructure/storage';
 import { createAuditModule } from '../modules/audit';
 import { type AppUrls, type AuthSettings, createAuthModule } from '../modules/auth';
+import { createChatModule } from '../modules/chat';
 import { createFlagReasonModule } from '../modules/flag-reason';
 import { createGalleryModule } from '../modules/gallery';
 import { createHealthModule } from '../modules/health';
@@ -19,10 +20,12 @@ import { createNotificationModule } from '../modules/notification';
 import { createPackageModule } from '../modules/package';
 import { createParkModule } from '../modules/park';
 import { createPartnerModule } from '../modules/partner';
+import { createProfileModule } from '../modules/profile';
 import { createQuoteRequestModule } from '../modules/quote-request';
 import { createSharedSafariModule } from '../modules/shared-safari';
 import { createSystemLogModule } from '../modules/system-log';
 import { createUsersModule, MetaRole } from '../modules/users';
+import { createWishlistModule } from '../modules/wishlist';
 
 export const API_PREFIX = '/api';
 
@@ -142,6 +145,34 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
         notificationService: notification.notificationService,
     });
 
+    const wishlist = createWishlistModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        packageService: packages.packageService,
+        sharedSafariService: sharedSafari.sharedSafariService,
+        partnerService: partner.partnerService,
+    });
+
+    const profile = createProfileModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        usersService: users.usersService,
+        partnerService: partner.partnerService,
+        sharedSafariService: sharedSafari.sharedSafariService,
+        packageService: packages.packageService,
+        parkService: park.parkService,
+        fileStorage: dependencies.fileStorage,
+    });
+    auth.connectSignUpProfiles(profile.profileService);
+
+    const chat = createChatModule({
+        db: dependencies.db,
+        auditService: audit.auditService,
+        usersService: users.usersService,
+        partnerService: partner.partnerService,
+        notificationService: notification.notificationService,
+    });
+
     const superAdmin = auth.access.roles([MetaRole.SUPER_ADMIN]);
 
     return [
@@ -187,5 +218,12 @@ export const registerRoutes = (app: Express, dependencies: RouteDependencies): R
             `${API_PREFIX}/shared-safari`,
             sharedSafari.createRouter({ viewer: auth.access.viewer, signedIn: auth.access.signedIn, superAdmin }),
         ),
+        ...mountApi(app, `${API_PREFIX}/wishlist`, wishlist.createRouter(auth.access.signedIn)),
+        ...mountApi(
+            app,
+            `${API_PREFIX}/profile`,
+            profile.createRouter({ signedIn: auth.access.signedIn, viewer: auth.access.viewer }),
+        ),
+        ...mountApi(app, `${API_PREFIX}/chat`, chat.createRouter(auth.access.signedIn)),
     ];
 };

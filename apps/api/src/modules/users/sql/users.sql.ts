@@ -106,6 +106,11 @@ export const UsersSQL = {
         SET name = ?, username = ?, email = ?, mobile = ?, updated_by = ?
         WHERE id = ? AND status <> ?`,
 
+    updateName: `
+        UPDATE user
+        SET name = ?, updated_by = ?
+        WHERE id = ? AND status = ?`,
+
     updateStatus: `
         UPDATE user
         SET status = ?, updated_by = ?

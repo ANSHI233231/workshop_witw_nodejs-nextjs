@@ -8,6 +8,7 @@ import { type IFileStorage, StoredFileNotFoundError } from '../../../infrastruct
 import { AuditAction, type AuditActionCode, AuditEntity, type IAuditService } from '../../audit';
 import { type INotificationService, NotificationKind } from '../../notification';
 import type { ParkLookup, PartnerLookup } from '../contracts/shared-safari-module.contract';
+import type { ISharedSafariService } from '../contracts/shared-safari-service.contract';
 import type { IWebsiteSafariService } from '../contracts/website-safari-service.contract';
 import type {
     CoverImage,
@@ -17,7 +18,9 @@ import type {
     SafariEditDto,
     SafariInput,
     SafariViewDto,
+    UserSafariPage,
     Viewer,
+    WishlistSafariState,
 } from '../dto/shared-safari.dto';
 import {
     maskContacts,
@@ -72,6 +75,8 @@ const EXTENSION_OF: Readonly<Record<string, string>> = { 'image/png': 'png', 'im
 
 const isOpen = (row: SafariRow): boolean => PUBLIC_STATUSES.includes(row.status);
 
+const DELETED_STATUSES: readonly number[] = [SharedSafariStatus.DELETED_BY_HOST, SharedSafariStatus.DELETED_BY_ADMIN];
+
 export const visibleTo = (row: SafariRow, viewer: Viewer): boolean => {
     if (row.hostStatus !== ACTIVE_USER) return false;
     if (isOpen(row)) return true;
@@ -103,7 +108,7 @@ const changesOf = (before: SafariRow, after: SafariInput): Record<string, unknow
     );
 };
 
-export class WebsiteSafariService implements IWebsiteSafariService {
+export class WebsiteSafariService implements IWebsiteSafariService, ISharedSafariService {
     constructor(
         private readonly db: Database,
         private readonly repository: SharedSafariRepository,
@@ -131,6 +136,28 @@ export class WebsiteSafariService implements IWebsiteSafariService {
                 ? await this.repository.organisedBy(this.db, viewer.id)
                 : await this.repository.joinedBy(this.db, viewer.id);
         return this.cards(rows, viewer, todayInIndia());
+    }
+
+    async wishlistState(id: number): Promise<WishlistSafariState | null> {
+        const row = await this.repository.findById(this.db, id);
+        if (!row || DELETED_STATUSES.includes(row.status)) return null;
+        return { id: row.id, isSavable: visibleTo(row, null) && row.startDate >= todayInIndia() };
+    }
+
+    async cardsOfIds(ids: readonly number[], viewerId: number): Promise<SafariCardDto[]> {
+        const rows = await this.repository.byIds(this.db, [...new Set(ids)]);
+        return this.cards(rows, { id: viewerId }, todayInIndia());
+    }
+
+    async activeOfUser(userId: number, page: number, viewerId: number): Promise<UserSafariPage> {
+        const today = todayInIndia();
+        const size = SHARED_SAFARI_LIMITS.PAGE_SIZE;
+        const [rows, total] = await Promise.all([
+            this.repository.activeOfUser(this.db, userId, today, size, (page - 1) * size),
+            this.repository.countActiveOfUser(this.db, userId, today),
+        ]);
+        const items = await this.cards(rows, { id: viewerId }, today);
+        return { items, total, page, pageSize: size, hasMore: page * size < total };
     }
 
     async view(ref: string, viewer: Viewer): Promise<SafariViewDto> {

@@ -9,6 +9,7 @@ import type {
     ParkPage,
     ParkStateDto,
     ParkUpdate,
+    WebsiteParkCardDto,
 } from '../dto/park.dto';
 import type { ParkStatusCode } from '../types/park.types';
 
@@ -22,4 +23,5 @@ export interface IParkService {
     setStatus(id: number, status: ParkStatusCode, actorId: number): Promise<ParkDto>;
     setFeatureImage(id: number, content: Buffer, actorId: number): Promise<ParkDto>;
     featureImage(id: number): Promise<ParkFeatureImage>;
+    websiteCardsOf(masterParkIds: readonly number[]): Promise<WebsiteParkCardDto[]>;
 }

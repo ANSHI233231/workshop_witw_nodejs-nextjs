@@ -7,15 +7,31 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ChangePasswordDialog } from '@/components/console/change-password-dialog';
 import { PORTAL_NOTIFICATION_LINKS, PORTAL_NOTIFICATIONS_PATH } from '@/components/console/portal-notifications';
 import { NotificationFeedBell } from '@/components/notification-feed/notification-feed-bell';
+import { ChatProvider, useChat } from '@/components/chat/chat-provider';
+import { MyPhotoProvider, useMyPhoto } from '@/components/profile/my-photo-provider';
 import { Toast } from '@/components/ui/toast';
+import { WishlistProvider, type WishlistViewer } from '@/components/wishlist/wishlist-provider';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSessionWatch } from '@/hooks/session/use-session-watch';
 import { config } from '@/lib/config';
 import { signOut } from '@/services/auth.service';
 import { partnerLogoUrl, type SitePartner } from '@/services/partner.service';
+import { userPhotoUrl } from '@/services/profile.service';
 import type { AuthUser } from '@/types/auth.types';
 
-import { BinocularsIcon, ExternalLinkIcon, InstagramIcon, LockIcon, LogOutIcon, MailIcon, UserCircleIcon } from './site-icons';
+import {
+    BinocularsIcon,
+    ExternalLinkIcon,
+    HeartIcon,
+    InstagramIcon,
+    LockIcon,
+    LogOutIcon,
+    MailIcon,
+    MessageSquareIcon,
+    PackageBoxIcon,
+    UserCircleIcon,
+    UserIcon,
+} from './site-icons';
 
 export const SITE_PATHS = {
     home: '/',
@@ -25,7 +41,12 @@ export const SITE_PATHS = {
     plans: '/parks',
     packages: '/packages',
     myQuoteRequests: '/my-quote-requests',
+    myProfile: '/my-profile',
+    wishlist: '/wishlist',
+    messages: '/messages',
 } as const;
+
+const partnerPortalPath = (path: string): string => `${config.partnerPortalUrl ?? ''}${path}`;
 
 const NavSection = { PLAN: 'plan', PACKAGES: 'packages', SHARED: 'shared', NONE: 'none' } as const;
 
@@ -77,6 +98,8 @@ function AccountMenu({
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const wrapRef = useRef<HTMLDivElement>(null);
+    const my = useMyPhoto();
+    const { unreadCount } = useChat();
 
     useEffect(() => {
         if (!open) return;
@@ -119,6 +142,8 @@ function AccountMenu({
                         <img className="avatar-photo" src={partnerLogoUrl(partner.id, partner.logoVersion)} alt="" />
                     ) : partner ? (
                         <img className="avatar-photo avatar-photo-default" src="/witw/logo.png" alt={t('No logo yet')} />
+                    ) : my.photoVersion ? (
+                        <img className="avatar-photo" src={userPhotoUrl(user.id, my.photoVersion)} alt="" />
                     ) : (
                         user.name.trim().charAt(0).toUpperCase()
                     )}
@@ -131,20 +156,43 @@ function AccountMenu({
                             <div className="list-title">{partner?.businessName ?? user.name}</div>
                             <div className="list-meta">{user.email ?? user.username ?? ''}</div>
                         </div>
-                        <Link className="mega-link" href={SITE_PATHS.mySharedSafaris} onClick={() => setOpen(false)}>
-                            <BinocularsIcon />
-                            {t('My Shared Safaris')}
+                        <Link className="mega-link" href={SITE_PATHS.myProfile} onClick={() => setOpen(false)}>
+                            <UserIcon />
+                            {t('My Profile')}
                         </Link>
                         {partner ? (
-                            <a className="mega-link" href={config.partnerPortalUrl} onClick={() => setOpen(false)}>
-                                <ExternalLinkIcon />
-                                {t('Partner portal')}
+                            <a
+                                className="mega-link"
+                                href={partnerPortalPath('/packages')}
+                                onClick={() => setOpen(false)}
+                            >
+                                <PackageBoxIcon />
+                                {t('My Packages')}
                             </a>
                         ) : (
-                            <Link className="mega-link" href={SITE_PATHS.myQuoteRequests} onClick={() => setOpen(false)}>
-                                <MailIcon />
-                                {t('My Quote Requests')}
-                            </Link>
+                            <>
+                                <Link className="mega-link" href={SITE_PATHS.mySharedSafaris} onClick={() => setOpen(false)}>
+                                    <BinocularsIcon />
+                                    {t('My Shared Safaris')}
+                                </Link>
+                                <Link className="mega-link" href={SITE_PATHS.myQuoteRequests} onClick={() => setOpen(false)}>
+                                    <MailIcon />
+                                    {t('My Quote Requests')}
+                                </Link>
+                                <Link className="mega-link" href={SITE_PATHS.wishlist} onClick={() => setOpen(false)}>
+                                    <HeartIcon />
+                                    {t('Wishlist')}
+                                </Link>
+                                <Link className="mega-link" href={SITE_PATHS.messages} onClick={() => setOpen(false)}>
+                                    <MessageSquareIcon />
+                                    {t('Messages')}
+                                    {unreadCount > 0 && (
+                                        <span className="dd-cnt" aria-label={t('{n} unread', { n: unreadCount })}>
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            </>
                         )}
                         <button
                             type="button"
@@ -157,6 +205,12 @@ function AccountMenu({
                             <LockIcon />
                             {t('Change Password')}
                         </button>
+                        {partner && (
+                            <a className="mega-link" href={config.partnerPortalUrl} onClick={() => setOpen(false)}>
+                                <ExternalLinkIcon />
+                                {t('Partner portal')}
+                            </a>
+                        )}
                         <div className="dd-sep"></div>
                         <button type="button" className="mega-link dd-btn" onClick={() => void logOut()}>
                             <LogOutIcon />
@@ -262,72 +316,79 @@ export function WitwSiteFrame({
     const [notice, setNotice] = useState<string | null>(null);
     const section = sectionOf(pathname);
     const onAuthPage = section === NavSection.NONE;
+    const viewer: WishlistViewer = !user ? 'guest' : partner ? 'partner' : 'user';
 
     return (
-        <div className="wb">
-            {user && <WatchSession userId={user.id} />}
-            {user && changePasswordOpen && (
-                <ChangePasswordDialog
-                    user={user}
-                    roleLabel=""
-                    onClose={() => setChangePasswordOpen(false)}
-                    onChanged={() => {
-                        setChangePasswordOpen(false);
-                        setNotice(t('Password updated.'));
-                        router.refresh();
-                    }}
-                />
-            )}
-            {notice && <Toast message={notice} onClose={() => setNotice(null)} />}
-            <header className="wb-head">
-                <Link className="wb-logo" href={SITE_PATHS.home} aria-label={t('Walk Into The Wild home')}>
-                    <img src="/witw/logo.png" alt="Walk Into The Wild" />
-                </Link>
-                <nav className="wb-nav" aria-label={t('Website')}>
-                    {NAV.map((item) =>
-                        onAuthPage && item.section !== NavSection.SHARED ? (
-                            <a key={item.label} className="is-off">
-                                <img src={item.icon} alt="" />
-                                {t(item.label)}
-                            </a>
-                        ) : (
-                            <Link
-                                key={item.label}
-                                className={item.section === section ? 'is-on' : undefined}
-                                aria-current={item.section === section ? 'page' : undefined}
-                                href={item.href}
-                            >
-                                <img src={item.icon} alt="" />
-                                {t(item.label)}
-                            </Link>
-                        ),
-                    )}
-                </nav>
-                <div className="wb-right">
-                    {user ? (
-                        <>
-                            <NotificationFeedBell
-                                owner={null}
-                                feedPath={PORTAL_NOTIFICATIONS_PATH}
-                                links={PORTAL_NOTIFICATION_LINKS}
-                                look="site"
+        <MyPhotoProvider userId={user?.id ?? null}>
+            <WishlistProvider viewer={viewer}>
+                <ChatProvider enabled={viewer === 'user'}>
+                    <div className="wb">
+                        {user && <WatchSession userId={user.id} />}
+                        {user && changePasswordOpen && (
+                            <ChangePasswordDialog
+                                user={user}
+                                roleLabel=""
+                                onClose={() => setChangePasswordOpen(false)}
+                                onChanged={() => {
+                                    setChangePasswordOpen(false);
+                                    setNotice(t('Password updated.'));
+                                    router.refresh();
+                                }}
                             />
-                            <AccountMenu user={user} partner={partner} onChangePassword={() => setChangePasswordOpen(true)} />
-                        </>
-                    ) : (
-                        <Link
-                            className="wb-ic"
-                            href={SITE_PATHS.signIn}
-                            aria-label={t('Sign in')}
-                            aria-current={pathname === SITE_PATHS.signIn ? 'page' : undefined}
-                        >
-                            <UserCircleIcon />
-                        </Link>
-                    )}
-                </div>
-            </header>
-            {children}
-            <SiteFooter />
-        </div>
+                        )}
+                        {notice && <Toast message={notice} onClose={() => setNotice(null)} />}
+                        <header className="wb-head">
+                            <Link className="wb-logo" href={SITE_PATHS.home} aria-label={t('Walk Into The Wild home')}>
+                                <img src="/witw/logo.png" alt="Walk Into The Wild" />
+                            </Link>
+                            <nav className="wb-nav" aria-label={t('Website')}>
+                                {NAV.map((item) =>
+                                    onAuthPage && item.section !== NavSection.SHARED ? (
+                                        <a key={item.label} className="is-off">
+                                            <img src={item.icon} alt="" />
+                                            {t(item.label)}
+                                        </a>
+                                    ) : (
+                                        <Link
+                                            key={item.label}
+                                            className={item.section === section ? 'is-on' : undefined}
+                                            aria-current={item.section === section ? 'page' : undefined}
+                                            href={item.href}
+                                        >
+                                            <img src={item.icon} alt="" />
+                                            {t(item.label)}
+                                        </Link>
+                                    ),
+                                )}
+                            </nav>
+                            <div className="wb-right">
+                                {user ? (
+                                    <>
+                                        <NotificationFeedBell
+                                            owner={null}
+                                            feedPath={PORTAL_NOTIFICATIONS_PATH}
+                                            links={PORTAL_NOTIFICATION_LINKS}
+                                            look="site"
+                                        />
+                                        <AccountMenu user={user} partner={partner} onChangePassword={() => setChangePasswordOpen(true)} />
+                                    </>
+                                ) : (
+                                    <Link
+                                        className="wb-ic"
+                                        href={SITE_PATHS.signIn}
+                                        aria-label={t('Sign in')}
+                                        aria-current={pathname === SITE_PATHS.signIn ? 'page' : undefined}
+                                    >
+                                        <UserCircleIcon />
+                                    </Link>
+                                )}
+                            </div>
+                        </header>
+                        {children}
+                        <SiteFooter />
+                    </div>
+                </ChatProvider>
+            </WishlistProvider>
+        </MyPhotoProvider>
     );
 }

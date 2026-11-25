@@ -14,4 +14,5 @@ export const PORTAL_NOTIFICATION_EMPTY = 'No notifications here.';
 export const PORTAL_NOTIFICATION_LINKS: NotificationLinks = {
     [NotificationKind.SHARED_SAFARI_JOINED]: '/shared-safaris/{id}',
     [NotificationKind.SHARED_SAFARI_COMMENTED]: '/shared-safaris/{id}',
+    [NotificationKind.CHAT_MESSAGE_RECEIVED]: '/messages',
 };

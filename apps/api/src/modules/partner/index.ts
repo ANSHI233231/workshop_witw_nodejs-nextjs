@@ -25,7 +25,7 @@ import { PartnerService } from './services/partner.service';
 export type { PartnerDemoModuleDependencies, PartnerModuleDependencies } from './contracts/partner-module.contract';
 export type { IPartnerService } from './contracts/partner-service.contract';
 export type { IPartnerDemoService } from './contracts/partner-demo-service.contract';
-export type { PartnerParkDto, PartnerRef } from './dto/partner.dto';
+export type { PartnerParkDto, PartnerRef, PublicPartnerDto } from './dto/partner.dto';
 export type { DemoPartner, DemoPartnerOutcome, DemoPartnerState } from './dto/partner-demo.dto';
 export { PartnerStatus, type PartnerStatusCode } from './types/partner.types';
 

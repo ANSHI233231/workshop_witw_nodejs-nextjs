@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { dateOfBirthField, genderField } from '../../../core/validation';
+
 import { AUTH_LIMITS, INDIAN_MOBILE_PATTERN, PASSWORD_LIMITS, SIGN_UP_LIMITS } from '../types/auth.types';
 
 export const signInSchema = z.object({
@@ -53,6 +55,12 @@ export const signUpAccountSchema = z
 export const signUpSchema = z.object({ body: signUpAccountSchema });
 
 export type SignUpBody = z.infer<typeof signUpSchema>['body'];
+
+export const websiteSignUpSchema = z.object({
+    body: signUpAccountSchema.extend({ dateOfBirth: dateOfBirthField, gender: genderField }),
+});
+
+export type WebsiteSignUpBody = z.infer<typeof websiteSignUpSchema>['body'];
 
 const passwordFields = {
     password: z

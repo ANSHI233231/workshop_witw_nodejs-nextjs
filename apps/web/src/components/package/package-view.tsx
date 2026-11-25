@@ -1,7 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
 
+import { partnerProfilePath } from '@/components/profile/person-link';
+import { WishlistHeart } from '@/components/wishlist/wishlist-heart';
 import { useT } from '@/hooks/i18n/use-t';
 import { cn } from '@/lib/class-names';
 import {
@@ -23,6 +26,7 @@ import {
     THEME_OPTIONS,
     VEHICLE_OPTIONS,
 } from '@/types/package.types';
+import { WishlistItemType } from '@/types/wishlist.types';
 
 import { CarIcon, MapPinIcon } from '../shared-safari/safari-icons';
 
@@ -182,7 +186,12 @@ export function PackageView({ pkg, viewer }: { readonly pkg: PackageDetail; read
                 </div>
             </div>
             <div className="pk2-pricebar">
-                <span></span>
+                <span className="pk2-op">
+                    {t('Operated by')}{' '}
+                    <Link className="up-link" href={partnerProfilePath(pkg.partner.id)}>
+                        <b>{pkg.partner.businessName}</b>
+                    </Link>
+                </span>
                 <div className="pk2-price">
                     <div>
                         {pkg.priceBeforeDiscount !== null && (
@@ -194,6 +203,7 @@ export function PackageView({ pkg, viewer }: { readonly pkg: PackageDetail; read
                         <span className="pk-tot">{t('Total Price {amount}', { amount: rupees(pkg.totalPrice) })}</span>
                         <span className="pk-tot">{priceMessageOf(pkg.priceMessage, t)}</span>
                     </div>
+                    <WishlistHeart itemType={WishlistItemType.PACKAGE} itemId={pkg.id} inline />
                     <button type="button" className="btn btn-primary" onClick={scrollToQuote}>
                         {t('Request a quote')}
                     </button>

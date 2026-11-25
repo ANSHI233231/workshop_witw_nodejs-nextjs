@@ -38,7 +38,9 @@ export type NotificationDto = {
     readonly excerpt: string | null;
     readonly isRead: boolean;
     readonly createdAt: string;
+    readonly actorId: number | null;
     readonly actorName: string | null;
+    readonly actorPhotoVersion: string | null;
     readonly actorIsYou: boolean;
     readonly titleTemplate: string | null;
 };

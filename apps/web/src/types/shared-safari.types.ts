@@ -62,6 +62,7 @@ export type Person = {
     readonly id: number;
     readonly name: string;
     readonly initials: string;
+    readonly photoVersion: string | null;
     readonly partner: PersonPartner | null;
 };
 

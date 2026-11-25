@@ -19,7 +19,7 @@ import type {
     ForgotPasswordBody,
     ResetPasswordBody,
     SignInBody,
-    SignUpBody,
+    WebsiteSignUpBody,
 } from '../validators/auth.validators';
 
 const BEARER_PREFIX = 'Bearer ';
@@ -53,7 +53,7 @@ export class AuthController {
     };
 
     signUp = async (req: Request, res: Response): Promise<void> => {
-        const session = await this.authService.signUp(req.body as SignUpBody);
+        const session = await this.authService.signUp(req.body as WebsiteSignUpBody);
         this.writeSessionCookies(res, session);
         created(res, { user: session.user }, 'Your account is created.');
     };

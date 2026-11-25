@@ -24,6 +24,7 @@ export interface IUsersService {
     userDetail(id: number): Promise<UserDetailDto>;
     setPassword(userId: number, password: string, actorId: number): Promise<void>;
     updateUser(id: number, update: UserUpdate, actorId: number): Promise<UserDetailDto>;
+    rename(userId: number, name: string, actorId: number): Promise<void>;
     setStatus(id: number, status: UserStatusCode, actorId: number): Promise<UserDetailDto>;
     createAccount(account: NewAccount, actorId: number | null): Promise<UserDetailDto>;
     signUp(account: NewSignUp): Promise<UserSummary>;

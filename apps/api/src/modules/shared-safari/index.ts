@@ -12,6 +12,7 @@ import { SharedSafariTestDataService } from './services/shared-safari-test-data.
 import { ConsoleSafariController } from './controllers/console-safari.controller';
 import { WebsiteSafariController } from './controllers/website-safari.controller';
 import { SharedSafariRepository } from './repositories/shared-safari.repository';
+import type { ISharedSafariService } from './contracts/shared-safari-service.contract';
 import { createSharedSafariRouter, type SharedSafariAccess } from './routes/shared-safari.routes';
 import { ConsoleSafariService } from './services/console-safari.service';
 import { DiscussionService } from './services/discussion.service';
@@ -19,6 +20,8 @@ import { WebsiteSafariService } from './services/website-safari.service';
 
 export type { SharedSafariModuleDependencies } from './contracts/shared-safari-module.contract';
 export type { SharedSafariAccess } from './routes/shared-safari.routes';
+export type { ISharedSafariService } from './contracts/shared-safari-service.contract';
+export type { SafariCardDto, UserSafariPage, WishlistSafariState } from './dto/shared-safari.dto';
 export { SharedSafariStatus } from './types/shared-safari.types';
 
 export type { ISharedSafariSeedService } from './contracts/shared-safari-seed-service.contract';
@@ -88,7 +91,9 @@ export const createSharedSafariModule = (dependencies: SharedSafariModuleDepende
         website: new WebsiteSafariController(websiteService, discussionService),
         console: new ConsoleSafariController(consoleService),
     };
+    const sharedSafariService: ISharedSafariService = websiteService;
     return {
+        sharedSafariService,
         createRouter: (access: SharedSafariAccess) => createSharedSafariRouter(controllers, access),
     };
 };

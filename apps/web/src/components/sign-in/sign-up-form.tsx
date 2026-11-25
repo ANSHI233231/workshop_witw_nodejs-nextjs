@@ -9,17 +9,19 @@ import { useT } from '@/hooks/i18n/use-t';
 import { useRevealFirstError } from '@/hooks/ui/use-reveal-first-error';
 import type { Translate } from '@/lib/i18n/locale';
 import { MOBILE_INPUT_LENGTH, mobileInput } from '@/lib/mobile-input';
+import { checkDateOfBirth, checkGender, todayInIndia } from '@/lib/profile-rules';
 import { ApiError } from '@/services/api-error';
 import { refreshSession, signUp } from '@/services/auth.service';
 import { PASSWORD_LIMITS, SIGN_UP_LIMITS } from '@/types/auth.types';
+import { GENDER_OPTIONS, type GenderCode } from '@/types/profile.types';
 
 import { rememberSignUp } from './signed-up-welcome';
 
-type Field = 'name' | 'email' | 'mobile' | 'password';
+type Field = 'name' | 'email' | 'mobile' | 'dateOfBirth' | 'gender' | 'password';
 
 type FieldErrors = Partial<Record<Field, string>>;
 
-const FIELDS: readonly Field[] = ['name', 'email', 'mobile', 'password'];
+const FIELDS: readonly Field[] = ['name', 'email', 'mobile', 'dateOfBirth', 'gender', 'password'];
 
 const SIGNED_IN_HOME = '/';
 
@@ -34,7 +36,15 @@ const FIELD_OF_CODE: Readonly<Record<string, Field>> = {
     MOBILE_TAKEN: 'mobile',
 };
 
-const checkFields = (t: Translate, name: string, email: string, mobile: string, password: string): FieldErrors => {
+const checkFields = (
+    t: Translate,
+    name: string,
+    email: string,
+    mobile: string,
+    dateOfBirth: string,
+    gender: string,
+    password: string,
+): FieldErrors => {
     const errors: FieldErrors = {};
     const fullName = name.trim();
     const address = email.trim();
@@ -44,6 +54,10 @@ const checkFields = (t: Translate, name: string, email: string, mobile: string, 
     if (!EMAIL_SHAPE.test(address) || address.length > SIGN_UP_LIMITS.EMAIL)
         errors.email = t('Enter a valid email address.');
     if (!INDIAN_MOBILE.test(mobile)) errors.mobile = t('Enter a 10-digit mobile number.');
+    const dobProblem = checkDateOfBirth(t, dateOfBirth, true);
+    if (dobProblem) errors.dateOfBirth = dobProblem;
+    const genderProblem = checkGender(t, gender === '' ? null : (Number(gender) as GenderCode), true);
+    if (genderProblem) errors.gender = genderProblem;
     if (password.length < PASSWORD_LIMITS.MIN)
         errors.password = t('Use at least {min} characters.', { min: PASSWORD_LIMITS.MIN });
     else if (password.length > PASSWORD_LIMITS.MAX)
@@ -76,6 +90,8 @@ export function SignUpForm() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [mobile, setMobile] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
+    const [gender, setGender] = useState('');
     const [password, setPassword] = useState('');
     const [passwordShown, setPasswordShown] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -102,7 +118,7 @@ export function SignUpForm() {
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (sending) return;
-        const errors = checkFields(t, name, email, mobile, password);
+        const errors = checkFields(t, name, email, mobile, dateOfBirth, gender, password);
         setFieldErrors(errors);
         revealFirstError();
         setFormError(null);
@@ -110,7 +126,14 @@ export function SignUpForm() {
 
         setSending(true);
         try {
-            const user = await signUp({ name: name.trim(), email: email.trim(), mobile, password });
+            const user = await signUp({
+                name: name.trim(),
+                email: email.trim(),
+                mobile,
+                dateOfBirth,
+                gender: Number(gender),
+                password,
+            });
             rememberSignUp(user.name);
             router.replace(SIGNED_UP_HOME);
             router.refresh();
@@ -228,6 +251,52 @@ export function SignUpForm() {
                     }}
                 />
                 {errorOf('mobile')}
+            </div>
+            <div className={fieldClass('dateOfBirth')}>
+                <label className="label" htmlFor="su-dob">
+                    {t('Date of birth')}
+                    {required}
+                </label>
+                <input
+                    id="su-dob"
+                    className="input"
+                    type="date"
+                    autoComplete="bday"
+                    max={todayInIndia()}
+                    name="dateOfBirth"
+                    value={dateOfBirth}
+                    aria-invalid={fieldErrors.dateOfBirth ? true : undefined}
+                    onChange={(event) => {
+                        setDateOfBirth(event.target.value);
+                        clear('dateOfBirth');
+                    }}
+                />
+                {errorOf('dateOfBirth')}
+            </div>
+            <div className={fieldClass('gender')}>
+                <label className="label" htmlFor="su-gender">
+                    {t('Gender')}
+                    {required}
+                </label>
+                <select
+                    id="su-gender"
+                    className="select"
+                    name="gender"
+                    value={gender}
+                    aria-invalid={fieldErrors.gender ? true : undefined}
+                    onChange={(event) => {
+                        setGender(event.target.value);
+                        clear('gender');
+                    }}
+                >
+                    <option value="">{t('Select')}</option>
+                    {GENDER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {t(option.label)}
+                        </option>
+                    ))}
+                </select>
+                {errorOf('gender')}
             </div>
             <div className={fieldClass('password')}>
                 <label className="label" htmlFor="su-password">

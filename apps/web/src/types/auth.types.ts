@@ -19,6 +19,11 @@ export type SignUpInput = {
     readonly password: string;
 };
 
+export type AccountSignUpInput = SignUpInput & {
+    readonly dateOfBirth: string;
+    readonly gender: number;
+};
+
 export const SIGN_UP_LIMITS = { NAME_MIN: 2, NAME_MAX: 100, EMAIL: 254 } as const;
 
 export const SIGN_IN_LIMITS = { IDENTIFIER: 254, PASSWORD: 200 } as const;

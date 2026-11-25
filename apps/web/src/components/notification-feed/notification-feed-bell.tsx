@@ -20,7 +20,7 @@ import {
     type NotificationOwner,
 } from '@/types/notification-feed.types';
 
-import { avatarOf, KIND_STYLE, linkOf, relativeTime, SentenceContent } from './notification-feed-format';
+import { ActorAvatarContent, avatarOf, KIND_STYLE, linkOf, relativeTime, SentenceContent } from './notification-feed-format';
 import { BellIcon, MailIcon } from './notification-feed-icons';
 
 const log = logger.category('notifications');
@@ -191,7 +191,7 @@ export function NotificationFeedBell({
                             onClick={() => openItem(item)}
                         >
                             <span className="ntp-av">
-                                {avatarOf(item)}
+                                <ActorAvatarContent item={item} text={avatarOf(item)} />
                                 {style && (
                                     <span className={`ntp-k ${style.css}`}>
                                         <style.Icon />

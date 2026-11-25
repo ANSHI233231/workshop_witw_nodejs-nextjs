@@ -9,6 +9,7 @@ import path from 'node:path';
 
 import { config } from './config';
 import { createApp } from './app';
+import { closeEventStreams } from './core/http';
 import { logger } from './core/logger';
 import { createConnectionPool } from './database/connection';
 import { createEmailSender } from './infrastructure/email';
@@ -114,6 +115,7 @@ const shutdown = (signal: string): void => {
     logger.info(`${signal} received, shutting down`);
     shuttingDown = true;
     worker?.kill('SIGTERM');
+    closeEventStreams();
     server.close(() => {
         db.close()
             .catch((error: unknown) => logger.error('Error closing the database pool', error))

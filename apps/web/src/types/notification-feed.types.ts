@@ -14,6 +14,7 @@ export const NotificationKind = {
     PACKAGE_VERSION_SENT: 1201,
     QUOTE_REQUEST_RECEIVED: 1301,
     QUOTE_REQUEST_ADMIN_MESSAGE: 1302,
+    CHAT_MESSAGE_RECEIVED: 1601,
 } as const;
 
 export const NOTIFICATION_KIND_TABS = ['account', 'jobs', 'shared-safari'] as const;
@@ -43,7 +44,9 @@ export type NotificationItem = {
     readonly excerpt: string | null;
     readonly isRead: boolean;
     readonly createdAt: string;
+    readonly actorId: number | null;
     readonly actorName: string | null;
+    readonly actorPhotoVersion: string | null;
     readonly actorIsYou: boolean;
     readonly titleTemplate: string | null;
 };

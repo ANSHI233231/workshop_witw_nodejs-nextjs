@@ -39,6 +39,7 @@ export class PackageService implements IPackageService {
             liveVersionId: row.version_id,
             liveVersionNumber: row.version_number,
             name: version.name,
+            pricePerPerson: version.price_per_person,
         };
     }
 
@@ -53,20 +54,38 @@ export class PackageService implements IPackageService {
             this.website.list(this.records.db, SHOWN, effective),
             this.website.count(this.records.db, SHOWN, effective),
         ]);
+        const size = PACKAGE_LIMITS.WEBSITE_PAGE_SIZE;
+        const items = await this.cardsOf(rows);
+        return { items, total, page: query.page, pageSize: size, hasMore: query.page * size < total };
+    }
+
+    async shownCards(packageIds: readonly number[]): Promise<WebsiteCardDto[]> {
+        return this.cardsOf(await this.website.shownByIds(this.records.db, SHOWN, [...new Set(packageIds)]));
+    }
+
+    async listShownOfPartner(partnerId: number, page: number): Promise<WebsitePageDto> {
+        const size = PACKAGE_LIMITS.WEBSITE_PAGE_SIZE;
+        const [rows, total] = await Promise.all([
+            this.website.shownOfPartner(this.records.db, SHOWN, partnerId, page, size),
+            this.website.countShownOfPartner(this.records.db, SHOWN, partnerId),
+        ]);
+        const items = await this.cardsOf(rows);
+        return { items, total, page, pageSize: size, hasMore: page * size < total };
+    }
+
+    private async cardsOf(rows: readonly WebsiteCardRow[]): Promise<WebsiteCardDto[]> {
         const versionIds = rows.map((row) => row.version_id);
         const [versions, parks] = await Promise.all([
             this.records.repository.versionsByIds(this.records.db, versionIds),
             this.records.repository.parksOf(this.records.db, versionIds),
         ]);
         const versionOf = new Map(versions.map((version) => [version.id, version]));
-        const items = rows.flatMap((row) => {
+        return rows.flatMap((row) => {
             const version = versionOf.get(row.version_id);
             if (!version) return [];
             const own = parks.filter((park) => park.package_version_id === row.version_id);
             return [this.card(row, version, { parks: own, ...emptyChildren })];
         });
-        const size = PACKAGE_LIMITS.WEBSITE_PAGE_SIZE;
-        return { items, total, page: query.page, pageSize: size, hasMore: query.page * size < total };
     }
 
     async pageBySlug(slug: string): Promise<WebsitePackageView> {

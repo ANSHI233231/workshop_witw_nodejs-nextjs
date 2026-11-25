@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useMyPhoto } from '@/components/profile/my-photo-provider';
 import { TablePager } from '@/components/ui/table-pager';
 import { Toast } from '@/components/ui/toast';
 import { useT } from '@/hooks/i18n/use-t';
 import type { Translate } from '@/lib/i18n/locale';
 import { logger } from '@/lib/logger';
+import { userPhotoUrl } from '@/services/profile.service';
 import { markAllNotificationsRead, markNotificationRead } from '@/services/notification-feed.service';
 import type { Paginated } from '@/types/api.types';
 import {
@@ -21,7 +23,7 @@ import {
     type NotificationTabOption,
 } from '@/types/notification-feed.types';
 
-import { actorInitials, initialsOf, linkOf, SentenceContent } from './notification-feed-format';
+import { ActorAvatarContent, actorInitials, initialsOf, linkOf, SentenceContent } from './notification-feed-format';
 import { BellIcon, CircleCheckIcon } from './notification-feed-icons';
 
 const log = logger.category('notifications');
@@ -59,10 +61,11 @@ const SHARED_SAFARI_KINDS: readonly number[] = [
     NotificationKind.SHARED_SAFARI_COMMENTED,
 ];
 
-const tagOf = (item: NotificationItem): { readonly label: string; readonly css: string } =>
-    SHARED_SAFARI_KINDS.includes(item.notificationKind)
-        ? { label: 'Shared Safari', css: 'badge badge-success' }
-        : { label: 'Account', css: 'badge badge-info' };
+const tagOf = (item: NotificationItem): { readonly label: string; readonly css: string } => {
+    if (SHARED_SAFARI_KINDS.includes(item.notificationKind)) return { label: 'Shared Safari', css: 'badge badge-success' };
+    if (item.notificationKind === NotificationKind.CHAT_MESSAGE_RECEIVED) return { label: 'Messages', css: 'badge badge-neutral' };
+    return { label: 'Account', css: 'badge badge-info' };
+};
 
 const tabUrl = (feedPath: string, tab: NotificationTab): string =>
     tab === 'all' ? feedPath : `${feedPath}?tab=${tab}`;
@@ -92,6 +95,7 @@ export function SiteNotificationList({
 }) {
     const t = useT();
     const router = useRouter();
+    const my = useMyPhoto();
     const [readState, setReadState] = useState<Readonly<Record<number, boolean>>>({});
     const [notice, setNotice] = useState<{ readonly message: string; readonly isError: boolean } | null>(null);
 
@@ -148,7 +152,9 @@ export function SiteNotificationList({
                 <div className="wn-list">
                     {result.items.map((item) => {
                         const tag = tagOf(item);
-                        const isSafari = SHARED_SAFARI_KINDS.includes(item.notificationKind);
+                        const fromActor =
+                            SHARED_SAFARI_KINDS.includes(item.notificationKind) ||
+                            item.notificationKind === NotificationKind.CHAT_MESSAGE_RECEIVED;
                         const read = isRead(item);
                         return (
                             <Link
@@ -157,7 +163,15 @@ export function SiteNotificationList({
                                 href={linkOf(links, item, feedPath)}
                                 onClick={() => open(item)}
                             >
-                                <span className="avatar">{isSafari ? actorInitials(item) : initialsOf(userName)}</span>
+                                <span className="avatar">
+                                    {fromActor ? (
+                                        <ActorAvatarContent item={item} text={actorInitials(item)} />
+                                    ) : my.photoVersion ? (
+                                        <img className="avatar-photo" src={userPhotoUrl(my.userId, my.photoVersion)} alt="" />
+                                    ) : (
+                                        initialsOf(userName)
+                                    )}
+                                </span>
                                 <span>
                                     <span className="wn-t">
                                         <SentenceContent item={item} />

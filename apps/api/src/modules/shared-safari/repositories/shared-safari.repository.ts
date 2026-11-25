@@ -69,6 +69,16 @@ const publicValues = (filters: PublicFilters, today: string): unknown[] => [
     ...filters.stays,
 ];
 
+const activeOfUserValues = (userId: number, today: string): unknown[] => [
+    SharedSafariStatus.ACTIVE,
+    SharedSafariStatus.SEAT_FULL,
+    today,
+    UserActive,
+    userId,
+    userId,
+    SharedSafariMemberStatus.JOINED,
+];
+
 const consoleShape = (filters: ConsoleFilters): ConsoleListShape => ({
     search: filters.search !== undefined,
     status: filters.status !== undefined,
@@ -140,6 +150,31 @@ export class SharedSafariRepository {
 
     async slugTaken(db: DbExecutor, slug: string): Promise<boolean> {
         return (await db.query<IdRow>(SharedSafariSQL.slugTaken, [slug])).length > 0;
+    }
+
+    async byIds(db: DbExecutor, ids: readonly number[]): Promise<SafariRow[]> {
+        if (ids.length === 0) return [];
+        return db.query<SafariRow>(SharedSafariSQL.byIds(ids.length), [...COUNT_PARAMS, ...ids]);
+    }
+
+    async activeOfUser(
+        db: DbExecutor,
+        userId: number,
+        today: string,
+        limit: number,
+        offset: number,
+    ): Promise<SafariRow[]> {
+        return db.query<SafariRow>(SharedSafariSQL.activeOfUser, [
+            ...COUNT_PARAMS,
+            ...activeOfUserValues(userId, today),
+            limit,
+            offset,
+        ]);
+    }
+
+    async countActiveOfUser(db: DbExecutor, userId: number, today: string): Promise<number> {
+        const rows = await db.query<CountRow>(SharedSafariSQL.countActiveOfUser, activeOfUserValues(userId, today));
+        return Number(rows[0]?.total ?? 0);
     }
 
     async organisedBy(db: DbExecutor, userId: number): Promise<SafariRow[]> {

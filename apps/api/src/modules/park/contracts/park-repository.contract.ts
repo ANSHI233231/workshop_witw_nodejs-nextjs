@@ -30,5 +30,6 @@ export interface IParkRepository {
     featureImageOfActive(db: DbExecutor, slug: string): Promise<FeatureImageRow | undefined>;
     websiteList(db: DbExecutor, query: WebsiteParkQuery, limit: number): Promise<WebsiteParkRow[]>;
     websiteCount(db: DbExecutor, query: WebsiteParkQuery): Promise<number>;
+    websiteCardsByIds(db: DbExecutor, ids: readonly number[]): Promise<WebsiteParkRow[]>;
     websitePage(db: DbExecutor, slug: string): Promise<WebsiteParkPageRow | undefined>;
 }

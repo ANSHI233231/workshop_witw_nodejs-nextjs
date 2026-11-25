@@ -4,7 +4,7 @@ import {
     type ChangePasswordInput,
     type PasswordResetInput,
     type SignInInput,
-    type SignUpInput,
+    type AccountSignUpInput,
 } from '@/types/auth.types';
 
 import { apiClient } from './api-client';
@@ -24,7 +24,7 @@ const isSignedOut = (error: unknown): boolean =>
 export const signIn = async (input: SignInInput): Promise<AuthUser> =>
     (await apiClient.post<UserResponse>('/auth/sign-in', input)).user;
 
-export const signUp = async (input: SignUpInput): Promise<AuthUser> =>
+export const signUp = async (input: AccountSignUpInput): Promise<AuthUser> =>
     (await apiClient.post<UserResponse>('/auth/sign-up', input)).user;
 
 const requestRefresh = async (): Promise<AuthUser | null> => {

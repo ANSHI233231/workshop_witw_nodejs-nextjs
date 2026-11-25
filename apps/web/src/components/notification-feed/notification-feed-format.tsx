@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 
 import type { Translate } from '@/lib/i18n/locale';
+import { userPhotoUrl } from '@/services/profile.service';
 import { NotificationKind, type NotificationItem, type NotificationLinks } from '@/types/notification-feed.types';
 
 import { KeyIcon, MessageIcon, TriangleAlertIcon, UserPlusIcon, UsersIcon, BellIcon, GalleryIcon, PackageIcon, QuoteIcon } from './notification-feed-icons';
@@ -64,6 +65,7 @@ export const KIND_STYLE: Readonly<Partial<Record<number, KindStyle>>> = {
     [NotificationKind.PACKAGE_VERSION_SENT]: { css: 'is-gallery', tag: 'Package', Icon: PackageIcon },
     [NotificationKind.QUOTE_REQUEST_RECEIVED]: { css: 'is-gallery', tag: 'Quote request', Icon: QuoteIcon },
     [NotificationKind.QUOTE_REQUEST_ADMIN_MESSAGE]: { css: 'is-gallery', tag: 'Super Admin', Icon: MessageIcon },
+    [NotificationKind.CHAT_MESSAGE_RECEIVED]: { css: 'is-account', tag: 'Messages', Icon: UsersIcon },
 };
 
 export const actorInitials = (item: NotificationItem): string => (item.actorName ? initialsOf(item.actorName) : 'S');
@@ -91,6 +93,13 @@ export function SentenceContent({ item }: { readonly item: NotificationItem }) {
                 )}
         </>
     );
+}
+
+export function ActorAvatarContent({ item, text }: { readonly item: NotificationItem; readonly text: string }) {
+    if (item.actorId !== null && item.actorPhotoVersion) {
+        return <img className="avatar-photo" src={userPhotoUrl(item.actorId, item.actorPhotoVersion)} alt="" />;
+    }
+    return <>{text}</>;
 }
 
 export const linkOf = (links: NotificationLinks, item: NotificationItem, fallback: string): string =>

@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useState } from 'react';
 
+import { PersonLink } from '@/components/profile/person-link';
 import { useT } from '@/hooks/i18n/use-t';
 import { logger } from '@/lib/logger';
 import { shortDate } from '@/lib/shared-safari-format';
@@ -89,7 +90,7 @@ export function InterestedDialog({ members, onClose }: { readonly members: reado
                                 <td>
                                     <span className="ss3-who-name">
                                         <PersonAvatar person={member} className="ss-av" />
-                                        {member.name}
+                                        <PersonLink person={member}>{member.name}</PersonLink>
                                     </span>
                                 </td>
                                 <td>{shortDate(member.joinedAt)}</td>

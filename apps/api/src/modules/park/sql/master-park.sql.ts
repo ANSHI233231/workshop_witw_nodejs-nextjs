@@ -103,6 +103,12 @@ export const MasterParkSQL = {
         FROM master_park
         ${websiteWhere(shape)}`,
 
+    websiteCardsByIds: (count: number) => `
+        SELECT ${WEBSITE_COLUMNS}
+        FROM master_park
+        WHERE master_park.id IN (${Array.from({ length: count }, () => '?').join(', ')}) AND master_park.status = ?
+        ORDER BY master_park.name ASC, master_park.id`,
+
     websitePage: `
         SELECT ${WEBSITE_COLUMNS},
             master_park.short_description, master_park.latitude, master_park.longitude,

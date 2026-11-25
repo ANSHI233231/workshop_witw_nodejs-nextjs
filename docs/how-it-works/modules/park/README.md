@@ -40,7 +40,7 @@ The park module is built before the partner and package modules (the partner mod
 | `GET /api/park/parks`, `/parks/:slug`, `/parks/:slug/feature-image` | public (active parks only; plan §2.4) |
 | `GET /api/park`, `GET /api/park/:id`, `POST /api/park`, `PUT /api/park/:id`, `PATCH /api/park/:id/status`, `GET` / `PUT /api/park/:id/feature-image` | Super Admin |
 
-The shared-safari module asks `parkService.findById` whether a park is active; the partner module checks parks the same way.
+The shared-safari module asks `parkService.findById` whether a park is active; the partner module checks parks the same way. `parkService.websiteCardsOf(ids)` gives the website park cards (with the price) of those parks that are active, by name: the [profile](../profile/README.md) module's Partner Profile › Parks.
 
 ## History
 

@@ -145,6 +145,11 @@ export class ParkRepository implements IParkRepository {
         return Number(rows[0]?.total ?? 0);
     }
 
+    async websiteCardsByIds(db: DbExecutor, ids: readonly number[]): Promise<WebsiteParkRow[]> {
+        if (ids.length === 0) return [];
+        return db.query<WebsiteParkRow>(MasterParkSQL.websiteCardsByIds(ids.length), [...ids, ParkStatus.ACTIVE]);
+    }
+
     async websitePage(db: DbExecutor, slug: string): Promise<WebsiteParkPageRow | undefined> {
         return (await db.query<WebsiteParkPageRow>(MasterParkSQL.websitePage, [slug, ParkStatus.ACTIVE]))[0];
     }

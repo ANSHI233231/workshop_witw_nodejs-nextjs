@@ -9,4 +9,4 @@ export {
     type LogRecordSink,
 } from './logger';
 export { REDACTED, redact, redactUrl, toLogJson } from './redact';
-export { describeRequest, markErrorLogged, recordRequestLog } from './request-log.middleware';
+export { describeRequest, markErrorLogged, markEventStream, recordRequestLog } from './request-log.middleware';

@@ -114,6 +114,7 @@ export interface SafariRow extends RowDataPacket {
     id: number;
     userId: number;
     hostName: string;
+    hostPhoto: string | null;
     hostEmail: string | null;
     hostStatus: number;
     masterParkId: number;
@@ -149,6 +150,7 @@ export interface FaceRow extends RowDataPacket {
     sharedSafariId: number;
     userId: number;
     name: string;
+    photoVersion: string | null;
     joinedAt: Date;
     leftAt: Date | null;
 }
@@ -169,6 +171,7 @@ export interface CommentRow extends RowDataPacket {
     sharedSafariCommentId: number | null;
     userId: number;
     writerName: string;
+    writerPhoto: string | null;
     writerStatus: number;
     commentText: string;
     status: number;

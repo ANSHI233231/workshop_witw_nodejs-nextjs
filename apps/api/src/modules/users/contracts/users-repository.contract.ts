@@ -28,6 +28,7 @@ export interface IUsersRepository {
     ): Promise<IdentifierClashRow[]>;
     listSystemRoles(db: DbExecutor, userId: number): Promise<SystemRoleRow[]>;
     updateUser(db: DbExecutor, id: number, update: UserUpdate, actorId: number): Promise<void>;
+    updateName(db: DbExecutor, id: number, name: string, actorId: number): Promise<boolean>;
     updateStatus(db: DbExecutor, id: number, status: number, actorId: number): Promise<void>;
     setUserRoleStatus(
         db: DbExecutor,

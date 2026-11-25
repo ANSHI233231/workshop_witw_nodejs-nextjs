@@ -4,6 +4,7 @@ const COMMENT_COLUMNS = `
     c.shared_safari_comment_id AS sharedSafariCommentId,
     c.user_id AS userId,
     u.name AS writerName,
+    wp.photo AS writerPhoto,
     u.status AS writerStatus,
     c.comment_text AS commentText,
     c.status,
@@ -31,6 +32,7 @@ export const DiscussionSQL = {
         SELECT ${COMMENT_COLUMNS}
         FROM shared_safari_comment c
         JOIN user u ON u.id = c.user_id
+        LEFT JOIN user_profile wp ON wp.user_id = u.id
         WHERE c.shared_safari_id = ? AND c.status = ? AND u.status = ?
         ORDER BY c.created_at, c.id`,
 
@@ -38,6 +40,7 @@ export const DiscussionSQL = {
         SELECT ${COMMENT_COLUMNS}
         FROM shared_safari_comment c
         JOIN user u ON u.id = c.user_id
+        LEFT JOIN user_profile wp ON wp.user_id = u.id
         WHERE c.id = ?`,
 
     insert: `

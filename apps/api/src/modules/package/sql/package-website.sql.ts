@@ -77,6 +77,23 @@ export const WebsiteSQL = {
         ${SHOWN_FROM}
         WHERE ${SHOWN_WHERE} AND p.id = ?`,
 
+    shownByIds: (count: number) => `
+        SELECT ${CARD_COLUMNS}
+        ${SHOWN_FROM}
+        WHERE ${SHOWN_WHERE} AND p.id IN (${placeholders(count)})`,
+
+    shownOfPartner: `
+        SELECT ${CARD_COLUMNS}
+        ${SHOWN_FROM}
+        WHERE ${SHOWN_WHERE} AND p.partner_id = ?
+        ORDER BY ${WEBSITE_ORDERS.newest}
+        LIMIT ? OFFSET ?`,
+
+    countShownOfPartner: `
+        SELECT COUNT(*) AS total
+        ${SHOWN_FROM}
+        WHERE ${SHOWN_WHERE} AND p.partner_id = ?`,
+
     shownBySlug: `
         SELECT ${CARD_COLUMNS}
         ${SHOWN_FROM}

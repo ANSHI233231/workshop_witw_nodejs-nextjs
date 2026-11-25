@@ -22,6 +22,7 @@ const SAFARI_COLUMNS = `
     s.id,
     s.user_id AS userId,
     u.name AS hostName,
+    hp.photo AS hostPhoto,
     u.email AS hostEmail,
     u.status AS hostStatus,
     s.master_park_id AS masterParkId,
@@ -58,6 +59,7 @@ const SAFARI_COLUMNS = `
 const SAFARI_FROM = `
     FROM shared_safari s
     JOIN user u ON u.id = s.user_id
+    LEFT JOIN user_profile hp ON hp.user_id = u.id
     JOIN master_park p ON p.id = s.master_park_id
     LEFT JOIN user d ON d.id = s.deleted_by`;
 
@@ -112,6 +114,27 @@ export const SharedSafariSQL = {
 
     slugTaken: `
         SELECT id FROM shared_safari WHERE slug = ?`,
+
+    byIds: (count: number) => `
+        SELECT ${SAFARI_COLUMNS}
+        ${SAFARI_FROM}
+        WHERE s.id IN (${placeholders(count)})`,
+
+    activeOfUser: `
+        SELECT ${SAFARI_COLUMNS}
+        ${SAFARI_FROM}
+        WHERE s.status IN (?, ?) AND s.end_date >= ? AND u.status = ?
+            AND (s.user_id = ? OR EXISTS (SELECT 1 FROM shared_safari_member me
+                WHERE me.shared_safari_id = s.id AND me.user_id = ? AND me.status = ?))
+        ORDER BY s.start_date ASC, s.id ASC
+        LIMIT ? OFFSET ?`,
+
+    countActiveOfUser: `
+        SELECT COUNT(*) AS total
+        ${SAFARI_FROM}
+        WHERE s.status IN (?, ?) AND s.end_date >= ? AND u.status = ?
+            AND (s.user_id = ? OR EXISTS (SELECT 1 FROM shared_safari_member me
+                WHERE me.shared_safari_id = s.id AND me.user_id = ? AND me.status = ?))`,
 
     organisedBy: `
         SELECT ${SAFARI_COLUMNS}
@@ -185,26 +208,29 @@ export const SharedSafariSQL = {
         UPDATE shared_safari SET is_pinned = ?, updated_by = ? WHERE id = ?`,
 
     faces: (count: number) => `
-        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, m.joined_at AS joinedAt,
+        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, up.photo AS photoVersion, m.joined_at AS joinedAt,
                m.left_at AS leftAt
         FROM shared_safari_member m
         JOIN user u ON u.id = m.user_id
+        LEFT JOIN user_profile up ON up.user_id = u.id
         WHERE m.shared_safari_id IN (${placeholders(count)}) AND m.status = ? AND u.status = ?
         ORDER BY m.joined_at, m.id`,
 
     leftMembers: `
-        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, m.joined_at AS joinedAt,
+        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, up.photo AS photoVersion, m.joined_at AS joinedAt,
                m.left_at AS leftAt
         FROM shared_safari_member m
         JOIN user u ON u.id = m.user_id
+        LEFT JOIN user_profile up ON up.user_id = u.id
         WHERE m.shared_safari_id = ? AND m.status = ?
         ORDER BY m.left_at DESC, m.id`,
 
     allMembers: `
-        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, m.joined_at AS joinedAt,
+        SELECT m.shared_safari_id AS sharedSafariId, m.user_id AS userId, u.name, up.photo AS photoVersion, m.joined_at AS joinedAt,
                m.left_at AS leftAt
         FROM shared_safari_member m
         JOIN user u ON u.id = m.user_id
+        LEFT JOIN user_profile up ON up.user_id = u.id
         WHERE m.shared_safari_id = ? AND m.status = ?
         ORDER BY m.joined_at, m.id`,
 

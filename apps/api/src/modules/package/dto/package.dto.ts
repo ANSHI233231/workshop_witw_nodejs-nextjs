@@ -366,6 +366,7 @@ export type ShownPackageRef = {
     readonly liveVersionId: number;
     readonly liveVersionNumber: number;
     readonly name: string;
+    readonly pricePerPerson: number;
 };
 
 export type ParkPriceRange = {

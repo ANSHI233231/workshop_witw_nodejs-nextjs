@@ -2,6 +2,7 @@ import { config } from '../../config';
 import { createFileStorage } from '../../infrastructure/storage';
 import { AuditEntity, createAuditModule } from '../../modules/audit';
 import { createAuthTestDataModule } from '../../modules/auth';
+import { createChatTestDataModule } from '../../modules/chat';
 import { createFlagReasonTestDataModule } from '../../modules/flag-reason';
 import { createGalleryTestDataModule } from '../../modules/gallery';
 import { createJobsTestDataModule } from '../../modules/jobs';
@@ -10,9 +11,11 @@ import { createNotificationTestDataModule } from '../../modules/notification';
 import { createPackageTestDataModule } from '../../modules/package';
 import { createParkTestDataModule } from '../../modules/park';
 import { createPartnerTestDataModule } from '../../modules/partner';
+import { createProfileTestDataModule } from '../../modules/profile';
 import { createQuoteRequestTestDataModule } from '../../modules/quote-request';
 import { createSharedSafariTestDataModule } from '../../modules/shared-safari';
 import { createUsersTestDataModule, type TestAccountMarker, type TestDataTable } from '../../modules/users';
+import { createWishlistTestDataModule } from '../../modules/wishlist';
 import { ConsoleController } from '../lib/ConsoleController';
 
 const CONFIRM = 'confirm';
@@ -51,7 +54,7 @@ type Found = Awaited<ReturnType<TestDataController['findAll']>>;
 
 export class TestDataController extends ConsoleController {
     /**
-     * Removes the local test data marked "ct_": accounts whose email starts with "ct_" with their roles, sessions and password resets; their partners with parks and logos; galleries, packages (every version, day, FAQ, photo, park, feature, inclusion) and package delete reasons named "ct_" or owned by those partners, with their files; quote requests from or to them or with notes starting "ct_"; parks named "ct_"; flag reasons named "ct_"; languages named "ct_" with their texts, data translations and column (the apps' translation files are published again), and screen texts (app translations) starting with "ct_"; background job runs titled "ct_" (and their retries); shared safaris, members, comments and flags of those accounts or titled "ct_"; notifications to or from them, about any of these rows, or with a "ct_" title or text. The audit, app and mail logs stay. Sample (@example.test) and demo (@packages-demo.test) accounts are never selected. e.g. "npm run cli test-data/remove-ct confirm". Dry run unless "confirm" is given; safe to run again; refused in production.
+     * Removes the local test data marked "ct_": accounts whose email starts with "ct_" with their roles, sessions and password resets; their partners with parks and logos; galleries, packages (every version, day, FAQ, photo, park, feature, inclusion) and package delete reasons named "ct_" or owned by those partners, with their files; quote requests from or to them or with notes starting "ct_"; parks named "ct_"; flag reasons named "ct_"; languages named "ct_" with their texts, data translations and column (the apps' translation files are published again), and screen texts (app translations) starting with "ct_"; background job runs titled "ct_" (and their retries); shared safaris, members, comments and flags of those accounts or titled "ct_"; notifications to or from them, about any of these rows, or with a "ct_" title or text; their wishlist items (and items saving the removed packages or safaris), their profiles with their photo folders, and their direct conversations with every message in them. The audit, app and mail logs stay. Sample (@example.test) and demo (@packages-demo.test) accounts are never selected. e.g. "npm run cli test-data/remove-ct confirm". Dry run unless "confirm" is given; safe to run again; refused in production.
      */
     public async actionRemoveCt(confirm?: string): Promise<void> {
         if (config.isProduction) {
@@ -74,6 +77,9 @@ export class TestDataController extends ConsoleController {
         const services = this.services();
         const removed = {
             notifications: await services.notificationTestDataService.remove(found.notifications),
+            wishlistItems: await services.wishlistTestDataService.remove(found.wishlist),
+            conversations: await services.chatTestDataService.remove(found.chat),
+            profiles: await services.profileTestDataService.remove(found.profiles),
             quoteRequests: await services.quoteRequestTestDataService.remove(found.quoteRequests),
             safaris: await services.sharedSafariTestDataService.remove(found.safaris),
             packages: await services.packageTestDataService.remove(found.packages),
@@ -88,7 +94,7 @@ export class TestDataController extends ConsoleController {
         };
         this.stdout(
             this.ansiFormat(
-                `Removed: ${removed.notifications} notifications, ${removed.quoteRequests} quote requests, ${removed.safaris} shared safaris, ${removed.packages} packages, ${removed.galleries} galleries, ${removed.partners} partners, ${removed.parks} parks, ${removed.flagReasons} flag reasons, ${removed.languageRows} language rows (languages and screen texts), ${removed.jobRuns} job runs, ${removed.sessions} sessions and password resets, ${removed.users} accounts.\n`,
+                `Removed: ${removed.notifications} notifications, ${removed.wishlistItems} wishlist items, ${removed.conversations} conversations, ${removed.profiles} profiles, ${removed.quoteRequests} quote requests, ${removed.safaris} shared safaris, ${removed.packages} packages, ${removed.galleries} galleries, ${removed.partners} partners, ${removed.parks} parks, ${removed.flagReasons} flag reasons, ${removed.languageRows} language rows (languages and screen texts), ${removed.jobRuns} job runs, ${removed.sessions} sessions and password resets, ${removed.users} accounts.\n`,
                 'green',
             ),
         );
@@ -126,6 +132,13 @@ export class TestDataController extends ConsoleController {
         const languages = await services.languageTestDataService.find({ textPrefix: CT_TEXT_PREFIX });
         const jobs = await services.jobTestDataService.find({ textPrefix: CT_TEXT_PREFIX });
         const auth = await services.authTestDataService.find(userIds);
+        const wishlist = await services.wishlistTestDataService.find({
+            userIds,
+            packageIds: packages.packageIds,
+            sharedSafariIds: safaris.safariIds,
+        });
+        const chat = await services.chatTestDataService.find(userIds);
+        const profiles = await services.profileTestDataService.find(userIds);
         const notifications = await services.notificationTestDataService.find({
             userIds,
             textPrefix: CT_TEXT_PREFIX,
@@ -138,9 +151,10 @@ export class TestDataController extends ConsoleController {
                 { entityType: AuditEntity.SHARED_SAFARI, entityIds: safaris.safariIds },
                 { entityType: AuditEntity.SHARED_SAFARI_COMMENT, entityIds: safaris.commentIds },
                 { entityType: AuditEntity.PARK, entityIds: parks.parkIds },
+                { entityType: AuditEntity.CHAT_CONVERSATION, entityIds: chat.conversationIds },
             ],
         });
-        return { users, partners, packages, galleries, quoteRequests, safaris, parks, flagReasons, languages, jobs, auth, notifications };
+        return { wishlist, chat, profiles, users, partners, packages, galleries, quoteRequests, safaris, parks, flagReasons, languages, jobs, auth, notifications };
     }
 
     private blockersOf(found: Found): string[] {
@@ -171,6 +185,9 @@ export class TestDataController extends ConsoleController {
     private removedTables(found: Found): TestDataTable[] {
         return [
             ...found.notifications.tables,
+            ...found.wishlist.tables,
+            ...found.chat.tables,
+            ...found.profiles.tables,
             ...found.quoteRequests.tables,
             ...found.safaris.tables,
             ...found.packages.tables,
@@ -194,6 +211,7 @@ export class TestDataController extends ConsoleController {
             ...found.packages.folders,
             ...found.parks.folders,
             ...found.safaris.folders,
+            ...found.profiles.folders,
         ];
         this.stdout(`  storage folders (${folders.length}, removed with everything in them where they exist):\n`);
         for (const folder of folders) this.stdout(`    ${folder}\n`);
@@ -254,6 +272,9 @@ export class TestDataController extends ConsoleController {
             ...createLanguageTestDataModule({ ...base, translationDirectories: config.translationDirs }),
             ...createJobsTestDataModule(base),
             ...createNotificationTestDataModule(base),
+            ...createWishlistTestDataModule(base),
+            ...createChatTestDataModule(base),
+            ...createProfileTestDataModule(withFiles),
         };
     }
 }

@@ -21,7 +21,7 @@ export default defineConfig([
         rules: { 'no-console': 'off' },
     },
     {
-        files: ['src/components/console/**/*.tsx', 'src/components/docs/**/*.tsx', 'src/components/website/**/*.tsx', 'src/components/layout/**/*.tsx', 'src/components/shared-safari/**/*.tsx', 'src/components/partner/**/*.tsx', 'src/components/partners/**/*.tsx'],
+        files: ['src/components/console/**/*.tsx', 'src/components/docs/**/*.tsx', 'src/components/website/**/*.tsx', 'src/components/layout/**/*.tsx', 'src/components/shared-safari/**/*.tsx', 'src/components/partner/**/*.tsx', 'src/components/partners/**/*.tsx', 'src/components/profile/**/*.tsx', 'src/components/chat/**/*.tsx', 'src/components/wishlist/**/*.tsx', 'src/components/notification-feed/**/*.tsx'],
         rules: { '@next/next/no-img-element': 'off' },
     },
     {

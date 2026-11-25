@@ -51,7 +51,9 @@ const toDto = (row: NotificationRow, userId: number, titleTemplate: string | nul
     excerpt: row.excerpt,
     isRead: row.readAt !== null,
     createdAt: row.createdAt,
+    actorId: row.actorId,
     actorName: row.actorName,
+    actorPhotoVersion: row.actorPhotoVersion,
     actorIsYou: row.actorId === userId,
     titleTemplate,
 });

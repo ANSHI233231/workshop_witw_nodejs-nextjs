@@ -65,22 +65,34 @@ const isoOf = (value: Date | string): string => iso(value) ?? '';
 const badgeOf = (partner: PartnerIdentity | undefined): PartnerBadgeDto | null =>
     partner ? { id: partner.id, businessName: partner.businessName, logoVersion: partner.logoVersion } : null;
 
-export type PersonShown = (id: number, name: string) => PersonDto;
+export type PersonShown = (id: number, name: string, photoVersion: string | null) => PersonDto;
 
 export const shownOnWebsite =
     (partners: PartnersByUser): PersonShown =>
-    (id, name) => {
+    (id, name, photoVersion) => {
         const partner = partners.get(id);
         const shownName = partner?.businessName ?? name;
-        return { id, name: shownName, initials: initialsOf(shownName), partner: badgeOf(partner) };
+        return {
+            id,
+            name: shownName,
+            initials: initialsOf(shownName),
+            photoVersion: partner ? null : photoVersion,
+            partner: badgeOf(partner),
+        };
     };
 
 export const shownInConsole =
     (partners: PartnersByUser): PersonShown =>
-    (id, name) => ({ id, name, initials: initialsOf(name), partner: badgeOf(partners.get(id)) });
+    (id, name, photoVersion) => ({
+        id,
+        name,
+        initials: initialsOf(name),
+        photoVersion,
+        partner: badgeOf(partners.get(id)),
+    });
 
 export const memberOf = (row: FaceRow, show: PersonShown): MemberDto => ({
-    ...show(row.userId, row.name),
+    ...show(row.userId, row.name, row.photoVersion),
     joinedAt: isoOf(row.joinedAt),
     leftAt: iso(row.leftAt),
 });
@@ -118,7 +130,7 @@ export const toCard = (
     id: row.id,
     slug: row.slug,
     title: row.title,
-    host: show(row.userId, row.hostName),
+    host: show(row.userId, row.hostName, row.hostPhoto),
     park: { id: row.masterParkId, name: row.parkName },
     startDate: row.startDate,
     endDate: row.endDate,
@@ -134,7 +146,7 @@ export const toCard = (
     status: row.status,
     isStarted: row.startDate < today,
     joinedCount: Number(row.joinedCount),
-    faces: faces.slice(0, SHARED_SAFARI_LIMITS.CARD_FACES).map((face) => show(face.userId, face.name)),
+    faces: faces.slice(0, SHARED_SAFARI_LIMITS.CARD_FACES).map((face) => show(face.userId, face.name, face.photoVersion)),
     createdAt: isoOf(row.createdAt),
     viewer: viewerStateOf(row, viewer, member),
 });
@@ -171,7 +183,7 @@ const commentOf = (row: CommentRow, rules: CommentRules, replies: readonly Comme
     const isMine = rules.viewerId !== null && row.userId === rules.viewerId;
     return {
         id: row.id,
-        writer: rules.show(row.userId, row.writerName),
+        writer: rules.show(row.userId, row.writerName, row.writerPhoto),
         isHost: row.userId === rules.hostId,
         text: row.commentText,
         createdAt: isoOf(row.createdAt),
@@ -200,7 +212,7 @@ const consoleCommentOf = (
     show: PersonShown,
 ): ConsoleCommentDto => ({
     id: row.id,
-    writer: show(row.userId, row.writerName),
+    writer: show(row.userId, row.writerName, row.writerPhoto),
     isHost: row.userId === hostId,
     text: row.commentText,
     createdAt: isoOf(row.createdAt),
@@ -228,7 +240,7 @@ export const toConsoleSafari = (row: SafariRow, show: PersonShown): ConsoleSafar
     id: row.id,
     slug: row.slug,
     title: row.title,
-    host: { ...show(row.userId, row.hostName), isActive: row.hostStatus === 1 },
+    host: { ...show(row.userId, row.hostName, row.hostPhoto), isActive: row.hostStatus === 1 },
     park: { id: row.masterParkId, name: row.parkName },
     startDate: row.startDate,
     endDate: row.endDate,

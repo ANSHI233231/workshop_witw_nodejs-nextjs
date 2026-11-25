@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { PageBreadcrumb } from '@/components/portal/page-breadcrumb';
+import { config } from '@/lib/config';
 import { formatDate } from '@/lib/format';
 import { serverTranslator } from '@/lib/i18n/server-translator';
 import { requireActivePartner } from '@/lib/portal-session';
@@ -24,6 +25,11 @@ export default async function BusinessProfilePage() {
                 />
                 <div className="page-head">
                     <h1 className="page-title">{t('Business Profile')}</h1>
+                    <div className="actions">
+                        <a className="btn btn-secondary" href={`${config.websiteUrl}/partners/${request.id}`}>
+                            {t('View public page')}
+                        </a>
+                    </div>
                 </div>
             </div>
             <div className="banner banner-info" role="status" style={{ marginBottom: 'var(--space-lg)' }}>

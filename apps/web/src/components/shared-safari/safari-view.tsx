@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { initialsOf } from '@/components/partner/partner-rules';
+import { useMyPhoto } from '@/components/profile/my-photo-provider';
+import { PersonLink } from '@/components/profile/person-link';
 import { SITE_PATHS } from '@/components/website/witw-site-frame';
+import { WishlistHeart } from '@/components/wishlist/wishlist-heart';
 import { useT } from '@/hooks/i18n/use-t';
 import { useSiteToast } from '@/hooks/shared-safari/use-site-toast';
 import type { Translate } from '@/lib/i18n/locale';
@@ -13,6 +16,7 @@ import { dateRange, priceRange, tripDays } from '@/lib/shared-safari-format';
 import { ApiError } from '@/services/api-error';
 import type { SitePartner } from '@/services/partner.service';
 import { deleteSafari, getSafari, joinSafari, leaveSafari, setSafariStatus } from '@/services/shared-safari.service';
+import { WishlistItemType } from '@/types/wishlist.types';
 import {
     type HostStatus,
     type Person,
@@ -96,15 +100,16 @@ function NotAvailable() {
     );
 }
 
-const meAsPerson = (meName: string, partner: SitePartner | null): Person =>
+const meAsPerson = (meId: number, meName: string, mePhoto: string | null, partner: SitePartner | null): Person =>
     partner
         ? {
-              id: 0,
+              id: meId,
               name: partner.businessName,
               initials: initialsOf(partner.businessName),
+              photoVersion: null,
               partner: { id: partner.id, businessName: partner.businessName, logoVersion: partner.logoVersion },
           }
-        : { id: 0, name: meName, initials: meName.trim().charAt(0).toUpperCase(), partner: null };
+        : { id: meId, name: meName, initials: meName.trim().charAt(0).toUpperCase(), photoVersion: mePhoto, partner: null };
 
 export function SafariViewPage({
     safariRef,
@@ -118,6 +123,7 @@ export function SafariViewPage({
     const t = useT();
     const router = useRouter();
     const { toast, show, showError, hide } = useSiteToast();
+    const my = useMyPhoto();
     const [safari, setSafari] = useState<SafariViewValue | null>(null);
     const [missing, setMissing] = useState(false);
     const [dialog, setDialog] = useState<Dialog>(null);
@@ -223,6 +229,12 @@ export function SafariViewPage({
                                 {safari.status !== SafariStatus.ACTIVE && (
                                     <span className={badgeClassOf(safari.status)}>{t(statusLabel(safari.status))}</span>
                                 )}
+                                <WishlistHeart
+                                    itemType={WishlistItemType.SHARED_SAFARI}
+                                    itemId={safari.id}
+                                    inline
+                                    alwaysShown={isOpen && !safari.isStarted}
+                                />
                             </div>
                             <span className="ss3-dates">{dateRange(safari.startDate, safari.endDate)}</span>
                             <span className="ss3-park">
@@ -230,7 +242,10 @@ export function SafariViewPage({
                                 <span>{safari.park.name}</span>
                             </span>
                             <span className="ss3-org">
-                                {t('Organized by')} <b>{safari.host.name}</b>
+                                {t('Organized by')}{' '}
+                                <PersonLink person={safari.host}>
+                                    <b>{safari.host.name}</b>
+                                </PersonLink>
                             </span>
                         </div>
                     </div>
@@ -312,7 +327,7 @@ export function SafariViewPage({
                     </div>
                     <SafariDiscussion
                         safari={safari}
-                        me={meAsPerson(meName, mePartner)}
+                        me={meAsPerson(my.userId, meName, my.photoVersion, mePartner)}
                         onChanged={load}
                         onMessage={show}
                         onError={showError}

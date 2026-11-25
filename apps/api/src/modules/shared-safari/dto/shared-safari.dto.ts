@@ -45,6 +45,7 @@ export type PersonDto = {
     readonly id: number;
     readonly name: string;
     readonly initials: string;
+    readonly photoVersion: string | null;
     readonly partner: PartnerBadgeDto | null;
 };
 
@@ -210,3 +211,16 @@ export type FlagInput = { readonly reasonId: number; readonly details: string };
 export type AdminDeleteInput = { readonly reason: number; readonly details: string };
 
 export type CoverImage = { readonly content: Buffer; readonly contentType: string };
+
+export type WishlistSafariState = {
+    readonly id: number;
+    readonly isSavable: boolean;
+};
+
+export type UserSafariPage = {
+    readonly items: readonly SafariCardDto[];
+    readonly total: number;
+    readonly page: number;
+    readonly pageSize: number;
+    readonly hasMore: boolean;
+};
