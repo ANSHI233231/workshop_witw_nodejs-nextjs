@@ -328,6 +328,8 @@ From the workflow (recorded there, repeated here so the plan stands alone):
 
 ### 6.1 Staging: migration before the code (run by the user)
 
+**Code:** branch `feature/profiles-wishlist-chat` at `e4d2961`, pushed to `origin` on 2026-11-25 (not merged; `main` on `origin` is still `c3d5d9e`). Which ref the staging server pulls is to be confirmed on the server: the docs say `staging`, which does not exist on `origin`.
+
 The migration must run **before** the new API code: the new code reads `user_profile` on every shared safari, notification and Sign Up, so code without the tables fails; the tables without the code change nothing (the old code never reads them). The migration only adds four new tables and one `notification_template` row: no DROP, ALTER, UPDATE or DELETE, no existing row changed. Existing users need no row: `date_of_birth` and `gender` are empty for them and are never forced (R219).
 
 1. Back up the staging database: `mysqldump --single-transaction --routines <staging_db> > witw-staging-before-2026-11-24.sql`.
